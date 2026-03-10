@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Frozen pipeline, mutable modeling template, git operations, and experiment logging
 - [ ] **Phase 2: Core Loop** - Autonomous experiment loop with multi-draft start, domain context, and resilience
-- [ ] **Phase 3: CLI and Integration** - Project scaffolding CLI and end-to-end validation
+- [x] **Phase 3: CLI and Integration** - Project scaffolding CLI and end-to-end validation (completed 2026-03-10)
 
 ## Phase Details
 
@@ -75,4 +75,4 @@ Phases execute in numeric order: 1 -> 2 -> 3
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-10 |
 | 2. Core Loop | 2/3 | In Progress|  |
-| 3. CLI and Integration | 0/2 | Not started | - |
+| 3. CLI and Integration | 2/2 | Complete   | 2026-03-10 |

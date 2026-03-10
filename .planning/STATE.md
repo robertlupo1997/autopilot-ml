@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 03-01-PLAN.md (Scaffold)
-last_updated: "2026-03-10T23:16:17.407Z"
-last_activity: 2026-03-10 -- Completed 03-01 (Scaffold)
+stopped_at: Completed 03-02-PLAN.md (CLI Entry Point)
+last_updated: "2026-03-10T23:21:32Z"
+last_activity: 2026-03-10 -- Completed 03-02 (CLI Entry Point)
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 100
 ---
 
@@ -26,18 +26,18 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 3 of 3 (CLI and Integration)
-Plan: 1 of 2 in current phase (03-01 complete)
-Status: In Progress
-Last activity: 2026-03-10 -- Completed 03-01 (Scaffold)
+Plan: 2 of 2 in current phase (03-02 complete)
+Status: Complete
+Last activity: 2026-03-10 -- Completed 03-02 (CLI Entry Point)
 
-Progress: [█████████░] 88%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 3min
-- Total execution time: 19min
+- Total execution time: 23min
 
 **By Phase:**
 
@@ -45,10 +45,10 @@ Progress: [█████████░] 88%
 |-------|-------|-------|----------|
 | 01-foundation | 3 | 10min | 3.3min |
 | 02-core-loop | 3 | 6min | 2min |
-| 03-cli-and-integration | 1 | 3min | 3min |
+| 03-cli-and-integration | 2 | 7min | 3.5min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (3min), 02-03 (2min), 02-02 (2min), 02-01 (2min), 01-03 (3min)
+- Last 5 plans: 03-02 (4min), 03-01 (3min), 02-03 (2min), 02-02 (2min), 02-01 (2min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -80,6 +80,8 @@ Recent decisions affecting current work:
 - [02-03]: program.md uses Python str.format() for placeholder substitution
 - [02-03]: CLAUDE.md references automl.drafts API functions by name to guide the agent
 - [Phase 03-01]: Used importlib.util.find_spec instead of import for train_template.py (avoids sibling import failure)
+- [Phase 03-02]: main(argv) accepts list for testability; empty list returns usage+error
+- [Phase 03-02]: E2e tests use sys.executable directly instead of uv run (avoids venv overhead)
 
 ### Pending Todos
 
@@ -91,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T23:16:17.404Z
-Stopped at: Completed 03-01-PLAN.md (Scaffold)
+Last session: 2026-03-10T23:21:32Z
+Stopped at: Completed 03-02-PLAN.md (CLI Entry Point)
 Resume file: None

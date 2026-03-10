@@ -64,7 +64,7 @@
 ### CLI and Scaffolding
 
 - [x] **CLI-01**: CLI command scaffolds a new experiment project from a CSV file
-- [ ] **CLI-02**: CLI accepts: data path, target column, metric name, goal description
+- [x] **CLI-02**: CLI accepts: data path, target column, metric name, goal description
 - [x] **CLI-03**: CLI generates: prepare.py, train.py, program.md, CLAUDE.md, .gitignore, pyproject.toml
 - [x] **CLI-04**: Generated project is immediately runnable with `uv run train.py`
 
@@ -149,7 +149,7 @@
 | DRAFT-03 | Phase 2 | Complete |
 | DRAFT-04 | Phase 2 | Complete |
 | CLI-01 | Phase 3 | Complete |
-| CLI-02 | Phase 3 | Pending |
+| CLI-02 | Phase 3 | Complete |
 | CLI-03 | Phase 3 | Complete |
 | CLI-04 | Phase 3 | Complete |
 
