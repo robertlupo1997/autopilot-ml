@@ -11,6 +11,9 @@ dependencies = [
     "lightgbm",
 ]
 
+[project.scripts]
+automl = "automl.cli:main"
+
 [dependency-groups]
 dev = [
     "pytest",
