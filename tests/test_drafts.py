@@ -112,3 +112,46 @@ class TestDraftResult:
         assert dr.status == "success"
         assert dr.commit_hash == "abc1234"
         assert dr.description == "XGBoost: accuracy=0.850000"
+
+
+# ---- Selection tests ----
+
+class TestSelectBestDraft:
+    def test_select_best_draft(self):
+        results = [
+            DraftResult("A", 0.75, "draft-discard", "aaa", "A"),
+            DraftResult("B", 0.90, "draft-discard", "bbb", "B"),
+            DraftResult("C", 0.82, "draft-discard", "ccc", "C"),
+        ]
+        best = select_best_draft(results)
+        assert best is not None
+        assert best.name == "B"
+        assert best.metric_value == 0.90
+
+    def test_select_best_draft_empty(self):
+        assert select_best_draft([]) is None
+
+    def test_select_best_draft_all_crashed(self):
+        results = [
+            DraftResult("A", None, "draft-discard", "aaa", "crashed"),
+            DraftResult("B", None, "draft-discard", "bbb", "crashed"),
+        ]
+        assert select_best_draft(results) is None
+
+    def test_select_best_draft_some_crashed(self):
+        results = [
+            DraftResult("A", None, "draft-discard", "aaa", "crashed"),
+            DraftResult("B", 0.80, "draft-discard", "bbb", "B"),
+            DraftResult("C", None, "draft-discard", "ccc", "crashed"),
+            DraftResult("D", 0.70, "draft-discard", "ddd", "D"),
+        ]
+        best = select_best_draft(results)
+        assert best is not None
+        assert best.name == "B"
+        assert best.metric_value == 0.80
+
+    def test_draft_status_strings(self):
+        keep = DraftResult("Winner", 0.95, "draft-keep", "abc", "winner")
+        discard = DraftResult("Loser", 0.50, "draft-discard", "def", "loser")
+        assert keep.status == "draft-keep"
+        assert discard.status == "draft-discard"
