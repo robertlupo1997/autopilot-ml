@@ -17,11 +17,11 @@
 
 ### Mutable Modeling
 
-- [ ] **MODEL-01**: Agent edits a single train.py file containing model selection, hyperparameters, and ensemble logic
-- [ ] **MODEL-02**: train.py template provides baseline model (e.g., LogisticRegression or XGBoost with defaults)
-- [ ] **MODEL-03**: train.py imports frozen evaluation function and data from prepare.py
-- [ ] **MODEL-04**: train.py prints structured metric output parseable by the agent (metric name, value, direction)
-- [ ] **MODEL-05**: train.py enforces a configurable time budget per experiment (default ~60s for tabular ML)
+- [x] **MODEL-01**: Agent edits a single train.py file containing model selection, hyperparameters, and ensemble logic
+- [x] **MODEL-02**: train.py template provides baseline model (e.g., LogisticRegression or XGBoost with defaults)
+- [x] **MODEL-03**: train.py imports frozen evaluation function and data from prepare.py
+- [x] **MODEL-04**: train.py prints structured metric output parseable by the agent (metric name, value, direction)
+- [x] **MODEL-05**: train.py enforces a configurable time budget per experiment (default ~60s for tabular ML)
 
 ### Experiment Loop
 
@@ -120,11 +120,11 @@
 | PIPE-05 | Phase 1 | Complete |
 | PIPE-06 | Phase 1 | Complete |
 | PIPE-07 | Phase 1 | Complete |
-| MODEL-01 | Phase 1 | Pending |
-| MODEL-02 | Phase 1 | Pending |
-| MODEL-03 | Phase 1 | Pending |
-| MODEL-04 | Phase 1 | Pending |
-| MODEL-05 | Phase 1 | Pending |
+| MODEL-01 | Phase 1 | Complete |
+| MODEL-02 | Phase 1 | Complete |
+| MODEL-03 | Phase 1 | Complete |
+| MODEL-04 | Phase 1 | Complete |
+| MODEL-05 | Phase 1 | Complete |
 | GIT-01 | Phase 1 | Complete |
 | GIT-02 | Phase 1 | Complete |
 | GIT-03 | Phase 1 | Complete |

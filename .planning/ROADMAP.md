@@ -12,7 +12,7 @@ AutoML delivers an autonomous ML experiment framework in three phases. Phase 1 b
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Frozen pipeline, mutable modeling template, git operations, and experiment logging
+- [x] **Phase 1: Foundation** - Frozen pipeline, mutable modeling template, git operations, and experiment logging
 - [ ] **Phase 2: Core Loop** - Autonomous experiment loop with multi-draft start, domain context, and resilience
 - [ ] **Phase 3: CLI and Integration** - Project scaffolding CLI and end-to-end validation
 
@@ -31,9 +31,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Project scaffolding and frozen data pipeline (prepare.py)
-- [ ] 01-02-PLAN.md — Git state management and experiment logging modules
-- [ ] 01-03-PLAN.md — Mutable train.py template and experiment runner
+- [x] 01-01-PLAN.md — Project scaffolding and frozen data pipeline (prepare.py)
+- [x] 01-02-PLAN.md — Git state management and experiment logging modules
+- [x] 01-03-PLAN.md — Mutable train.py template and experiment runner
 
 ### Phase 2: Core Loop
 **Goal**: The agent autonomously runs experiments in a loop -- generating diverse drafts, selecting the best, iterating with keep/revert, recovering from crashes, and breaking out of stagnation -- all guided by domain context
@@ -72,6 +72,6 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Not started | - |
+| 1. Foundation | 3/3 | Complete | 2026-03-10 |
 | 2. Core Loop | 0/3 | Not started | - |
 | 3. CLI and Integration | 0/1 | Not started | - |
