@@ -36,17 +36,17 @@
 
 ### Git State Management
 
-- [ ] **GIT-01**: Each experiment run operates on a dedicated branch (e.g., automl/run-<tag>)
-- [ ] **GIT-02**: Successful experiments are committed with descriptive messages
-- [ ] **GIT-03**: Failed/reverted experiments reset to the last good commit
-- [ ] **GIT-04**: results.tsv is untracked by git (listed in .gitignore)
-- [ ] **GIT-05**: Git operations use subprocess + CLI (not GitPython)
+- [x] **GIT-01**: Each experiment run operates on a dedicated branch (e.g., automl/run-<tag>)
+- [x] **GIT-02**: Successful experiments are committed with descriptive messages
+- [x] **GIT-03**: Failed/reverted experiments reset to the last good commit
+- [x] **GIT-04**: results.tsv is untracked by git (listed in .gitignore)
+- [x] **GIT-05**: Git operations use subprocess + CLI (not GitPython)
 
 ### Experiment Logging
 
-- [ ] **LOG-01**: results.tsv tracks: commit hash, metric value, memory/time, status (keep/discard/crash), description
-- [ ] **LOG-02**: results.tsv is tab-separated and append-only
-- [ ] **LOG-03**: Each experiment's full output is captured in run.log (overwritten per experiment)
+- [x] **LOG-01**: results.tsv tracks: commit hash, metric value, memory/time, status (keep/discard/crash), description
+- [x] **LOG-02**: results.tsv is tab-separated and append-only
+- [x] **LOG-03**: Each experiment's full output is captured in run.log (overwritten per experiment)
 
 ### Domain Context
 
@@ -125,14 +125,14 @@
 | MODEL-03 | Phase 1 | Pending |
 | MODEL-04 | Phase 1 | Pending |
 | MODEL-05 | Phase 1 | Pending |
-| GIT-01 | Phase 1 | Pending |
-| GIT-02 | Phase 1 | Pending |
-| GIT-03 | Phase 1 | Pending |
-| GIT-04 | Phase 1 | Pending |
-| GIT-05 | Phase 1 | Pending |
-| LOG-01 | Phase 1 | Pending |
-| LOG-02 | Phase 1 | Pending |
-| LOG-03 | Phase 1 | Pending |
+| GIT-01 | Phase 1 | Complete |
+| GIT-02 | Phase 1 | Complete |
+| GIT-03 | Phase 1 | Complete |
+| GIT-04 | Phase 1 | Complete |
+| GIT-05 | Phase 1 | Complete |
+| LOG-01 | Phase 1 | Complete |
+| LOG-02 | Phase 1 | Complete |
+| LOG-03 | Phase 1 | Complete |
 | LOOP-01 | Phase 2 | Pending |
 | LOOP-02 | Phase 2 | Pending |
 | LOOP-03 | Phase 2 | Pending |
