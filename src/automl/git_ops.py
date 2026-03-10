@@ -55,6 +55,14 @@ class GitManager:
         """Hard reset to last commit. Does NOT touch untracked/ignored files."""
         self._run("reset", "--hard", "HEAD")
 
+    def revert_last_commit(self):
+        """Hard reset to parent commit. Undoes the most recent commit.
+
+        Use after 'commit then run' pattern: if the run fails, this
+        reverts to the state before the commit.
+        """
+        self._run("reset", "--hard", "HEAD~1")
+
     def get_current_commit(self):
         """Return short hash of HEAD."""
         result = self._run("rev-parse", "--short", "HEAD")
