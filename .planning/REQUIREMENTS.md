@@ -7,13 +7,13 @@
 
 ### Frozen Pipeline
 
-- [ ] **PIPE-01**: Framework accepts any CSV file + target column + evaluation metric as input
-- [ ] **PIPE-02**: Data is automatically split into train/test (time-based if temporal, stratified if classification)
-- [ ] **PIPE-03**: Evaluation function computes configurable metric (AUC, RMSE, F1, accuracy, MAE) using cross-validation
-- [ ] **PIPE-04**: Sanity-check baselines are computed before agent loop starts (majority class, mean predictor, random)
-- [ ] **PIPE-05**: Hidden holdout set is reserved that the agent never sees (final validation)
-- [ ] **PIPE-06**: Basic data preprocessing handled in frozen layer (missing values, categorical encoding, type inference)
-- [ ] **PIPE-07**: Data preview/summary generated for agent context (shape, dtypes, distributions, correlations)
+- [x] **PIPE-01**: Framework accepts any CSV file + target column + evaluation metric as input
+- [x] **PIPE-02**: Data is automatically split into train/test (time-based if temporal, stratified if classification)
+- [x] **PIPE-03**: Evaluation function computes configurable metric (AUC, RMSE, F1, accuracy, MAE) using cross-validation
+- [x] **PIPE-04**: Sanity-check baselines are computed before agent loop starts (majority class, mean predictor, random)
+- [x] **PIPE-05**: Hidden holdout set is reserved that the agent never sees (final validation)
+- [x] **PIPE-06**: Basic data preprocessing handled in frozen layer (missing values, categorical encoding, type inference)
+- [x] **PIPE-07**: Data preview/summary generated for agent context (shape, dtypes, distributions, correlations)
 
 ### Mutable Modeling
 
@@ -113,13 +113,13 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | Phase 1 | Pending |
-| PIPE-02 | Phase 1 | Pending |
-| PIPE-03 | Phase 1 | Pending |
-| PIPE-04 | Phase 1 | Pending |
-| PIPE-05 | Phase 1 | Pending |
-| PIPE-06 | Phase 1 | Pending |
-| PIPE-07 | Phase 1 | Pending |
+| PIPE-01 | Phase 1 | Complete |
+| PIPE-02 | Phase 1 | Complete |
+| PIPE-03 | Phase 1 | Complete |
+| PIPE-04 | Phase 1 | Complete |
+| PIPE-05 | Phase 1 | Complete |
+| PIPE-06 | Phase 1 | Complete |
+| PIPE-07 | Phase 1 | Complete |
 | MODEL-01 | Phase 1 | Pending |
 | MODEL-02 | Phase 1 | Pending |
 | MODEL-03 | Phase 1 | Pending |
