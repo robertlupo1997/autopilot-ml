@@ -60,10 +60,11 @@ Plans:
   1. User runs a CLI command with a CSV path, target column, and metric -- and gets a fully scaffolded project (prepare.py, train.py, program.md, CLAUDE.md, .gitignore, pyproject.toml)
   2. The scaffolded project is immediately runnable with `uv run train.py` and produces valid metric output
   3. End-to-end test: CLI scaffold, then autonomous loop runs on a real dataset and improves beyond the baseline
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — Scaffold module: experiment directory generation from CSV
+- [ ] 03-02-PLAN.md — CLI entry point, entry point registration, and end-to-end validation
 
 ## Progress
 
@@ -74,4 +75,4 @@ Phases execute in numeric order: 1 -> 2 -> 3
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-10 |
 | 2. Core Loop | 2/3 | In Progress|  |
-| 3. CLI and Integration | 0/1 | Not started | - |
+| 3. CLI and Integration | 0/2 | Not started | - |
