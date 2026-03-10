@@ -73,5 +73,5 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-10 |
-| 2. Core Loop | 0/3 | In progress | - |
+| 2. Core Loop | 2/3 | In Progress|  |
 | 3. CLI and Integration | 0/1 | Not started | - |

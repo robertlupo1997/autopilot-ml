@@ -25,14 +25,14 @@
 
 ### Experiment Loop
 
-- [ ] **LOOP-01**: Agent runs train.py, extracts metric from output, decides keep or revert
+- [x] **LOOP-01**: Agent runs train.py, extracts metric from output, decides keep or revert
 - [ ] **LOOP-02**: All stdout/stderr redirected to run.log to prevent context flooding
 - [ ] **LOOP-03**: Agent reads metric via grep/regex from run.log (not by reading full output)
-- [ ] **LOOP-04**: Keep/revert logic: if metric improved → git commit; if equal/worse → git reset
-- [ ] **LOOP-05**: Agent runs autonomously and indefinitely until manually interrupted ("NEVER STOP")
-- [ ] **LOOP-06**: Timeout enforcement: experiments exceeding 2x budget are killed and treated as failures
-- [ ] **LOOP-07**: Crash recovery: if train.py crashes, agent reads traceback, attempts fix, moves on after 3 failed attempts
-- [ ] **LOOP-08**: Stagnation detection: after N consecutive reverts (default 5), agent is prompted to try a different strategy category
+- [x] **LOOP-04**: Keep/revert logic: if metric improved → git commit; if equal/worse → git reset
+- [x] **LOOP-05**: Agent runs autonomously and indefinitely until manually interrupted ("NEVER STOP")
+- [x] **LOOP-06**: Timeout enforcement: experiments exceeding 2x budget are killed and treated as failures
+- [x] **LOOP-07**: Crash recovery: if train.py crashes, agent reads traceback, attempts fix, moves on after 3 failed attempts
+- [x] **LOOP-08**: Stagnation detection: after N consecutive reverts (default 5), agent is prompted to try a different strategy category
 
 ### Git State Management
 
@@ -56,10 +56,10 @@
 
 ### Multi-Draft Start
 
-- [ ] **DRAFT-01**: Before iterating, agent generates 3-5 diverse initial solutions using different algorithm families
-- [ ] **DRAFT-02**: Each draft is evaluated using the frozen evaluation function
-- [ ] **DRAFT-03**: Best-performing draft is selected as the starting point for linear iteration
-- [ ] **DRAFT-04**: Draft results are logged in results.tsv with status "draft-keep" or "draft-discard"
+- [x] **DRAFT-01**: Before iterating, agent generates 3-5 diverse initial solutions using different algorithm families
+- [x] **DRAFT-02**: Each draft is evaluated using the frozen evaluation function
+- [x] **DRAFT-03**: Best-performing draft is selected as the starting point for linear iteration
+- [x] **DRAFT-04**: Draft results are logged in results.tsv with status "draft-keep" or "draft-discard"
 
 ### CLI and Scaffolding
 
@@ -133,21 +133,21 @@
 | LOG-01 | Phase 1 | Complete |
 | LOG-02 | Phase 1 | Complete |
 | LOG-03 | Phase 1 | Complete |
-| LOOP-01 | Phase 2 | Pending |
+| LOOP-01 | Phase 2 | Complete |
 | LOOP-02 | Phase 2 | Pending |
 | LOOP-03 | Phase 2 | Pending |
-| LOOP-04 | Phase 2 | Pending |
-| LOOP-05 | Phase 2 | Pending |
-| LOOP-06 | Phase 2 | Pending |
-| LOOP-07 | Phase 2 | Pending |
-| LOOP-08 | Phase 2 | Pending |
+| LOOP-04 | Phase 2 | Complete |
+| LOOP-05 | Phase 2 | Complete |
+| LOOP-06 | Phase 2 | Complete |
+| LOOP-07 | Phase 2 | Complete |
+| LOOP-08 | Phase 2 | Complete |
 | CTX-01 | Phase 2 | Pending |
 | CTX-02 | Phase 2 | Pending |
 | CTX-03 | Phase 2 | Pending |
-| DRAFT-01 | Phase 2 | Pending |
-| DRAFT-02 | Phase 2 | Pending |
-| DRAFT-03 | Phase 2 | Pending |
-| DRAFT-04 | Phase 2 | Pending |
+| DRAFT-01 | Phase 2 | Complete |
+| DRAFT-02 | Phase 2 | Complete |
+| DRAFT-03 | Phase 2 | Complete |
+| DRAFT-04 | Phase 2 | Complete |
 | CLI-01 | Phase 3 | Pending |
 | CLI-02 | Phase 3 | Pending |
 | CLI-03 | Phase 3 | Pending |
