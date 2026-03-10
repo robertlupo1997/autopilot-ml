@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 01-03-PLAN.md (Train template + experiment runner) -- Phase 1 complete
-last_updated: "2026-03-10T19:21:16.748Z"
-last_activity: 2026-03-10 -- Completed 02-01 (Loop helpers)
+status: completed
+stopped_at: Completed 02-03-PLAN.md (Templates) -- Phase 2 complete
+last_updated: "2026-03-10T19:36:59.024Z"
+last_activity: 2026-03-10 -- Completed 02-03 (Templates)
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
-  percent: 67
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -21,33 +21,33 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline -- running experiments, keeping improvements, reverting failures, and logging everything -- without human intervention.
-**Current focus:** Phase 2: Core Loop
+**Current focus:** Phase 3: CLI
 
 ## Current Position
 
-Phase: 2 of 3 (Core Loop)
-Plan: 2 of 3 in current phase (02-02 complete)
-Status: In Progress
-Last activity: 2026-03-10 -- Completed 02-02 (Multi-draft initialization)
+Phase: 2 of 3 (Core Loop) -- COMPLETE
+Plan: 3 of 3 in current phase (02-03 complete)
+Status: Phase 2 Complete
+Last activity: 2026-03-10 -- Completed 02-03 (Templates)
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 3min
-- Total execution time: 14min
+- Total execution time: 16min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3 | 10min | 3.3min |
-| 02-core-loop | 2 | 4min | 2min |
+| 02-core-loop | 3 | 6min | 2min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (2min), 02-01 (2min), 01-03 (3min), 01-02 (3min), 01-01 (4min)
+- Last 5 plans: 02-03 (2min), 02-02 (2min), 02-01 (2min), 01-03 (3min), 01-02 (3min)
 - Trend: improving
 
 *Updated after each plan completion*
@@ -75,6 +75,9 @@ Recent decisions affecting current work:
 - [02-01]: Strategy cycling: when all categories tried, restart from first
 - [02-02]: generate_draft_train_py takes content string (not file path) for easy testing
 - [02-02]: select_best_draft does not set statuses -- caller marks winner as draft-keep
+- [02-03]: CLAUDE.md template is static (no placeholders) -- rendered by simply reading the file
+- [02-03]: program.md uses Python str.format() for placeholder substitution
+- [02-03]: CLAUDE.md references automl.drafts API functions by name to guide the agent
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10
-Stopped at: Completed 02-02-PLAN.md (Multi-draft initialization)
+Last session: 2026-03-10T19:36:59.022Z
+Stopped at: Completed 02-03-PLAN.md (Templates) -- Phase 2 complete
 Resume file: None

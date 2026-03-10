@@ -26,8 +26,8 @@
 ### Experiment Loop
 
 - [x] **LOOP-01**: Agent runs train.py, extracts metric from output, decides keep or revert
-- [ ] **LOOP-02**: All stdout/stderr redirected to run.log to prevent context flooding
-- [ ] **LOOP-03**: Agent reads metric via grep/regex from run.log (not by reading full output)
+- [x] **LOOP-02**: All stdout/stderr redirected to run.log to prevent context flooding
+- [x] **LOOP-03**: Agent reads metric via grep/regex from run.log (not by reading full output)
 - [x] **LOOP-04**: Keep/revert logic: if metric improved → git commit; if equal/worse → git reset
 - [x] **LOOP-05**: Agent runs autonomously and indefinitely until manually interrupted ("NEVER STOP")
 - [x] **LOOP-06**: Timeout enforcement: experiments exceeding 2x budget are killed and treated as failures
@@ -50,9 +50,9 @@
 
 ### Domain Context
 
-- [ ] **CTX-01**: program.md file accepts human-written domain expertise (data patterns, feature hints, known issues)
-- [ ] **CTX-02**: Agent reads program.md at each iteration for strategy guidance
-- [ ] **CTX-03**: CLAUDE.md provides the meta-orchestrator instructions (experiment loop protocol)
+- [x] **CTX-01**: program.md file accepts human-written domain expertise (data patterns, feature hints, known issues)
+- [x] **CTX-02**: Agent reads program.md at each iteration for strategy guidance
+- [x] **CTX-03**: CLAUDE.md provides the meta-orchestrator instructions (experiment loop protocol)
 
 ### Multi-Draft Start
 
@@ -134,16 +134,16 @@
 | LOG-02 | Phase 1 | Complete |
 | LOG-03 | Phase 1 | Complete |
 | LOOP-01 | Phase 2 | Complete |
-| LOOP-02 | Phase 2 | Pending |
-| LOOP-03 | Phase 2 | Pending |
+| LOOP-02 | Phase 2 | Complete |
+| LOOP-03 | Phase 2 | Complete |
 | LOOP-04 | Phase 2 | Complete |
 | LOOP-05 | Phase 2 | Complete |
 | LOOP-06 | Phase 2 | Complete |
 | LOOP-07 | Phase 2 | Complete |
 | LOOP-08 | Phase 2 | Complete |
-| CTX-01 | Phase 2 | Pending |
-| CTX-02 | Phase 2 | Pending |
-| CTX-03 | Phase 2 | Pending |
+| CTX-01 | Phase 2 | Complete |
+| CTX-02 | Phase 2 | Complete |
+| CTX-03 | Phase 2 | Complete |
 | DRAFT-01 | Phase 2 | Complete |
 | DRAFT-02 | Phase 2 | Complete |
 | DRAFT-03 | Phase 2 | Complete |
