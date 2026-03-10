@@ -28,12 +28,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Sanity-check baselines (majority class, mean predictor) are computed and available for comparison
   4. A successful experiment is committed to a run branch with a descriptive message; a failed experiment resets to the last good commit
   5. Each experiment's metric, status, commit hash, and description are appended to results.tsv
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Project scaffolding and frozen data pipeline (prepare.py)
+- [ ] 01-02-PLAN.md — Git state management and experiment logging modules
+- [ ] 01-03-PLAN.md — Mutable train.py template and experiment runner
 
 ### Phase 2: Core Loop
 **Goal**: The agent autonomously runs experiments in a loop -- generating diverse drafts, selecting the best, iterating with keep/revert, recovering from crashes, and breaking out of stagnation -- all guided by domain context
