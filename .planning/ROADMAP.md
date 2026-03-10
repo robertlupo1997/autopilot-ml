@@ -45,12 +45,12 @@ Plans:
   3. When train.py crashes, the agent reads the traceback, attempts a fix, and moves on (giving up after 3 consecutive failures on the same issue)
   4. After 5 consecutive reverts, the agent shifts to a different strategy category instead of making tiny adjustments
   5. The agent reads program.md at each iteration for domain-specific guidance, and CLAUDE.md provides the loop protocol
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md — Loop helpers (keep/revert, stagnation, crash tracking) and git revert fix
+- [ ] 02-02-PLAN.md — Multi-draft initialization system (algorithm families, generation, selection)
+- [ ] 02-03-PLAN.md — Context templates (program.md and CLAUDE.md loop protocol)
 
 ### Phase 3: CLI and Integration
 **Goal**: A user can go from CSV file to running autonomous experiment loop with a single CLI command
@@ -73,5 +73,5 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-10 |
-| 2. Core Loop | 0/3 | Not started | - |
+| 2. Core Loop | 0/3 | In progress | - |
 | 3. CLI and Integration | 0/1 | Not started | - |
