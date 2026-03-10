@@ -1,0 +1,61 @@
+"""Git state management via subprocess -- no GitPython dependency.
+
+Handles experiment lifecycle: branch creation, commits, reverts, and .gitignore setup.
+All operations use subprocess.run to call git directly.
+"""
+
+import os
+import subprocess
+
+
+class GitManager:
+    """Manage git operations for experiment branches."""
+
+    def __init__(self, repo_dir="."):
+        self.repo_dir = repo_dir
+
+    def _run(self, *args, check=True):
+        """Run a git command via subprocess. Return CompletedProcess."""
+        result = subprocess.run(
+            ["git"] + list(args),
+            capture_output=True,
+            text=True,
+            check=check,
+            cwd=self.repo_dir,
+        )
+        return result
+
+    def init_repo(self):
+        """Initialize git repo and create .gitignore if not exists."""
+        if not os.path.exists(os.path.join(self.repo_dir, ".git")):
+            self._run("init")
+        gitignore_path = os.path.join(self.repo_dir, ".gitignore")
+        if not os.path.exists(gitignore_path):
+            with open(gitignore_path, "w") as f:
+                f.write("results.tsv\nrun.log\n__pycache__/\n*.pyc\n")
+            self._run("add", ".gitignore")
+            self._run("commit", "-m", "Initial commit with .gitignore")
+
+    def create_branch(self, tag):
+        """Create and checkout experiment branch. Returns branch name."""
+        branch = f"automl/run-{tag}"
+        self._run("checkout", "-b", branch)
+        return branch
+
+    def commit(self, message, files=None):
+        """Stage files and commit. Returns short hash."""
+        files = files or ["train.py"]
+        for f in files:
+            self._run("add", f)
+        self._run("commit", "-m", message)
+        result = self._run("rev-parse", "--short", "HEAD")
+        return result.stdout.strip()
+
+    def revert(self):
+        """Hard reset to last commit. Does NOT touch untracked/ignored files."""
+        self._run("reset", "--hard", "HEAD")
+
+    def get_current_commit(self):
+        """Return short hash of HEAD."""
+        result = self._run("rev-parse", "--short", "HEAD")
+        return result.stdout.strip()

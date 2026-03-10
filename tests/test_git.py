@@ -1,0 +1,137 @@
+"""Integration tests for GitManager -- git state management via subprocess."""
+
+import os
+import re
+import subprocess
+
+import pytest
+
+from automl.git_ops import GitManager
+
+
+@pytest.fixture
+def git_repo(tmp_path):
+    """Create a temp git repo with an initial commit so HEAD exists."""
+    subprocess.run(["git", "init"], cwd=tmp_path, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@test.com"],
+        cwd=tmp_path, capture_output=True, check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test"],
+        cwd=tmp_path, capture_output=True, check=True,
+    )
+    # Create an initial commit so HEAD exists
+    readme = tmp_path / "README.md"
+    readme.write_text("init")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, capture_output=True, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "initial commit"],
+        cwd=tmp_path, capture_output=True, check=True,
+    )
+    return tmp_path
+
+
+class TestCreateBranch:
+    def test_create_branch(self, git_repo):
+        gm = GitManager(repo_dir=str(git_repo))
+        branch = gm.create_branch("test-run")
+        assert branch == "automl/run-test-run"
+        # Verify branch is checked out
+        result = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=git_repo, capture_output=True, text=True,
+        )
+        assert result.stdout.strip() == "automl/run-test-run"
+
+
+class TestCommit:
+    def test_commit(self, git_repo):
+        gm = GitManager(repo_dir=str(git_repo))
+        # Create a file to commit
+        test_file = git_repo / "test.txt"
+        test_file.write_text("hello")
+        short_hash = gm.commit("test message", files=["test.txt"])
+        # short hash is 7+ hex chars
+        assert re.match(r"^[0-9a-f]{7,}$", short_hash)
+
+
+class TestRevert:
+    def test_revert(self, git_repo):
+        gm = GitManager(repo_dir=str(git_repo))
+        # Create and commit a file
+        test_file = git_repo / "tracked.txt"
+        test_file.write_text("original content")
+        gm.commit("add tracked file", files=["tracked.txt"])
+        # Modify the file
+        test_file.write_text("modified content")
+        assert test_file.read_text() == "modified content"
+        # Revert
+        gm.revert()
+        assert test_file.read_text() == "original content"
+
+    def test_revert_preserves_untracked_gitignored(self, git_repo):
+        gm = GitManager(repo_dir=str(git_repo))
+        # Set up gitignore
+        gm.init_repo()
+        # Create results.tsv (should be gitignored)
+        results = git_repo / "results.tsv"
+        results.write_text("some data")
+        # Create and commit a tracked file
+        tracked = git_repo / "tracked.txt"
+        tracked.write_text("original")
+        gm.commit("add tracked", files=["tracked.txt"])
+        # Modify tracked and revert
+        tracked.write_text("modified")
+        gm.revert()
+        # results.tsv should still exist (not deleted by revert)
+        assert results.exists()
+        assert results.read_text() == "some data"
+
+
+class TestGitignore:
+    def test_gitignore(self, git_repo):
+        gm = GitManager(repo_dir=str(git_repo))
+        gm.init_repo()
+        gitignore = git_repo / ".gitignore"
+        content = gitignore.read_text()
+        assert "results.tsv" in content
+        assert "run.log" in content
+        assert "__pycache__/" in content
+        assert "*.pyc" in content
+
+
+class TestGetCurrentCommit:
+    def test_get_current_commit(self, git_repo):
+        gm = GitManager(repo_dir=str(git_repo))
+        commit_hash = gm.get_current_commit()
+        assert re.match(r"^[0-9a-f]{7,}$", commit_hash)
+
+
+class TestNoGitPython:
+    def test_no_gitpython(self):
+        """Verify git_ops.py does not import GitPython (GIT-05)."""
+        import automl.git_ops as mod
+        source_path = mod.__file__
+        with open(source_path) as f:
+            source = f.read()
+        # Should not have "import git" (but "import git_ops" style is OK)
+        lines = source.split("\n")
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                continue
+            # Check for "import git" but not "import git_ops"
+            if "import git" in stripped and "git_ops" not in stripped:
+                assert False, f"Found GitPython import: {stripped}"
+
+
+class TestSubprocessUsed:
+    def test_subprocess_used(self):
+        """Verify git_ops.py uses subprocess.run for git commands."""
+        import automl.git_ops as mod
+        source_path = mod.__file__
+        with open(source_path) as f:
+            source = f.read()
+        assert "subprocess.run" in source
+        assert re.search(r'subprocess\.run.*git', source)
