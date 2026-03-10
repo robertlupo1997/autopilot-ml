@@ -1,0 +1,90 @@
+# AutoML Experiment Loop Protocol
+
+## Setup
+
+You are an autonomous ML researcher. Your job is to maximize the evaluation
+metric by modifying `train.py`. You run experiments, keep improvements, revert
+failures, and **NEVER STOP** until manually interrupted.
+
+## Files
+
+- `prepare.py` -- **FROZEN.** Do not modify. Contains data loading, preprocessing,
+  train/test split, and the evaluation function.
+- `train.py` -- **MUTABLE.** This is the ONLY file you edit. It contains the model
+  definition, training logic, and prints structured output (metric_value, etc.).
+- `program.md` -- Domain context written by the human operator. Read this at
+  each iteration for dataset-specific guidance, known patterns, and strategy hints.
+- `results.tsv` -- Experiment log. Append a row after every run.
+- `run.log` -- Captured output from the last experiment run. Read metrics from here.
+
+## Phase 1: Multi-Draft Initialization
+
+Before iterating, generate diverse starting points to avoid local optima.
+
+1. Read the task type (classification or regression) from `prepare.py` output.
+2. Generate 3-5 diverse `train.py` versions using different algorithm families
+   (e.g., LogisticRegression/Ridge, RandomForest, XGBoost, LightGBM, SVM/ElasticNet).
+   Use `ALGORITHM_FAMILIES` from `automl.drafts` as a reference for the families.
+3. For each draft:
+   a. Edit `train.py` with the new algorithm (use `generate_draft_train_py`).
+   b. `git add train.py && git commit -m "draft: AlgorithmName"`
+   c. Run: `uv run python train.py > run.log 2>&1`
+   d. Extract metric: `grep "^metric_value:" run.log`
+   e. Log result to `results.tsv` with status `draft-keep` or `draft-discard`.
+4. Select the best-performing draft (highest metric_value) using `select_best_draft`.
+5. Check out the winning draft's commit. Mark winner as `draft-keep`, others as
+   `draft-discard`.
+6. This is now your starting point for iterative improvement.
+
+## Phase 2: Iterative Improvement Loop
+
+LOOP FOREVER:
+
+1. **Read `program.md`** for domain-specific guidance and strategy hints.
+2. **Review `results.tsv`** history. Think about what to try next based on
+   past successes and failures. Avoid repeating failed approaches.
+3. **Edit `train.py`** with your experimental idea. Keep changes focused --
+   one idea per iteration.
+4. **Commit:** `git add train.py && git commit -m "description of change"`
+5. **Run:** `uv run python train.py > run.log 2>&1`
+   - ALWAYS redirect stdout and stderr to `run.log`.
+   - NEVER let training output flood your context window.
+6. **Extract results:** `grep "^metric_value:\|^elapsed_sec:" run.log`
+7. **If grep returns empty -> CRASH:**
+   - Read the error: `tail -n 50 run.log`
+   - If the error is fixable: fix `train.py` and retry.
+   - Track consecutive crash attempts. After 3 consecutive crashes on the
+     same error, give up on this approach: revert and try something different.
+   - `git reset --hard HEAD~1` to undo the crashed commit.
+8. **Log result** to `results.tsv` (metric value, elapsed time, status, description).
+9. **If metric improved** (new > best) -> **KEEP.** The branch advances.
+   Update your best score tracker.
+10. **If metric is equal or worse** -> **REVERT.** Run `git reset --hard HEAD~1`
+    to undo the commit and restore the previous best `train.py`.
+11. **After 5 consecutive reverts -> STAGNATION.** Your current approach is not
+    working. Switch to a radically different strategy:
+    - Switch algorithm family entirely (e.g., tree-based -> linear -> ensemble).
+    - Try radically different hyperparameters (10x larger/smaller).
+    - Add or remove preprocessing steps (StandardScaler, feature selection).
+    - Try ensemble methods (VotingClassifier, StackingClassifier).
+    - Simplify: remove features, reduce model complexity.
+    Reset the consecutive revert counter after switching strategy.
+12. **Go to step 1.**
+
+## Rules
+
+- **NEVER STOP.** Do not ask if you should continue. Do not pause for confirmation.
+  Run experiments indefinitely until the human operator interrupts you.
+- **NEVER modify `prepare.py`.** It is frozen. The evaluation function, data
+  loading, and preprocessing are fixed.
+- **`train.py` is the ONLY mutable file.** All your changes go here.
+- **ALWAYS redirect output** to `run.log`. Use `> run.log 2>&1` on every run.
+- **ALWAYS log results** to `results.tsv` after every experiment, including
+  crashes and reverts.
+- **Keep it simple.** A small improvement that adds ugly complexity is not
+  worth keeping. Prefer clean, readable code.
+- **Commit before running.** This lets you cleanly revert with `git reset --hard HEAD~1`
+  if the experiment fails or regresses.
+- **Higher is always better.** All metrics use the sklearn convention where higher
+  values indicate better performance. Compare with strict greater-than (equal is
+  NOT an improvement).

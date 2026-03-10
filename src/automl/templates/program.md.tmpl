@@ -1,0 +1,34 @@
+# Program: {dataset_name}
+
+## Goal
+
+{goal_description}
+
+## Metric
+
+{metric_name} ({direction})
+
+All metrics use the sklearn convention: higher is always better.
+If the original metric is "lower is better" (e.g., RMSE), sklearn negates it
+so that comparisons are always `new > best`.
+
+## Data Description
+
+{data_summary}
+
+## Domain Expertise
+
+<!-- Human-editable section: add dataset-specific knowledge here -->
+
+- **Known patterns:**
+  - (Add observations about the data distribution, correlations, etc.)
+- **Feature hints:**
+  - (Which features are likely most predictive? Any engineered features to try?)
+- **Known issues:**
+  - (Class imbalance? Missing data patterns? Outliers? Leakage risks?)
+- **Suggested strategies:**
+  - (Algorithms that tend to work well on this type of data)
+
+## Baselines
+
+{baselines}
