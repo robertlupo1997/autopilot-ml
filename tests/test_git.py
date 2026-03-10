@@ -108,6 +108,31 @@ class TestGetCurrentCommit:
         assert re.match(r"^[0-9a-f]{7,}$", commit_hash)
 
 
+class TestRevertLastCommit:
+    def test_revert_last_commit(self, git_repo):
+        """After commit + revert_last_commit, HEAD is back at pre-commit state."""
+        gm = GitManager(repo_dir=str(git_repo))
+        # Create and commit first file
+        file_a = git_repo / "a.txt"
+        file_a.write_text("first version")
+        gm.commit("first commit", files=["a.txt"])
+        first_hash = gm.get_current_commit()
+
+        # Create and commit second change
+        file_a.write_text("second version")
+        gm.commit("second commit", files=["a.txt"])
+        second_hash = gm.get_current_commit()
+        assert first_hash != second_hash
+
+        # Revert the last commit
+        gm.revert_last_commit()
+
+        # HEAD should be back at first commit
+        assert gm.get_current_commit() == first_hash
+        # File content should match first commit
+        assert file_a.read_text() == "first version"
+
+
 class TestNoGitPython:
     def test_no_gitpython(self):
         """Verify git_ops.py does not import GitPython (GIT-05)."""
