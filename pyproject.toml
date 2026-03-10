@@ -28,3 +28,6 @@ packages = ["src/automl"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (e.g. scaffold + run train.py)",
+]
