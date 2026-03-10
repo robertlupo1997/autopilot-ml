@@ -63,10 +63,10 @@
 
 ### CLI and Scaffolding
 
-- [ ] **CLI-01**: CLI command scaffolds a new experiment project from a CSV file
+- [x] **CLI-01**: CLI command scaffolds a new experiment project from a CSV file
 - [ ] **CLI-02**: CLI accepts: data path, target column, metric name, goal description
-- [ ] **CLI-03**: CLI generates: prepare.py, train.py, program.md, CLAUDE.md, .gitignore, pyproject.toml
-- [ ] **CLI-04**: Generated project is immediately runnable with `uv run train.py`
+- [x] **CLI-03**: CLI generates: prepare.py, train.py, program.md, CLAUDE.md, .gitignore, pyproject.toml
+- [x] **CLI-04**: Generated project is immediately runnable with `uv run train.py`
 
 ## v2 Requirements
 
@@ -148,10 +148,10 @@
 | DRAFT-02 | Phase 2 | Complete |
 | DRAFT-03 | Phase 2 | Complete |
 | DRAFT-04 | Phase 2 | Complete |
-| CLI-01 | Phase 3 | Pending |
+| CLI-01 | Phase 3 | Complete |
 | CLI-02 | Phase 3 | Pending |
-| CLI-03 | Phase 3 | Pending |
-| CLI-04 | Phase 3 | Pending |
+| CLI-03 | Phase 3 | Complete |
+| CLI-04 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 39 total
