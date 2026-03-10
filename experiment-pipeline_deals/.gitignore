@@ -1,0 +1,11 @@
+results.tsv
+run.log
+__pycache__/
+*.pyc
+.venv/
+
+# Generated experiment directories
+experiment-*/
+
+# Windows zone identifiers
+*.Zone.Identifier
