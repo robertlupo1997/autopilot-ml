@@ -13,7 +13,7 @@ AutoML delivers an autonomous ML experiment framework in three phases. Phase 1 b
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Frozen pipeline, mutable modeling template, git operations, and experiment logging
-- [ ] **Phase 2: Core Loop** - Autonomous experiment loop with multi-draft start, domain context, and resilience
+- [x] **Phase 2: Core Loop** - Autonomous experiment loop with multi-draft start, domain context, and resilience (completed 2026-03-10)
 - [x] **Phase 3: CLI and Integration** - Project scaffolding CLI and end-to-end validation (completed 2026-03-10)
 
 ## Phase Details
@@ -48,9 +48,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Loop helpers (keep/revert, stagnation, crash tracking) and git revert fix
-- [ ] 02-02-PLAN.md — Multi-draft initialization system (algorithm families, generation, selection)
-- [ ] 02-03-PLAN.md — Context templates (program.md and CLAUDE.md loop protocol)
+- [x] 02-01-PLAN.md — Loop helpers (keep/revert, stagnation, crash tracking) and git revert fix
+- [x] 02-02-PLAN.md — Multi-draft initialization system (algorithm families, generation, selection)
+- [x] 02-03-PLAN.md — Context templates (program.md and CLAUDE.md loop protocol)
 
 ### Phase 3: CLI and Integration
 **Goal**: A user can go from CSV file to running autonomous experiment loop with a single CLI command
@@ -63,8 +63,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Scaffold module: experiment directory generation from CSV
-- [ ] 03-02-PLAN.md — CLI entry point, entry point registration, and end-to-end validation
+- [x] 03-01-PLAN.md — Scaffold module: experiment directory generation from CSV
+- [x] 03-02-PLAN.md — CLI entry point, entry point registration, and end-to-end validation
 
 ## Progress
 
@@ -74,5 +74,5 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-10 |
-| 2. Core Loop | 2/3 | In Progress|  |
+| 2. Core Loop | 3/3 | Complete | 2026-03-10 |
 | 3. CLI and Integration | 2/2 | Complete   | 2026-03-10 |
