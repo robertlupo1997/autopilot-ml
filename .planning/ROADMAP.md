@@ -81,7 +81,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Core Loop | 3/3 | Complete | 2026-03-10 |
 | 3. CLI and Integration | 2/2 | Complete | 2026-03-10 |
 | 4. E2E Baseline Test | 1/1 | Complete | 2026-03-11 |
-| 5. Hooks + Scaffolding | 0/2 | In Progress | — |
+| 5. Hooks + Scaffolding | 1/2 | In Progress|  |
 | 6. Structured Output | 0/? | Not planned | — |
 | 7. E2E Validation Test | 0/? | Not planned | — |
 
@@ -100,7 +100,7 @@ Plans:
 **Goal:** Scaffold generates .claude/settings.json with PreToolUse hooks (mutable zone enforcement), permissions.allow config, and a CLAUDE.md with graceful shutdown — so the user experience is just `cd experiment-dir && claude`
 **Depends on:** Phase 4 (informed by what broke in baseline test)
 **Requirements:** HOOK-01, HOOK-02, HOOK-03, HOOK-04, HOOK-05, HOOK-06
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 05-01-PLAN.md — .claude/settings.json + guard-frozen.sh hook generation in scaffold.py

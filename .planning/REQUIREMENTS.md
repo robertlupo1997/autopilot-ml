@@ -74,8 +74,8 @@
 - [ ] **HOOK-02**: Scaffold generates .claude/hooks/guard-frozen.sh PreToolUse hook that denies writes to prepare.py
 - [ ] **HOOK-03**: Hook script is executable (chmod 755) and uses jq with Python fallback for JSON parsing
 - [ ] **HOOK-04**: .gitignore includes .claude/settings.local.json to prevent personal overrides from being committed
-- [ ] **HOOK-05**: CLAUDE.md includes graceful shutdown section addressing max_turns mid-action interrupt
-- [ ] **HOOK-06**: Scaffolded project requires no --dangerously-skip-permissions or manual --allowedTools flags
+- [x] **HOOK-05**: CLAUDE.md includes graceful shutdown section addressing max_turns mid-action interrupt
+- [x] **HOOK-06**: Scaffolded project requires no --dangerously-skip-permissions or manual --allowedTools flags
 
 ## v2 Requirements
 

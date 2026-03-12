@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md (E2E Baseline Test). Phase 4 complete. Next -- Phase 5 (Hooks + Scaffolding).
-last_updated: "2026-03-12T02:46:31.181Z"
+stopped_at: Completed 05-02-PLAN.md (Graceful Shutdown template section). Phase 5 Plan 2 complete.
+last_updated: "2026-03-12T22:07:34.726Z"
 last_activity: 2026-03-11 -- Completed 04-01 (E2E Baseline Test)
 progress:
   total_phases: 7
   completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
   percent: 56
 ---
 
@@ -52,6 +52,7 @@ Progress: [████████░░] 56% (4/7 phases, 9/9 plans)
 - Trend: stable
 
 *Updated after each plan completion*
+| Phase 05-hooks-and-enhanced-scaffolding P02 | 4 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 04-01]: stop_reason=tool_use (mid-action interrupt) is expected at max_turns -- Phase 5 needs graceful shutdown
 - [Phase 04-01]: 30-turn cap insufficient to exercise stagnation (5 reverts needed) -- Phase 7 must use 50+ turns
 - [Phase 04-01]: Use noisier dataset in Phase 7 (iris near-ceiling at 0.98) to force genuine stagnation
+- [Phase 05-02]: Graceful Shutdown placed between Phase 2 loop and Rules sections -- natural insertion point before rules summary
+- [Phase 05-02]: git reset --hard HEAD (not HEAD~1) for uncommitted mid-edit interrupts -- HEAD~1 would undo a clean commit
 
 ### Roadmap Evolution
 
@@ -104,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11
-Stopped at: Completed 04-01-PLAN.md (E2E Baseline Test). Phase 4 complete. Next -- Phase 5 (Hooks + Scaffolding).
+Last session: 2026-03-12T22:07:34.723Z
+Stopped at: Completed 05-02-PLAN.md (Graceful Shutdown template section). Phase 5 Plan 2 complete.
 Resume file: None
