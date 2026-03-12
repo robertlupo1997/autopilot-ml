@@ -68,6 +68,15 @@
 - [x] **CLI-03**: CLI generates: prepare.py, train.py, program.md, CLAUDE.md, .gitignore, pyproject.toml
 - [x] **CLI-04**: Generated project is immediately runnable with `uv run train.py`
 
+### Hooks and Enhanced Scaffolding
+
+- [ ] **HOOK-01**: Scaffold generates .claude/settings.json with permissions.allow rules (Bash, Edit(train.py), Write(train.py), Read, Glob, Grep)
+- [ ] **HOOK-02**: Scaffold generates .claude/hooks/guard-frozen.sh PreToolUse hook that denies writes to prepare.py
+- [ ] **HOOK-03**: Hook script is executable (chmod 755) and uses jq with Python fallback for JSON parsing
+- [ ] **HOOK-04**: .gitignore includes .claude/settings.local.json to prevent personal overrides from being committed
+- [ ] **HOOK-05**: CLAUDE.md includes graceful shutdown section addressing max_turns mid-action interrupt
+- [ ] **HOOK-06**: Scaffolded project requires no --dangerously-skip-permissions or manual --allowedTools flags
+
 ## v2 Requirements
 
 ### Feature Engineering Zone
@@ -152,12 +161,18 @@
 | CLI-02 | Phase 3 | Complete |
 | CLI-03 | Phase 3 | Complete |
 | CLI-04 | Phase 3 | Complete |
+| HOOK-01 | Phase 5 | Planned |
+| HOOK-02 | Phase 5 | Planned |
+| HOOK-03 | Phase 5 | Planned |
+| HOOK-04 | Phase 5 | Planned |
+| HOOK-05 | Phase 5 | Planned |
+| HOOK-06 | Phase 5 | Planned |
 
 **Coverage:**
-- v1 requirements: 39 total
-- Mapped to phases: 39
+- v1 requirements: 45 total
+- Mapped to phases: 45
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after roadmap creation*
+*Last updated: 2026-03-11 after Phase 5 planning*

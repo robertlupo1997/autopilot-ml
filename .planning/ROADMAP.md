@@ -81,7 +81,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Core Loop | 3/3 | Complete | 2026-03-10 |
 | 3. CLI and Integration | 2/2 | Complete | 2026-03-10 |
 | 4. E2E Baseline Test | 1/1 | Complete | 2026-03-11 |
-| 5. Hooks + Scaffolding | 0/? | Not planned | — |
+| 5. Hooks + Scaffolding | 0/2 | In Progress | — |
 | 6. Structured Output | 0/? | Not planned | — |
 | 7. E2E Validation Test | 0/? | Not planned | — |
 
@@ -97,12 +97,14 @@ Plans:
 
 ### Phase 5: Hooks and Enhanced Scaffolding
 
-**Goal:** Scaffold generates .claude/settings.json with PreToolUse hooks (mutable zone enforcement), allowedTools config, .claude/rules/, and a leaner CLAUDE.md — so the user experience is just `cd experiment-dir && claude`
+**Goal:** Scaffold generates .claude/settings.json with PreToolUse hooks (mutable zone enforcement), permissions.allow config, and a CLAUDE.md with graceful shutdown — so the user experience is just `cd experiment-dir && claude`
 **Depends on:** Phase 4 (informed by what broke in baseline test)
-**Plans:** 0 plans
+**Requirements:** HOOK-01, HOOK-02, HOOK-03, HOOK-04, HOOK-05, HOOK-06
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 5 to break down)
+- [ ] 05-01-PLAN.md — .claude/settings.json + guard-frozen.sh hook generation in scaffold.py
+- [ ] 05-02-PLAN.md — CLAUDE.md graceful shutdown section
 
 ### Phase 6: Structured Output and Metrics Parsing
 
