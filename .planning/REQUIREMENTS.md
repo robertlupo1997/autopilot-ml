@@ -70,10 +70,10 @@
 
 ### Hooks and Enhanced Scaffolding
 
-- [ ] **HOOK-01**: Scaffold generates .claude/settings.json with permissions.allow rules (Bash, Edit(train.py), Write(train.py), Read, Glob, Grep)
-- [ ] **HOOK-02**: Scaffold generates .claude/hooks/guard-frozen.sh PreToolUse hook that denies writes to prepare.py
-- [ ] **HOOK-03**: Hook script is executable (chmod 755) and uses jq with Python fallback for JSON parsing
-- [ ] **HOOK-04**: .gitignore includes .claude/settings.local.json to prevent personal overrides from being committed
+- [x] **HOOK-01**: Scaffold generates .claude/settings.json with permissions.allow rules (Bash, Edit(train.py), Write(train.py), Read, Glob, Grep)
+- [x] **HOOK-02**: Scaffold generates .claude/hooks/guard-frozen.sh PreToolUse hook that denies writes to prepare.py
+- [x] **HOOK-03**: Hook script is executable (chmod 755) and uses jq with Python fallback for JSON parsing
+- [x] **HOOK-04**: .gitignore includes .claude/settings.local.json to prevent personal overrides from being committed
 - [x] **HOOK-05**: CLAUDE.md includes graceful shutdown section addressing max_turns mid-action interrupt
 - [x] **HOOK-06**: Scaffolded project requires no --dangerously-skip-permissions or manual --allowedTools flags
 

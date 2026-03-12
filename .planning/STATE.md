@@ -5,7 +5,7 @@ milestone_name: milestone
 status: executing
 stopped_at: Completed 05-02-PLAN.md (Graceful Shutdown template section). Phase 5 Plan 2 complete.
 last_updated: "2026-03-12T22:07:34.726Z"
-last_activity: 2026-03-11 -- Completed 04-01 (E2E Baseline Test)
+last_activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 progress:
   total_phases: 7
   completed_phases: 4
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 ## Current Position
 
-Phase: 4 of 7 (E2E Baseline Test)
-Plan: 1 of 1 in current phase (04-01 complete)
-Status: In Progress (phase complete, move to Phase 5)
-Last activity: 2026-03-11 -- Completed 04-01 (E2E Baseline Test)
+Phase: 5 of 7 (Hooks + Enhanced Scaffolding)
+Plan: 1 of 2 in current phase (05-01 complete)
+Status: In Progress
+Last activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 
-Progress: [████████░░] 56% (4/7 phases, 9/9 plans)
+Progress: [████████░░] 60% (4/7 phases, 10/11 plans)
 
 ## Performance Metrics
 
@@ -87,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 04-01]: stop_reason=tool_use (mid-action interrupt) is expected at max_turns -- Phase 5 needs graceful shutdown
 - [Phase 04-01]: 30-turn cap insufficient to exercise stagnation (5 reverts needed) -- Phase 7 must use 50+ turns
 - [Phase 04-01]: Use noisier dataset in Phase 7 (iris near-ceiling at 0.98) to force genuine stagnation
+- [Phase 05-01]: permissions.allow uses Edit(train.py)/Write(train.py) not wildcard — tightest scope
+- [Phase 05-01]: Hook exits 0 in all cases; deny signaled via JSON body (Claude Code PreToolUse convention)
 - [Phase 05-02]: Graceful Shutdown placed between Phase 2 loop and Rules sections -- natural insertion point before rules summary
 - [Phase 05-02]: git reset --hard HEAD (not HEAD~1) for uncommitted mid-edit interrupts -- HEAD~1 would undo a clean commit
 
