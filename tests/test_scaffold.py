@@ -1,6 +1,9 @@
 """Tests for experiment directory scaffolding."""
 
 import inspect
+import json
+import stat
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -33,7 +36,9 @@ class TestScaffoldCreatesAllFiles:
         actual_files = [f.name for f in out.iterdir() if f.is_file()]
         for fname in expected_files:
             assert fname in actual_files, f"Missing file: {fname}"
-        assert len(list(out.iterdir())) == 7
+        # 7 files + .claude/ dir = 8 top-level items
+        assert len(list(out.iterdir())) == 8
+        assert (out / ".claude").is_dir()
 
 
 class TestScaffoldPrepare:
@@ -131,7 +136,7 @@ class TestScaffoldGitignore:
         )
 
         content = (out / ".gitignore").read_text()
-        for pattern in ["results.tsv", "run.log", "__pycache__/", ".venv/"]:
+        for pattern in ["results.tsv", "run.log", "__pycache__/", ".venv/", ".claude/settings.local.json"]:
             assert pattern in content, f"Missing .gitignore pattern: {pattern}"
 
 
@@ -184,3 +189,84 @@ class TestScaffoldCsvCopied:
         copied_csv = out / sample_classification_csv.name
         assert copied_csv.exists()
         assert copied_csv.read_bytes() == sample_classification_csv.read_bytes()
+
+
+class TestScaffoldDotClaude:
+    """.claude/ directory is created with settings.json and hook script."""
+
+    @pytest.fixture
+    def scaffolded(self, sample_classification_csv, tmp_path):
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+        )
+        return out
+
+    def test_scaffold_creates_dot_claude_dir(self, scaffolded):
+        assert (scaffolded / ".claude").is_dir()
+
+    def test_scaffold_settings_json_valid(self, scaffolded):
+        settings_path = scaffolded / ".claude" / "settings.json"
+        assert settings_path.exists()
+        data = json.loads(settings_path.read_text())
+        assert isinstance(data, dict)
+
+    def test_scaffold_settings_permissions(self, scaffolded):
+        settings_path = scaffolded / ".claude" / "settings.json"
+        data = json.loads(settings_path.read_text())
+        allow = data["permissions"]["allow"]
+        expected = ["Bash", "Edit(train.py)", "Write(train.py)", "Read", "Glob", "Grep"]
+        assert allow == expected
+
+    def test_scaffold_settings_hooks(self, scaffolded):
+        settings_path = scaffolded / ".claude" / "settings.json"
+        data = json.loads(settings_path.read_text())
+        hooks_list = data["hooks"]["PreToolUse"]
+        assert len(hooks_list) == 1
+        entry = hooks_list[0]
+        assert entry["matcher"] == "Edit|Write"
+        assert entry["hooks"][0]["type"] == "command"
+
+    def test_scaffold_hook_script_exists_and_executable(self, scaffolded):
+        hook_path = scaffolded / ".claude" / "hooks" / "guard-frozen.sh"
+        assert hook_path.exists()
+        mode = hook_path.stat().st_mode
+        assert mode & stat.S_IXUSR != 0, "guard-frozen.sh is not executable"
+
+    def test_scaffold_hook_denies_prepare_py(self, scaffolded):
+        hook_path = scaffolded / ".claude" / "hooks" / "guard-frozen.sh"
+        input_json = json.dumps({
+            "tool_name": "Edit",
+            "tool_input": {"file_path": "/some/experiment/prepare.py"},
+        })
+        result = subprocess.run(
+            ["bash", str(hook_path)],
+            input=input_json,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0
+        output = result.stdout.strip()
+        assert output, "Hook should output deny JSON for prepare.py"
+        deny_data = json.loads(output)
+        hook_output = deny_data["hookSpecificOutput"]
+        assert hook_output["permissionDecision"] == "deny"
+
+    def test_scaffold_hook_allows_train_py(self, scaffolded):
+        hook_path = scaffolded / ".claude" / "hooks" / "guard-frozen.sh"
+        input_json = json.dumps({
+            "tool_name": "Edit",
+            "tool_input": {"file_path": "/some/experiment/train.py"},
+        })
+        result = subprocess.run(
+            ["bash", str(hook_path)],
+            input=input_json,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0
+        assert result.stdout.strip() == "", "Hook should output nothing for train.py"
