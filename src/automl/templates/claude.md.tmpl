@@ -71,6 +71,18 @@ LOOP FOREVER:
     Reset the consecutive revert counter after switching strategy.
 12. **Go to step 1.**
 
+## Graceful Shutdown
+
+When you approach your turn limit or are interrupted mid-action:
+
+1. **Finish the current results.tsv row.** If you ran an experiment, log its result
+   before stopping -- even if you are about to revert.
+2. **Run `git status`** to confirm `train.py` is in a clean state.
+3. **If train.py is partially edited** (uncommitted changes from a mid-experiment
+   interrupt), run `git reset --hard HEAD` to restore the last known good state.
+4. **Do NOT leave train.py in a half-written state.** The next session must be able
+   to resume from a clean commit.
+
 ## Rules
 
 - **NEVER STOP.** Do not ask if you should continue. Do not pause for confirmation.

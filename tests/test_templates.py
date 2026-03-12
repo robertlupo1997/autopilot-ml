@@ -114,6 +114,21 @@ class TestClaudeMdTemplate:
         assert "prepare.py" in content
         assert "FROZEN" in content.upper() or "Do not modify" in content
 
+    def test_claude_md_has_graceful_shutdown(self):
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        assert "Graceful Shutdown" in content, "Template must have a Graceful Shutdown section"
+
+    def test_claude_md_shutdown_mentions_git_reset(self):
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        assert "git reset --hard HEAD" in content, "Shutdown section must include git reset --hard HEAD"
+
+    def test_claude_md_shutdown_mentions_results_tsv(self):
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        assert "results.tsv" in content, "Shutdown section must reference results.tsv"
+
 
 # ---------------------------------------------------------------------------
 # Render function tests
@@ -162,3 +177,4 @@ class TestRenderFunctions:
         assert isinstance(result, str)
         assert len(result) > 100, "CLAUDE.md should be a substantial document"
         assert "NEVER STOP" in result
+        assert "Graceful Shutdown" in result, "render_claude_md() output must include Graceful Shutdown"
