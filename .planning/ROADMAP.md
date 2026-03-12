@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Frozen pipeline, mutable modeling template, git operations, and experiment logging
 - [x] **Phase 2: Core Loop** - Autonomous experiment loop with multi-draft start, domain context, and resilience (completed 2026-03-10)
 - [x] **Phase 3: CLI and Integration** - Project scaffolding CLI and end-to-end validation (completed 2026-03-10)
-- [ ] **Phase 4: E2E Baseline Test** - Run the autonomous loop as-is on a test dataset, document what works and what breaks
+- [x] **Phase 4: E2E Baseline Test** - Run the autonomous loop as-is on a test dataset, document what works and what breaks (completed 2026-03-11)
 - [ ] **Phase 5: Hooks and Enhanced Scaffolding** - PreToolUse mutable zone enforcement, .claude/settings.json generation, allowedTools, CLAUDE.md upgrade, UX polish
 - [ ] **Phase 6: Structured Output and Metrics Parsing** - JSON output parsing, replace grep-based extraction (if Phase 4 reveals parsing fragility)
 - [ ] **Phase 7: E2E Validation Test** - Re-run the autonomous loop after all changes, prove the system works unattended end-to-end
@@ -80,7 +80,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Foundation | 3/3 | Complete | 2026-03-10 |
 | 2. Core Loop | 3/3 | Complete | 2026-03-10 |
 | 3. CLI and Integration | 2/2 | Complete | 2026-03-10 |
-| 4. E2E Baseline Test | 0/1 | Planned | — |
+| 4. E2E Baseline Test | 1/1 | Complete | 2026-03-11 |
 | 5. Hooks + Scaffolding | 0/? | Not planned | — |
 | 6. Structured Output | 0/? | Not planned | — |
 | 7. E2E Validation Test | 0/? | Not planned | — |
@@ -93,7 +93,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 **Plans:** 1 plan
 
 Plans:
-- [ ] 04-01-PLAN.md — Run baseline test on iris dataset and document findings
+- [x] 04-01-PLAN.md — Run baseline test on iris dataset and document findings
 
 ### Phase 5: Hooks and Enhanced Scaffolding
 

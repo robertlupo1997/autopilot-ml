@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 03-02-PLAN.md (CLI Entry Point)
-last_updated: "2026-03-10T23:30:32.279Z"
-last_activity: 2026-03-10 -- Completed 03-02 (CLI Entry Point)
+status: in_progress
+stopped_at: Completed 04-01-PLAN.md (E2E Baseline Test)
+last_updated: "2026-03-11T00:00:00.000Z"
+last_activity: 2026-03-11 -- Completed 04-01 (E2E Baseline Test)
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_phases: 7
+  completed_phases: 4
+  total_plans: 9
+  completed_plans: 9
+  percent: 56
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline -- running experiments, keeping improvements, reverting failures, and logging everything -- without human intervention.
-**Current focus:** Phase 3: CLI
+**Current focus:** Phase 4: E2E Baseline Test
 
 ## Current Position
 
-Phase: 3 of 3 (CLI and Integration)
-Plan: 2 of 2 in current phase (03-02 complete)
-Status: Complete
-Last activity: 2026-03-10 -- Completed 03-02 (CLI Entry Point)
+Phase: 4 of 7 (E2E Baseline Test)
+Plan: 1 of 1 in current phase (04-01 complete)
+Status: In Progress (phase complete, move to Phase 5)
+Last activity: 2026-03-11 -- Completed 04-01 (E2E Baseline Test)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 56% (4/7 phases, 9/9 plans)
 
 ## Performance Metrics
 
@@ -82,6 +82,17 @@ Recent decisions affecting current work:
 - [Phase 03-01]: Used importlib.util.find_spec instead of import for train_template.py (avoids sibling import failure)
 - [Phase 03-02]: main(argv) accepts list for testability; empty list returns usage+error
 - [Phase 03-02]: E2e tests use sys.executable directly instead of uv run (avoids venv overhead)
+- [Phase 04-01]: CLAUDE.md instructions alone enforced frozen file compliance -- hooks are a safety net, not primary mechanism
+- [Phase 04-01]: stop_reason=tool_use (mid-action interrupt) is expected at max_turns -- Phase 5 needs graceful shutdown
+- [Phase 04-01]: 30-turn cap insufficient to exercise stagnation (5 reverts needed) -- Phase 7 must use 50+ turns
+- [Phase 04-01]: Use noisier dataset in Phase 7 (iris near-ceiling at 0.98) to force genuine stagnation
+
+### Roadmap Evolution
+
+- Phase 4 added: Hooks and safety enforcement → restructured to E2E baseline test (test-first)
+- Phase 5 added: Enhanced scaffolding → restructured to Hooks + enhanced scaffolding (merged old 4+5)
+- Phase 6 added: Structured output and metrics parsing (conditional on Phase 4 findings)
+- Phase 7 added: End-to-end autonomous loop test → restructured to E2E validation test (re-test after fixes)
 
 ### Pending Todos
 
@@ -93,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10
-Stopped at: v1.0 milestone complete (3/3 phases, 8/8 plans, 111 tests). Next — research Claude Code capabilities and expand v1 scope.
+Last session: 2026-03-11
+Stopped at: Completed 04-01-PLAN.md (E2E Baseline Test). Phase 4 complete. Next -- Phase 5 (Hooks + Scaffolding).
 Resume file: None
