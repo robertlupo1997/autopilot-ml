@@ -2,7 +2,7 @@
 
 ## Overview
 
-AutoML delivers an autonomous ML experiment framework in three phases. Phase 1 builds the frozen data pipeline, mutable modeling template, git state management, and experiment logging -- everything needed to run and track a single experiment. Phase 2 wires the autonomous experiment loop with keep/revert logic, domain context injection, multi-draft initialization, and resilience features (crash recovery, stagnation detection). Phase 3 wraps the framework in a CLI that scaffolds ready-to-run experiment projects from any CSV. After v1 ships, Phase 4 expands the agent's mutable zones to include feature engineering and tree search.
+AutoML delivers an autonomous ML experiment framework in seven phases. Phases 1-3 (complete) built the frozen pipeline, autonomous loop, and CLI scaffolding. Phases 4-7 follow a test-fix-test pattern: Phase 4 runs the autonomous loop as-is to discover what breaks, Phase 5 adds hooks and enhanced scaffolding to fix those problems, Phase 6 adds structured output if parsing proves fragile, and Phase 7 re-runs the loop to prove everything works unattended.
 
 ## Phases
 
@@ -15,6 +15,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Frozen pipeline, mutable modeling template, git operations, and experiment logging
 - [x] **Phase 2: Core Loop** - Autonomous experiment loop with multi-draft start, domain context, and resilience (completed 2026-03-10)
 - [x] **Phase 3: CLI and Integration** - Project scaffolding CLI and end-to-end validation (completed 2026-03-10)
+- [ ] **Phase 4: E2E Baseline Test** - Run the autonomous loop as-is on a test dataset, document what works and what breaks
+- [ ] **Phase 5: Hooks and Enhanced Scaffolding** - PreToolUse mutable zone enforcement, .claude/settings.json generation, allowedTools, CLAUDE.md upgrade, UX polish
+- [ ] **Phase 6: Structured Output and Metrics Parsing** - JSON output parsing, replace grep-based extraction (if Phase 4 reveals parsing fragility)
+- [ ] **Phase 7: E2E Validation Test** - Re-run the autonomous loop after all changes, prove the system works unattended end-to-end
 
 ## Phase Details
 
@@ -69,10 +73,51 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-10 |
 | 2. Core Loop | 3/3 | Complete | 2026-03-10 |
-| 3. CLI and Integration | 2/2 | Complete   | 2026-03-10 |
+| 3. CLI and Integration | 2/2 | Complete | 2026-03-10 |
+| 4. E2E Baseline Test | 0/1 | Planned | — |
+| 5. Hooks + Scaffolding | 0/? | Not planned | — |
+| 6. Structured Output | 0/? | Not planned | — |
+| 7. E2E Validation Test | 0/? | Not planned | — |
+
+### Phase 4: E2E Baseline Test
+
+**Goal:** Run the autonomous loop as-is on a small test dataset (iris or synthetic), using `claude -p` with --max-turns, and document exactly what works and what breaks — draft generation, keep/revert decisions, frozen file compliance, metric parsing, stagnation handling
+**Depends on:** Phase 3
+**Requirements:** E2E-BASELINE-01, E2E-BASELINE-02, E2E-BASELINE-03
+**Plans:** 1 plan
+
+Plans:
+- [ ] 04-01-PLAN.md — Run baseline test on iris dataset and document findings
+
+### Phase 5: Hooks and Enhanced Scaffolding
+
+**Goal:** Scaffold generates .claude/settings.json with PreToolUse hooks (mutable zone enforcement), allowedTools config, .claude/rules/, and a leaner CLAUDE.md — so the user experience is just `cd experiment-dir && claude`
+**Depends on:** Phase 4 (informed by what broke in baseline test)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 5 to break down)
+
+### Phase 6: Structured Output and Metrics Parsing
+
+**Goal:** Replace grep-based metric extraction with structured JSON output if Phase 4 reveals parsing fragility — use --output-format json and --json-schema for validated metrics
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 6 to break down)
+
+### Phase 7: E2E Validation Test
+
+**Goal:** Re-run the full autonomous loop after all Phase 5-6 changes, proving hooks enforce frozen files, keep/discard cycle works, metrics parse correctly, and the system runs unattended end-to-end
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 7 to break down)
