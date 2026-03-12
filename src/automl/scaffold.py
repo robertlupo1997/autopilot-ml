@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
+import json
 import shutil
 import textwrap
 from pathlib import Path
@@ -142,6 +143,9 @@ def scaffold_experiment(
     # 8. Write pyproject.toml
     (out / "pyproject.toml").write_text(_pyproject_content(csv_path.stem))
 
+    # 9. Write .claude/ directory with settings.json and guard hook
+    _dot_claude_settings(out)
+
     return out
 
 
@@ -183,6 +187,78 @@ def _format_baselines(baselines: dict) -> str:
     return "\n".join(lines)
 
 
+def _guard_frozen_hook_content() -> str:
+    """Return the bash script content for .claude/hooks/guard-frozen.sh."""
+    return textwrap.dedent("""\
+        #!/bin/bash
+        # Guard: deny writes to frozen files. Reads PreToolUse JSON from stdin.
+        INPUT=$(cat)
+        # Try jq first, fall back to python3
+        if command -v jq >/dev/null 2>&1; then
+          FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+        else
+          FILE_PATH=$(echo "$INPUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))")
+        fi
+        BASENAME=$(basename "$FILE_PATH" 2>/dev/null)
+        FROZEN_FILES="prepare.py"
+        for frozen in $FROZEN_FILES; do
+          if [ "$BASENAME" = "$frozen" ]; then
+            cat <<'DENY'
+        {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"prepare.py is FROZEN. Only train.py is mutable. Do not modify prepare.py."}}
+        DENY
+            exit 0
+          fi
+        done
+        exit 0
+    """)
+
+
+def _dot_claude_settings(out: Path) -> None:
+    """Create .claude/ directory with settings.json and guard-frozen.sh hook.
+
+    Parameters
+    ----------
+    out : Path
+        Root of the experiment directory.
+    """
+    dot_claude = out / ".claude"
+    hooks_dir = dot_claude / "hooks"
+    dot_claude.mkdir(exist_ok=True)
+    hooks_dir.mkdir(exist_ok=True)
+
+    settings = {
+        "$schema": "https://docs.anthropic.com/en/docs/claude-code/settings",
+        "permissions": {
+            "allow": [
+                "Bash",
+                "Edit(train.py)",
+                "Write(train.py)",
+                "Read",
+                "Glob",
+                "Grep",
+            ]
+        },
+        "hooks": {
+            "PreToolUse": [
+                {
+                    "matcher": "Edit|Write",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": '"$CLAUDE_PROJECT_DIR"/.claude/hooks/guard-frozen.sh',
+                        }
+                    ],
+                }
+            ]
+        },
+    }
+    (dot_claude / "settings.json").write_text(json.dumps(settings, indent=2) + "\n")
+
+    hook_path = hooks_dir / "guard-frozen.sh"
+    hook_path.write_text(_guard_frozen_hook_content())
+    hook_path.chmod(0o755)
+
+
 def _gitignore_content() -> str:
     """Return .gitignore content for experiment directories."""
     return textwrap.dedent("""\
@@ -191,6 +267,7 @@ def _gitignore_content() -> str:
         __pycache__/
         *.pyc
         .venv/
+        .claude/settings.local.json
     """)
 
 
