@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: CLI and Integration** - Project scaffolding CLI and end-to-end validation (completed 2026-03-10)
 - [x] **Phase 4: E2E Baseline Test** - Run the autonomous loop as-is on a test dataset, document what works and what breaks (completed 2026-03-11)
 - [x] **Phase 5: Hooks and Enhanced Scaffolding** - PreToolUse mutable zone enforcement, .claude/settings.json generation, allowedTools, CLAUDE.md upgrade, UX polish (completed 2026-03-12)
-- [ ] **Phase 6: Structured Output and Metrics Parsing** - JSON output parsing, replace grep-based extraction (if Phase 4 reveals parsing fragility)
+- [ ] **Phase 6: Structured Output and Metrics Parsing** - Additive JSON output line in train.py, parse_run_result.py for Phase 7 test harness, optional runner.py JSON parser
 - [ ] **Phase 7: E2E Validation Test** - Re-run the autonomous loop after all changes, prove the system works unattended end-to-end
 
 ## Phase Details
@@ -82,7 +82,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. CLI and Integration | 2/2 | Complete | 2026-03-10 |
 | 4. E2E Baseline Test | 1/1 | Complete | 2026-03-11 |
 | 5. Hooks + Scaffolding | 2/2 | Complete   | 2026-03-12 |
-| 6. Structured Output | 0/? | Not planned | — |
+| 6. Structured Output | 0/2 | Planned | — |
 | 7. E2E Validation Test | 0/? | Not planned | — |
 
 ### Phase 4: E2E Baseline Test
@@ -103,17 +103,19 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 05-01-PLAN.md — .claude/settings.json + guard-frozen.sh hook generation in scaffold.py
-- [ ] 05-02-PLAN.md — CLAUDE.md graceful shutdown section
+- [x] 05-01-PLAN.md — .claude/settings.json + guard-frozen.sh hook generation in scaffold.py
+- [x] 05-02-PLAN.md — CLAUDE.md graceful shutdown section
 
 ### Phase 6: Structured Output and Metrics Parsing
 
-**Goal:** Replace grep-based metric extraction with structured JSON output if Phase 4 reveals parsing fragility — use --output-format json and --json-schema for validated metrics
+**Goal:** Add a json_output line to train.py's structured output for agent ergonomics, create parse_run_result.py to automate extraction from claude -p JSON output for Phase 7, and add an optional JSON parser to runner.py -- all additive, no replacement of working grep-based parsing
 **Depends on:** Phase 5
-**Plans:** 0 plans
+**Requirements:** STRUCT-01, STRUCT-02, STRUCT-03
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 6 to break down)
+- [ ] 06-01-PLAN.md — JSON output line in train_template.py + optional runner.py JSON parser
+- [ ] 06-02-PLAN.md — parse_run_result.py helper script for Phase 7 test harness
 
 ### Phase 7: E2E Validation Test
 
