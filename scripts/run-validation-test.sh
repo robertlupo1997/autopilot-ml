@@ -62,7 +62,7 @@ echo ""
 echo "NOTE: This script must be run OUTSIDE of a Claude Code session."
 echo "      'claude -p' cannot be launched inside another CC session."
 echo "      If you see an error about nested sessions, open a new terminal."
-echo "      Tool permissions are governed by settings.json (no allowedTools flag)."
+echo "      Tool permissions: --allowedTools + guard-frozen.sh hook for prepare.py."
 echo ""
 
 # ---------------------------------------------------------------------------
@@ -176,7 +176,7 @@ claude -p "Follow the CLAUDE.md protocol exactly. NEVER STOP until max-turns is 
     --max-turns 50 \
     --max-budget-usd 4.00 \
     --output-format json \
-    --allowedTools "Bash(*)" "Edit(train.py)" "Write(train.py)" "Write(results.tsv)" "Write(run.log)" "Read" "Glob" "Grep" \
+    --allowedTools "Bash(*)" "Edit(*)" "Write(*)" "Read" "Glob" "Grep" \
     2>&1 | tee validation-run-output.json
 
 echo ""
