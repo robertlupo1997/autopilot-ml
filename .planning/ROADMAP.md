@@ -83,7 +83,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. E2E Baseline Test | 1/1 | Complete | 2026-03-11 |
 | 5. Hooks + Scaffolding | 2/2 | Complete   | 2026-03-12 |
 | 6. Structured Output | 2/2 | Complete   | 2026-03-13 |
-| 7. E2E Validation Test | 1/3 | Gap Closure | — |
+| 7. E2E Validation Test | 2/3 | In Progress|  |
 
 ### Phase 4: E2E Baseline Test
 
@@ -122,7 +122,7 @@ Plans:
 **Goal:** Re-run the full autonomous loop after all Phase 5-6 changes, proving hooks enforce frozen files, keep/discard cycle works, metrics parse correctly, and the system runs unattended end-to-end
 **Depends on:** Phase 6
 **Requirements:** VAL-01, VAL-02, VAL-03, VAL-04, VAL-05, VAL-06, VAL-07
-**Plans:** 3 plans (1 original + 2 gap closure)
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 07-01-PLAN.md — Generate noisy dataset, run validation test, document findings

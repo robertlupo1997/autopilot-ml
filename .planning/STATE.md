@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 07-01-PLAN.md (E2E Validation Test). Phase 7 Plan 1 complete. v1.0 BLOCKED by settings.json permissions bug.
-last_updated: "2026-03-13T01:12:33.472Z"
+stopped_at: Completed 07-02-PLAN.md (Permissions Fix and Requirements Gap Closure). v1.0 permissions fix applied — scaffold.py now generates correct settings.json for headless operation.
+last_updated: "2026-03-13T01:28:28.222Z"
 last_activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 progress:
   total_phases: 7
-  completed_phases: 7
-  total_plans: 14
-  completed_plans: 14
+  completed_phases: 6
+  total_plans: 16
+  completed_plans: 15
   percent: 60
 ---
 
@@ -56,6 +56,7 @@ Progress: [████████░░] 60% (4/7 phases, 10/11 plans)
 | Phase 06-structured-output-and-metrics-parsing P02 | 3 | 1 tasks | 2 files |
 | Phase 06-structured-output-and-metrics-parsing P01 | 3 | 2 tasks | 4 files |
 | Phase 07-e2e-validation-test P01 | 15 | 3 tasks | 3 files |
+| Phase 07-e2e-validation-test P02 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,9 @@ Recent decisions affecting current work:
 - [Phase 06-01]: _parse_json_output is purely additive — _parse_output and existing regex paths unchanged
 - [Phase 07-e2e-validation-test]: Phase 7 correctly removed --allowedTools to test settings.json governance, revealing permissions too narrow for headless claude -p mode (8 denials, 0 experiments run)
 - [Phase 07-e2e-validation-test]: v1.0 certification BLOCKED: scaffold.py must generate broader permissions.allow rules for headless autonomous operation
+- [Phase 07-02]: Use Bash(*) wildcard for headless claude -p instead of scoped Bash patterns — simpler and hook system protects files via Edit|Write, not Bash
+- [Phase 07-02]: Write(results.tsv) + Write(run.log) instead of Write(*) — narrowest scope enabling the loop
+- [Phase 07-02]: VAL-01 through VAL-07 formally added to REQUIREMENTS.md (52 total v1 requirements)
 
 ### Roadmap Evolution
 
@@ -117,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T01:12:33.443Z
-Stopped at: Completed 07-01-PLAN.md (E2E Validation Test). Phase 7 Plan 1 complete. v1.0 BLOCKED by settings.json permissions bug.
+Last session: 2026-03-13T01:28:28.218Z
+Stopped at: Completed 07-02-PLAN.md (Permissions Fix and Requirements Gap Closure). v1.0 permissions fix applied — scaffold.py now generates correct settings.json for headless operation.
 Resume file: None

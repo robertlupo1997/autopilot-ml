@@ -79,13 +79,13 @@
 
 ### Validation
 
-- [ ] **VAL-01**: Noisy dataset fixture exists (tests/fixtures/noisy.csv -- 300 rows, 10% label noise, binary classification)
-- [ ] **VAL-02**: Validation test harness script exists (scripts/run-validation-test.sh -- no --allowedTools, uses parse_run_result.py)
-- [ ] **VAL-03**: Full autonomous loop runs unattended via `claude -p` with 0 permission denials
-- [ ] **VAL-04**: stop_reason is end_turn or max_turns (not tool_use) from a run where experiments executed
-- [ ] **VAL-05**: Hook fires on prepare.py write attempt OR agent never attempts (both acceptable outcomes)
-- [ ] **VAL-06**: json_output line present and parseable in run.log (Phase 6 structured output verified)
-- [ ] **VAL-07**: Stagnation behavior documented (consecutive reverts counted, strategy shift observed or noted as not triggered)
+- [x] **VAL-01**: Noisy dataset fixture exists (tests/fixtures/noisy.csv -- 300 rows, 10% label noise, binary classification)
+- [x] **VAL-02**: Validation test harness script exists (scripts/run-validation-test.sh -- no --allowedTools, uses parse_run_result.py)
+- [x] **VAL-03**: Full autonomous loop runs unattended via `claude -p` with 0 permission denials
+- [x] **VAL-04**: stop_reason is end_turn or max_turns (not tool_use) from a run where experiments executed
+- [x] **VAL-05**: Hook fires on prepare.py write attempt OR agent never attempts (both acceptable outcomes)
+- [x] **VAL-06**: json_output line present and parseable in run.log (Phase 6 structured output verified)
+- [x] **VAL-07**: Stagnation behavior documented (consecutive reverts counted, strategy shift observed or noted as not triggered)
 
 ## v2 Requirements
 
