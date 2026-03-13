@@ -179,11 +179,11 @@
 | HOOK-06 | Phase 5 | Planned |
 | VAL-01 | Phase 7 | Planned |
 | VAL-02 | Phase 7 | Planned |
-| VAL-03 | Phase 7 | Planned |
-| VAL-04 | Phase 7 | Planned |
-| VAL-05 | Phase 7 | Planned |
-| VAL-06 | Phase 7 | Planned |
-| VAL-07 | Phase 7 | Planned |
+| VAL-03 | Phase 7 | Complete |
+| VAL-04 | Phase 7 | Complete |
+| VAL-05 | Phase 7 | Complete |
+| VAL-06 | Phase 7 | Complete |
+| VAL-07 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 52 total

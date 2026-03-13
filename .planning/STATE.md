@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 07-02-PLAN.md (Permissions Fix and Requirements Gap Closure). v1.0 permissions fix applied — scaffold.py now generates correct settings.json for headless operation.
-last_updated: "2026-03-13T01:28:28.222Z"
+stopped_at: "Completed 07-03-PLAN.md (Re-validation after permissions fix). v1.0 loop machinery validated: 10 experiments, 0 denials, all Phase 5-6 features confirmed working."
+last_updated: "2026-03-13T03:25:11.494Z"
 last_activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 16
-  completed_plans: 15
+  completed_plans: 16
   percent: 60
 ---
 
@@ -57,6 +57,7 @@ Progress: [████████░░] 60% (4/7 phases, 10/11 plans)
 | Phase 06-structured-output-and-metrics-parsing P01 | 3 | 2 tasks | 4 files |
 | Phase 07-e2e-validation-test P01 | 15 | 3 tasks | 3 files |
 | Phase 07-e2e-validation-test P02 | 2 | 2 tasks | 3 files |
+| Phase 07-e2e-validation-test P03 | 10 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase 07-02]: Use Bash(*) wildcard for headless claude -p instead of scoped Bash patterns — simpler and hook system protects files via Edit|Write, not Bash
 - [Phase 07-02]: Write(results.tsv) + Write(run.log) instead of Write(*) — narrowest scope enabling the loop
 - [Phase 07-02]: VAL-01 through VAL-07 formally added to REQUIREMENTS.md (52 total v1 requirements)
+- [Phase 07-e2e-validation-test]: settings.json permissions.allow ignored in headless claude -p mode; --allowedTools flag is required
+- [Phase 07-e2e-validation-test]: Write(*)/Edit(*) broad patterns required; relative path patterns don't match absolute paths in headless mode
+- [Phase 07-e2e-validation-test]: v1.0 conditional pass: 10 experiments, 0 denials, Phase 5-6 validated; graceful shutdown at max_turns documented as known quality gap
 
 ### Roadmap Evolution
 
@@ -121,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T01:28:28.218Z
-Stopped at: Completed 07-02-PLAN.md (Permissions Fix and Requirements Gap Closure). v1.0 permissions fix applied — scaffold.py now generates correct settings.json for headless operation.
+Last session: 2026-03-13T03:24:57.799Z
+Stopped at: Completed 07-03-PLAN.md (Re-validation after permissions fix). v1.0 loop machinery validated: 10 experiments, 0 denials, all Phase 5-6 features confirmed working.
 Resume file: None
