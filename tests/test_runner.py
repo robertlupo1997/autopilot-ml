@@ -149,3 +149,68 @@ class TestErrorHandling:
 
         assert result.status == "timeout"
         assert result.metric_value is None
+
+
+class TestJsonOutputParsing:
+    """_parse_json_output returns dict or None; existing _parse_output is unchanged."""
+
+    def test_parse_json_output_present(self):
+        """When stdout contains a valid json_output line, returns dict with all 6 keys."""
+        from automl.runner import ExperimentRunner
+        import json
+
+        runner = ExperimentRunner("/tmp", time_budget=60)
+        payload = {
+            "metric_name": "accuracy",
+            "metric_value": 0.950000,
+            "metric_std": 0.012000,
+            "direction": "maximize",
+            "elapsed_sec": 3.5,
+            "model": "RandomForestClassifier",
+        }
+        stdout = (
+            "---\n"
+            "metric_name:  accuracy\n"
+            "metric_value: 0.950000\n"
+            "metric_std:   0.012000\n"
+            "direction:    maximize\n"
+            "elapsed_sec:  3.5\n"
+            "model:        RandomForestClassifier\n"
+            f"json_output: {json.dumps(payload)}\n"
+        )
+        result = runner._parse_json_output(stdout)
+        assert result is not None, "_parse_json_output should return a dict when line is present"
+        required_keys = {"metric_name", "metric_value", "metric_std", "direction", "elapsed_sec", "model"}
+        assert required_keys == set(result.keys()), f"Missing keys: {required_keys - set(result.keys())}"
+        assert result["metric_value"] == pytest.approx(0.950000)
+        assert result["model"] == "RandomForestClassifier"
+
+    def test_parse_json_output_missing(self):
+        """When stdout has no json_output line, returns None."""
+        from automl.runner import ExperimentRunner
+
+        runner = ExperimentRunner("/tmp", time_budget=60)
+        stdout = (
+            "---\n"
+            "metric_name:  accuracy\n"
+            "metric_value: 0.950000\n"
+            "metric_std:   0.012000\n"
+            "direction:    maximize\n"
+            "elapsed_sec:  3.5\n"
+            "model:        RandomForestClassifier\n"
+        )
+        result = runner._parse_json_output(stdout)
+        assert result is None, "_parse_json_output should return None when json_output line is absent"
+
+    def test_parse_json_output_invalid(self):
+        """When json_output line contains invalid JSON, returns None without raising."""
+        from automl.runner import ExperimentRunner
+
+        runner = ExperimentRunner("/tmp", time_budget=60)
+        stdout = (
+            "---\n"
+            "metric_value: 0.950000\n"
+            "json_output: {invalid json here\n"
+        )
+        result = runner._parse_json_output(stdout)
+        assert result is None, "_parse_json_output should return None for invalid JSON, not raise"

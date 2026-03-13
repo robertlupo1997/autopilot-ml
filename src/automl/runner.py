@@ -143,6 +143,17 @@ class ExperimentRunner:
         match = re.search(rf"^{field_name}:\s+(.+)$", text, re.MULTILINE)
         return match.group(1).strip() if match else None
 
+    def _parse_json_output(self, text: str) -> Optional[dict]:
+        """Try to parse json_output line if present. Returns None if absent or invalid."""
+        import json
+        match = re.search(r"^json_output:\s+(.+)$", text, re.MULTILINE)
+        if match:
+            try:
+                return json.loads(match.group(1).strip())
+            except (json.JSONDecodeError, ValueError):
+                return None
+        return None
+
     def _write_run_log(self, stdout: str, stderr: str) -> None:
         """Write stdout+stderr to run.log (overwrite mode)."""
         with open(self.run_log_path, "w") as f:
