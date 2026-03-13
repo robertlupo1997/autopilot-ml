@@ -18,7 +18,7 @@
 #   - Uses noisy.csv (300 rows, 10% label noise) instead of iris.csv
 #   - Max turns: 50 (not 30) -- exercises stagnation handling (5+ reverts needed)
 #   - Budget cap: $4.00 (not $2.00)
-#   - No allowedTools flag used -- settings.json permissions.allow governs tool access
+#   - --allowedTools flag passed (project settings.json alone isn't sufficient in headless -p mode)
 #   - Automated assertions section validates Phase 5-6 fixes
 # =============================================================================
 
@@ -169,13 +169,14 @@ echo "  OK: Git repository initialized with initial commit"
 echo "[6/8] Running autonomous ML loop (this may take 5-10 minutes)..."
 echo "      Max turns: 50 | Budget cap: \$4.00"
 echo "      Output: $EXPERIMENT_DIR/validation-run-output.json"
-echo "      NOTE: settings.json permissions govern tool access (no allowedTools flag passed)"
+echo "      NOTE: --allowedTools passed for headless mode (settings.json alone is insufficient)"
 echo ""
 
 claude -p "Follow the CLAUDE.md protocol exactly. NEVER STOP until max-turns is reached." \
     --max-turns 50 \
     --max-budget-usd 4.00 \
     --output-format json \
+    --allowedTools "Bash(*)" "Edit(train.py)" "Write(train.py)" "Write(results.tsv)" "Write(run.log)" "Read" "Glob" "Grep" \
     2>&1 | tee validation-run-output.json
 
 echo ""
