@@ -47,3 +47,13 @@ print(f"metric_std:   {score_std:.6f}")
 print(f"direction:    {direction}")
 print(f"elapsed_sec:  {elapsed:.1f}")
 print(f"model:        {type(model).__name__}")
+import json as _json
+_result = {
+    "metric_name": METRIC,
+    "metric_value": round(score_mean, 6),
+    "metric_std": round(score_std, 6),
+    "direction": direction,
+    "elapsed_sec": round(elapsed, 1),
+    "model": type(model).__name__,
+}
+print(f"json_output: {_json.dumps(_result)}")

@@ -154,3 +154,79 @@ class TestTimeoutEnforcement:
         # Should exit non-zero due to TimeoutError
         assert result.returncode != 0, "Should have failed due to timeout"
         assert "TimeoutError" in result.stderr, f"Expected TimeoutError in stderr, got: {result.stderr}"
+
+
+class TestJsonOutput:
+    """MODEL-04 extension: train.py emits a machine-parseable json_output line."""
+
+    @pytest.fixture
+    def experiment_dir(self, sample_classification_csv, tmp_path):
+        """Create a temp experiment directory with train.py, prepare.py, and data.csv."""
+        exp_dir = tmp_path / "experiment_json"
+        exp_dir.mkdir()
+        shutil.copy(TEMPLATE_PATH, exp_dir / "train.py")
+        shutil.copy(PREPARE_PATH, exp_dir / "prepare.py")
+        shutil.copy(sample_classification_csv, exp_dir / "data.csv")
+        return exp_dir
+
+    @pytest.fixture
+    def train_stdout(self, experiment_dir):
+        """Run train.py and return stdout."""
+        result = subprocess.run(
+            [sys.executable, "train.py"],
+            capture_output=True, text=True,
+            cwd=str(experiment_dir),
+            timeout=30,
+        )
+        assert result.returncode == 0, f"train.py failed:\nSTDERR: {result.stderr}"
+        return result.stdout
+
+    def test_json_output_present(self, train_stdout):
+        """Exactly one line starts with 'json_output: '."""
+        import json
+        json_lines = [
+            line for line in train_stdout.splitlines()
+            if line.startswith("json_output: ")
+        ]
+        assert len(json_lines) == 1, (
+            f"Expected exactly 1 json_output line, got {len(json_lines)}.\n"
+            f"stdout:\n{train_stdout}"
+        )
+
+    def test_json_output_parseable(self, train_stdout):
+        """The JSON after 'json_output: ' is valid and contains all 6 required keys."""
+        import json
+        json_lines = [
+            line for line in train_stdout.splitlines()
+            if line.startswith("json_output: ")
+        ]
+        assert len(json_lines) == 1, "Expected exactly 1 json_output line"
+        json_str = json_lines[0][len("json_output: "):]
+        parsed = json.loads(json_str)
+        required_keys = {"metric_name", "metric_value", "metric_std", "direction", "elapsed_sec", "model"}
+        missing = required_keys - set(parsed.keys())
+        assert not missing, f"json_output missing keys: {missing}"
+
+    def test_json_output_values_match(self, train_stdout):
+        """The metric_value in JSON matches the metric_value in key:value text output."""
+        import json
+        # Extract text metric_value
+        text_lines = [
+            line for line in train_stdout.splitlines()
+            if line.startswith("metric_value:")
+        ]
+        assert len(text_lines) == 1, "Expected exactly 1 metric_value: line"
+        text_value = float(text_lines[0].split(":")[1].strip())
+
+        # Extract JSON metric_value
+        json_lines = [
+            line for line in train_stdout.splitlines()
+            if line.startswith("json_output: ")
+        ]
+        assert len(json_lines) == 1, "Expected exactly 1 json_output line"
+        parsed = json.loads(json_lines[0][len("json_output: "):])
+        json_value = parsed["metric_value"]
+
+        assert text_value == pytest.approx(json_value, abs=1e-9), (
+            f"text metric_value {text_value} != json metric_value {json_value}"
+        )
