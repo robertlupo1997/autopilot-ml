@@ -230,9 +230,11 @@ def _dot_claude_settings(out: Path) -> None:
         "$schema": "https://docs.anthropic.com/en/docs/claude-code/settings",
         "permissions": {
             "allow": [
-                "Bash",
+                "Bash(*)",
                 "Edit(train.py)",
                 "Write(train.py)",
+                "Write(results.tsv)",
+                "Write(run.log)",
                 "Read",
                 "Glob",
                 "Grep",

@@ -219,7 +219,16 @@ class TestScaffoldDotClaude:
         settings_path = scaffolded / ".claude" / "settings.json"
         data = json.loads(settings_path.read_text())
         allow = data["permissions"]["allow"]
-        expected = ["Bash", "Edit(train.py)", "Write(train.py)", "Read", "Glob", "Grep"]
+        expected = [
+            "Bash(*)",
+            "Edit(train.py)",
+            "Write(train.py)",
+            "Write(results.tsv)",
+            "Write(run.log)",
+            "Read",
+            "Glob",
+            "Grep",
+        ]
         assert allow == expected
 
     def test_scaffold_settings_hooks(self, scaffolded):
