@@ -77,6 +77,16 @@
 - [x] **HOOK-05**: CLAUDE.md includes graceful shutdown section addressing max_turns mid-action interrupt
 - [x] **HOOK-06**: Scaffolded project requires no --dangerously-skip-permissions or manual --allowedTools flags
 
+### Validation
+
+- [ ] **VAL-01**: Noisy dataset fixture exists (tests/fixtures/noisy.csv -- 300 rows, 10% label noise, binary classification)
+- [ ] **VAL-02**: Validation test harness script exists (scripts/run-validation-test.sh -- no --allowedTools, uses parse_run_result.py)
+- [ ] **VAL-03**: Full autonomous loop runs unattended via `claude -p` with 0 permission denials
+- [ ] **VAL-04**: stop_reason is end_turn or max_turns (not tool_use) from a run where experiments executed
+- [ ] **VAL-05**: Hook fires on prepare.py write attempt OR agent never attempts (both acceptable outcomes)
+- [ ] **VAL-06**: json_output line present and parseable in run.log (Phase 6 structured output verified)
+- [ ] **VAL-07**: Stagnation behavior documented (consecutive reverts counted, strategy shift observed or noted as not triggered)
+
 ## v2 Requirements
 
 ### Feature Engineering Zone
@@ -167,12 +177,19 @@
 | HOOK-04 | Phase 5 | Planned |
 | HOOK-05 | Phase 5 | Planned |
 | HOOK-06 | Phase 5 | Planned |
+| VAL-01 | Phase 7 | Planned |
+| VAL-02 | Phase 7 | Planned |
+| VAL-03 | Phase 7 | Planned |
+| VAL-04 | Phase 7 | Planned |
+| VAL-05 | Phase 7 | Planned |
+| VAL-06 | Phase 7 | Planned |
+| VAL-07 | Phase 7 | Planned |
 
 **Coverage:**
-- v1 requirements: 45 total
-- Mapped to phases: 45
+- v1 requirements: 52 total
+- Mapped to phases: 52
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-11 after Phase 5 planning*
+*Last updated: 2026-03-13 after Phase 7 gap closure*
