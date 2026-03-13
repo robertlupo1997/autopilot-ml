@@ -83,7 +83,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. E2E Baseline Test | 1/1 | Complete | 2026-03-11 |
 | 5. Hooks + Scaffolding | 2/2 | Complete   | 2026-03-12 |
 | 6. Structured Output | 2/2 | Complete   | 2026-03-13 |
-| 7. E2E Validation Test | 0/? | Not planned | — |
+| 7. E2E Validation Test | 0/1 | Planned | — |
 
 ### Phase 4: E2E Baseline Test
 
@@ -114,14 +114,15 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 06-01-PLAN.md — JSON output line in train_template.py + optional runner.py JSON parser
-- [ ] 06-02-PLAN.md — parse_run_result.py helper script for Phase 7 test harness
+- [x] 06-01-PLAN.md — JSON output line in train_template.py + optional runner.py JSON parser
+- [x] 06-02-PLAN.md — parse_run_result.py helper script for Phase 7 test harness
 
 ### Phase 7: E2E Validation Test
 
 **Goal:** Re-run the full autonomous loop after all Phase 5-6 changes, proving hooks enforce frozen files, keep/discard cycle works, metrics parse correctly, and the system runs unattended end-to-end
 **Depends on:** Phase 6
-**Plans:** 0 plans
+**Requirements:** VAL-01, VAL-02, VAL-03, VAL-04, VAL-05, VAL-06, VAL-07
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 7 to break down)
+- [ ] 07-01-PLAN.md — Generate noisy dataset, run validation test, document findings
