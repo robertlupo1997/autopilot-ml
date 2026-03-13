@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-02-PLAN.md (parse_run_result.py helper script). Phase 6 Plan 2 complete.
-last_updated: "2026-03-13T00:12:29.700Z"
+stopped_at: Completed 06-01-PLAN.md (Structured Output and Metrics Parsing). Phase 6 Plan 1 complete.
+last_updated: "2026-03-13T00:14:13.845Z"
 last_activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
   percent: 60
 ---
 
@@ -54,6 +54,7 @@ Progress: [████████░░] 60% (4/7 phases, 10/11 plans)
 *Updated after each plan completion*
 | Phase 05-hooks-and-enhanced-scaffolding P02 | 4 | 1 tasks | 2 files |
 | Phase 06-structured-output-and-metrics-parsing P02 | 3 | 1 tasks | 2 files |
+| Phase 06-structured-output-and-metrics-parsing P01 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Recent decisions affecting current work:
 - [Phase 05-02]: Graceful Shutdown placed between Phase 2 loop and Rules sections -- natural insertion point before rules summary
 - [Phase 05-02]: git reset --hard HEAD (not HEAD~1) for uncommitted mid-edit interrupts -- HEAD~1 would undo a clean commit
 - [Phase 06-02]: parse_run_result uses data.get() for all fields so missing fields return None without KeyError
+- [Phase 06-01]: json_output line placed AFTER all key:value lines to prevent runner regex false-matches on JSON content
+- [Phase 06-01]: _parse_json_output is purely additive — _parse_output and existing regex paths unchanged
 
 ### Roadmap Evolution
 
@@ -111,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T00:12:29.695Z
-Stopped at: Completed 06-02-PLAN.md (parse_run_result.py helper script). Phase 6 Plan 2 complete.
+Last session: 2026-03-13T00:14:13.842Z
+Stopped at: Completed 06-01-PLAN.md (Structured Output and Metrics Parsing). Phase 6 Plan 1 complete.
 Resume file: None
