@@ -21,7 +21,8 @@
 
 - [ ] **BASE-01**: Naive forecast (repeat last known value) computed as mandatory floor
 - [ ] **BASE-02**: Seasonal naive (same quarter last year) computed as mandatory floor
-- [ ] **BASE-03**: Agent must beat both baselines to "keep" an experiment; failing to beat naive = auto-revert
+- [ ] **BASE-03a**: Baselines computed on same walk-forward splits as agent evaluation (infrastructure)
+- [ ] **BASE-03b**: Agent must beat both baselines to "keep" an experiment; failing to beat naive = auto-revert (enforcement gate in CLAUDE.md protocol and/or `loop_helpers.should_keep()`)
 
 ### Feature Engineering
 
@@ -84,7 +85,8 @@
 | FMET-03 | Phase 11 | Pending |
 | BASE-01 | Phase 11 | Pending |
 | BASE-02 | Phase 11 | Pending |
-| BASE-03 | Phase 11 | Pending |
+| BASE-03a | Phase 11 | Pending |
+| BASE-03b | Phase 12 | Pending |
 | FEAT-01 | Phase 12 | Pending |
 | FEAT-02 | Phase 12 | Pending |
 | FEAT-03 | Phase 12 | Pending |
@@ -99,10 +101,10 @@
 | EVAL-02 | Phase 14 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 21 total
-- Mapped to phases: 21
+- v2.0 requirements: 22 total (BASE-03 split into BASE-03a infrastructure + BASE-03b enforcement)
+- Mapped to phases: 22
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-14*
-*Last updated: 2026-03-14 after v2.0 roadmap created*
+*Last updated: 2026-03-14 — BASE-03 split into BASE-03a (Phase 11) and BASE-03b (Phase 12)*
