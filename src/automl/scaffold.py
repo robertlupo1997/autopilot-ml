@@ -17,6 +17,7 @@ import shutil
 import textwrap
 from pathlib import Path
 
+import automl.forecast as _forecast_module
 import automl.prepare as _prepare_module
 from automl.prepare import (
     build_preprocessor,
@@ -88,6 +89,10 @@ def scaffold_experiment(
     # 1. Copy prepare.py (byte-identical to installed source)
     prepare_source = inspect.getfile(_prepare_module)
     shutil.copy2(prepare_source, out / "prepare.py")
+
+    # 1b. Copy forecast.py (byte-identical to installed source)
+    forecast_source = inspect.getfile(_forecast_module)
+    shutil.copy2(forecast_source, out / "forecast.py")
 
     # 2. Generate train.py from template with config substitution
     # train_template.py uses sibling imports (from prepare import ...) so we
@@ -240,6 +245,8 @@ def _dot_claude_settings(out: Path) -> None:
             "deny": [
                 "Edit(prepare.py)",
                 "Write(prepare.py)",
+                "Edit(forecast.py)",
+                "Write(forecast.py)",
             ],
         },
         "hooks": {
@@ -295,5 +302,6 @@ def _pyproject_content(dataset_name: str) -> str:
             "numpy>=2.0",
             "xgboost",
             "lightgbm",
+            "optuna>=4.0",
         ]
     """)
