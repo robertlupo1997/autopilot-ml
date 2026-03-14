@@ -49,6 +49,24 @@ def sample_regression_csv(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
+def quarterly_revenue_series() -> np.ndarray:
+    """40-row synthetic quarterly revenue series (dollars) with trend and seasonality.
+
+    Generates: base=1000 + 50*quarter_index + 200*sin(quarter_index * pi/2) + noise
+    Returned as np.ndarray of shape (40,) with positive dollar values.
+    """
+    rng = np.random.RandomState(7)
+    quarters = np.arange(40)
+    series = (
+        1000.0
+        + 50.0 * quarters
+        + 200.0 * np.sin(quarters * np.pi / 2)
+        + rng.randn(40) * 30.0
+    )
+    return series.astype(float)
+
+
+@pytest.fixture
 def sample_csv_with_missing(tmp_path: Path) -> Path:
     """Generate a classification CSV with ~10% missing values in numeric and categorical columns."""
     rng = np.random.RandomState(42)
