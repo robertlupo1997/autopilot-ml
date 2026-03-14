@@ -76,33 +76,33 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TVAL-01 | - | Pending |
-| TVAL-02 | - | Pending |
-| TVAL-03 | - | Pending |
-| FMET-01 | - | Pending |
-| FMET-02 | - | Pending |
-| FMET-03 | - | Pending |
-| BASE-01 | - | Pending |
-| BASE-02 | - | Pending |
-| BASE-03 | - | Pending |
-| FEAT-01 | - | Pending |
-| FEAT-02 | - | Pending |
-| FEAT-03 | - | Pending |
-| FEAT-04 | - | Pending |
-| OPTA-01 | - | Pending |
-| OPTA-02 | - | Pending |
-| OPTA-03 | - | Pending |
-| SCAF-01 | - | Pending |
-| SCAF-02 | - | Pending |
-| SCAF-03 | - | Pending |
-| EVAL-01 | - | Pending |
-| EVAL-02 | - | Pending |
+| TVAL-01 | Phase 11 | Pending |
+| TVAL-02 | Phase 11 | Pending |
+| TVAL-03 | Phase 11 | Pending |
+| FMET-01 | Phase 11 | Pending |
+| FMET-02 | Phase 11 | Pending |
+| FMET-03 | Phase 11 | Pending |
+| BASE-01 | Phase 11 | Pending |
+| BASE-02 | Phase 11 | Pending |
+| BASE-03 | Phase 11 | Pending |
+| FEAT-01 | Phase 12 | Pending |
+| FEAT-02 | Phase 12 | Pending |
+| FEAT-03 | Phase 12 | Pending |
+| FEAT-04 | Phase 12 | Pending |
+| OPTA-01 | Phase 12 | Pending |
+| OPTA-02 | Phase 12 | Pending |
+| OPTA-03 | Phase 12 | Pending |
+| SCAF-01 | Phase 13 | Pending |
+| SCAF-02 | Phase 13 | Pending |
+| SCAF-03 | Phase 13 | Pending |
+| EVAL-01 | Phase 14 | Pending |
+| EVAL-02 | Phase 14 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21
+- Mapped to phases: 21
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-14*
-*Last updated: 2026-03-14 after v2.0 milestone definition*
+*Last updated: 2026-03-14 after v2.0 roadmap created*
