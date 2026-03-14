@@ -200,11 +200,11 @@ def _guard_frozen_hook_content() -> str:
           FILE_PATH=$(echo "$INPUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))")
         fi
         BASENAME=$(basename "$FILE_PATH" 2>/dev/null)
-        FROZEN_FILES="prepare.py"
+        FROZEN_FILES="prepare.py forecast.py"
         for frozen in $FROZEN_FILES; do
           if [ "$BASENAME" = "$frozen" ]; then
             cat <<'DENY'
-        {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"prepare.py is FROZEN. Only train.py is mutable. Do not modify prepare.py."}}
+        {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"prepare.py and forecast.py are FROZEN. Only train.py is mutable. Do not modify prepare.py or forecast.py."}}
         DENY
             exit 0
           fi
