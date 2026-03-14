@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-02-PLAN.md (CLI --resume flag and CLAUDE.md Resume Protocol). Added --resume to cli.py, Session Resume Check section to claude.md.tmpl.
-last_updated: "2026-03-14T04:34:59.257Z"
+stopped_at: Completed 10-01-PLAN.md (Core Swarm Infrastructure). Created SwarmScoreboard, swarm_claims, and GitManager worktree methods.
+last_updated: "2026-03-14T05:18:11.053Z"
 last_activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 progress:
   total_phases: 10
   completed_phases: 9
-  total_plans: 19
-  completed_plans: 19
+  total_plans: 22
+  completed_plans: 20
   percent: 60
 ---
 
@@ -61,6 +61,7 @@ Progress: [████████░░] 60% (4/7 phases, 10/11 plans)
 | Phase 08-permissions-simplification P01 | 2 | 2 tasks | 4 files |
 | Phase 09-resume-capability P01 | 2min | 2 tasks | 4 files |
 | Phase 09-resume-capability P02 | 3min | 1 tasks | 4 files |
+| Phase 10-multi-agent-swarm P01 | 8min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,9 @@ Recent decisions affecting current work:
 - [Phase 09-resume-capability]: --resume flag is informational for v1: actual resume behavior comes from CLAUDE.md Session Resume Check section, not Python enforcement
 - [Phase 09-resume-capability]: Session Resume Check fires unconditionally on every startup: checkpoint.json presence is the signal, not the --resume flag
 - [Phase 09-resume-capability]: loop_phase=draft triggers Phase 1 restart on resume (safe re-evaluation); loop_phase=iteration skips to Phase 2
+- [Phase 10-multi-agent-swarm]: fcntl.LOCK_EX on scoreboard.lock sidecar (not scoreboard.tsv): lockfile is purely a lock primitive, never read
+- [Phase 10-multi-agent-swarm]: Lockless read_best: TSV append writes are effectively atomic on Linux; stale-by-one-row is acceptable
+- [Phase 10-multi-agent-swarm]: CLAIM_TTL=300s: generous for slow ML experiments, claims clear in 5 minutes maximum
 
 ### Roadmap Evolution
 
@@ -139,6 +143,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T04:32:09.377Z
-Stopped at: Completed 09-02-PLAN.md (CLI --resume flag and CLAUDE.md Resume Protocol). Added --resume to cli.py, Session Resume Check section to claude.md.tmpl.
+Last session: 2026-03-14T05:18:11.050Z
+Stopped at: Completed 10-01-PLAN.md (Core Swarm Infrastructure). Created SwarmScoreboard, swarm_claims, and GitManager worktree methods.
 Resume file: None

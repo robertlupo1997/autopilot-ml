@@ -89,7 +89,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 7. E2E Validation Test | 3/3 | Complete   | 2026-03-13 |
 | 8. Permissions Simplification | 1/1 | Complete   | 2026-03-14 |
 | 9. Resume Capability | 2/2 | Complete   | 2026-03-14 |
-| 10. Multi-Agent Swarm | 0/3 | Planned | — |
+| 10. Multi-Agent Swarm | 1/3 | In Progress|  |
 
 ### Phase 4: E2E Baseline Test
 
@@ -174,7 +174,7 @@ Plans:
   4. SwarmManager orchestrates setup, spawning, monitoring, and teardown of all agents
   5. CLI accepts --agents N flag to enable swarm mode
   6. A validation script exists for manual smoke testing of 2-agent swarm
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 10-01-PLAN.md — Swarm infrastructure: scoreboard, claims, git worktree methods
