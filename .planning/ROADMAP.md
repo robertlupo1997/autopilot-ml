@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 6: Structured Output and Metrics Parsing** - Additive JSON output line in train.py, parse_run_result.py for Phase 7 test harness, optional runner.py JSON parser (completed 2026-03-13)
 - [x] **Phase 7: E2E Validation Test** - Re-run the autonomous loop after all changes, prove the system works unattended end-to-end (gap closure in progress) (completed 2026-03-13)
 - [x] **Phase 8: Permissions Simplification** - Broaden permissions.allow, add permissions.deny, remove --allowedTools from scripts (completed 2026-03-14)
-- [ ] **Phase 9: Resume Capability** - Checkpoint persistence for session resume via checkpoint.json and --resume CLI flag
+- [x] **Phase 9: Resume Capability** - Checkpoint persistence for session resume via checkpoint.json and --resume CLI flag (completed 2026-03-14)
 - [ ] **Phase 10: Multi-Agent Swarm** - Parallel claude -p agents with git worktrees, scoreboard coordination, and family partitioning
 
 ## Phase Details
@@ -88,7 +88,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 6. Structured Output | 2/2 | Complete   | 2026-03-13 |
 | 7. E2E Validation Test | 3/3 | Complete   | 2026-03-13 |
 | 8. Permissions Simplification | 1/1 | Complete   | 2026-03-14 |
-| 9. Resume Capability | 1/2 | In Progress|  |
+| 9. Resume Capability | 2/2 | Complete   | 2026-03-14 |
 | 10. Multi-Agent Swarm | 0/0 | Not planned | — |
 
 ### Phase 4: E2E Baseline Test
@@ -156,7 +156,7 @@ Plans:
   3. Scaffolded .gitignore includes checkpoint.json and checkpoint.json.tmp
   4. CLI accepts --resume flag without error
   5. CLAUDE.md template includes Session Resume Check section that instructs the agent to check for checkpoint.json on startup, restore state, and update checkpoint after every keep/revert
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 09-01-PLAN.md — Checkpoint persistence module and scaffold gitignore update

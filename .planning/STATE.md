@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-01-PLAN.md (Checkpoint Persistence Module). Created checkpoint.py, updated scaffold.py gitignore.
-last_updated: "2026-03-14T04:26:17.753Z"
+stopped_at: Completed 09-02-PLAN.md (CLI --resume flag and CLAUDE.md Resume Protocol). Added --resume to cli.py, Session Resume Check section to claude.md.tmpl.
+last_updated: "2026-03-14T04:32:09.382Z"
 last_activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 progress:
   total_phases: 10
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
   percent: 60
 ---
 
@@ -60,6 +60,7 @@ Progress: [████████░░] 60% (4/7 phases, 10/11 plans)
 | Phase 07-e2e-validation-test P03 | 10 | 2 tasks | 1 files |
 | Phase 08-permissions-simplification P01 | 2 | 2 tasks | 4 files |
 | Phase 09-resume-capability P01 | 2min | 2 tasks | 4 files |
+| Phase 09-resume-capability P02 | 3min | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,9 @@ Recent decisions affecting current work:
 - [Phase 08-01]: HOOK-06 updated: --allowedTools still required for headless mode; only --dangerously-skip-permissions eliminated
 - [Phase 09-resume-capability]: All stdlib (json, dataclasses, pathlib) for checkpoint.py -- no external deps
 - [Phase 09-resume-capability]: load_loop_state() filters to known LoopState fields via dataclasses.fields() for forward compatibility
+- [Phase 09-resume-capability]: --resume flag is informational for v1: actual resume behavior comes from CLAUDE.md Session Resume Check section, not Python enforcement
+- [Phase 09-resume-capability]: Session Resume Check fires unconditionally on every startup: checkpoint.json presence is the signal, not the --resume flag
+- [Phase 09-resume-capability]: loop_phase=draft triggers Phase 1 restart on resume (safe re-evaluation); loop_phase=iteration skips to Phase 2
 
 ### Roadmap Evolution
 
@@ -135,6 +139,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T04:26:17.749Z
-Stopped at: Completed 09-01-PLAN.md (Checkpoint Persistence Module). Created checkpoint.py, updated scaffold.py gitignore.
+Last session: 2026-03-14T04:32:09.377Z
+Stopped at: Completed 09-02-PLAN.md (CLI --resume flag and CLAUDE.md Resume Protocol). Added --resume to cli.py, Session Resume Check section to claude.md.tmpl.
 Resume file: None
