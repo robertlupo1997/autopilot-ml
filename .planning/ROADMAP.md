@@ -90,10 +90,10 @@ Plans:
   2. Running the autonomous loop for 50 turns produces at least 5 keep/revert cycles with at least one "keep" decision (model beats both naive baselines)
   3. The best model's holdout MAPE is lower than seasonal-naive holdout MAPE on the synthetic dataset
   4. FINDINGS.md documents baseline scores, best-model MAPE, iterations to first beat seasonal naive, observed Optuna trial counts, and wall-clock time per experiment
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 14-01: E2E validation run on synthetic quarterly data + FINDINGS.md
+- [ ] 14-01-PLAN.md — Generate synthetic dataset, write validation harness script, run E2E loop, populate FINDINGS.md
 
 ## Progress
 
