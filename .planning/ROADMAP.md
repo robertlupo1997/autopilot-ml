@@ -31,7 +31,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 - [x] **Phase 11: Forecasting Infrastructure** - New `forecast.py` frozen module with walk-forward validation, forecasting metrics, and naive baselines; simplified `prepare.py` with date-column support (completed 2026-03-14)
 - [x] **Phase 12: Forecast Template and Mutable Zone 2** - `train_template_forecast.py` demonstrating correct lag features + Optuna pattern; updated `CLAUDE.md` and `program.md` templates with v2 agent protocol; dual-baseline enforcement gate (completed 2026-03-14)
-- [ ] **Phase 13: Scaffold and CLI Updates** - `--date-column` CLI flag, scaffold wiring to copy `forecast.py`, compute baselines, render updated templates, expand deny list and guard hook
+- [x] **Phase 13: Scaffold and CLI Updates** - `--date-column` CLI flag, scaffold wiring to copy `forecast.py`, compute baselines, render updated templates, expand deny list and guard hook (completed 2026-03-14)
 - [ ] **Phase 14: E2E Validation** - Full autonomous loop on synthetic 40-quarter dataset; confirm agent beats seasonal naive and completes 5+ keep/revert cycles within 50 turns
 
 ## Phase Details
@@ -76,7 +76,7 @@ Plans:
   1. Running `uv run automl data.csv revenue quarterly --date-column date` produces a scaffolded directory containing `forecast.py`, `train.py` (from forecast template), `CLAUDE.md`, and `program.md` — no manual file copying required
   2. The generated `program.md` includes the dataset's time range, inferred frequency, and naive + seasonal-naive MAPE scores computed at scaffold time
   3. Running the same command without `--date-column` scaffolds the v1.0 template unchanged — forecasting mode is strictly opt-in
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 13-01-PLAN.md — --date-column CLI flag, scaffold_experiment forecasting branch, forecast program.md with baselines, tests
@@ -114,5 +114,5 @@ Phases execute in numeric order: 11 → 12 → 13 → 14
 | 10. Multi-Agent Swarm | v1.0 | 3/3 | Complete | 2026-03-14 |
 | 11. Forecasting Infrastructure | 2/2 | Complete    | 2026-03-14 | - |
 | 12. Forecast Template + Mutable Zone 2 | 2/2 | Complete    | 2026-03-14 | - |
-| 13. Scaffold and CLI Updates | v2.0 | 0/1 | Not started | - |
+| 13. Scaffold and CLI Updates | 1/1 | Complete   | 2026-03-14 | - |
 | 14. E2E Validation | v2.0 | 0/1 | Not started | - |

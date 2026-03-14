@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Results-Driven Forecasting
 status: planning
-stopped_at: Completed 12-01-PLAN.md (forecast template and claude_forecast.md.tmpl)
-last_updated: "2026-03-14T23:24:58.675Z"
+stopped_at: Completed 13-01-PLAN.md (scaffold and CLI updates)
+last_updated: "2026-03-14T23:41:14.303Z"
 last_activity: 2026-03-14 — v2.0 roadmap created
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 5
   percent: 0
 ---
 
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 11 P02 | 240 | 1 tasks | 3 files |
 | Phase 12 P02 | 480 | 1 tasks | 2 files |
 | Phase 12 P01 | 720 | 1 tasks | 3 files |
+| Phase 13 P01 | 204 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Recent decisions affecting current work:
 - [Phase 12]: Dual-baseline gate enforced in CLAUDE.md as agent protocol rule only — loop_helpers.should_keep() unchanged (assumes higher=better)
 - [Phase 12]: Template uses local imports (from forecast import ...) not automl package — matches standalone experiment directory layout
 - [Phase 12]: MAPE direction explicit in CLAUDE.md: keep if new_mape < best_mape, not should_keep() which assumes higher=better
+- [Phase 13]: scaffold_experiment import moved to cli.py module level for testability (patch support)
+- [Phase 13]: _render_forecast_program_md() built separately from render_program_md() to avoid 'higher is always better' text in forecasting program.md
 
 ### Pending Todos
 
@@ -87,6 +90,6 @@ None at roadmap stage. Key risks documented in research:
 
 ## Session Continuity
 
-Last session: 2026-03-14
-Stopped at: Phase 12 complete, ready to plan Phase 13
+Last session: 2026-03-14T23:41:14.300Z
+Stopped at: Completed 13-01-PLAN.md (scaffold and CLI updates)
 Resume file: None

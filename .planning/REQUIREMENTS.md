@@ -39,9 +39,9 @@
 
 ### Scaffold & CLI
 
-- [ ] **SCAF-01**: CLI accepts `--date-column` flag to enable forecasting mode
-- [ ] **SCAF-02**: Scaffold generates forecasting-specific `train.py`, `CLAUDE.md`, and `program.md` when date column specified
-- [ ] **SCAF-03**: `program.md` includes data summary with time range, frequency, trend, and naive baseline scores
+- [x] **SCAF-01**: CLI accepts `--date-column` flag to enable forecasting mode
+- [x] **SCAF-02**: Scaffold generates forecasting-specific `train.py`, `CLAUDE.md`, and `program.md` when date column specified
+- [x] **SCAF-03**: `program.md` includes data summary with time range, frequency, trend, and naive baseline scores
 
 ### Validation
 
@@ -94,9 +94,9 @@
 | OPTA-01 | Phase 12 | Complete |
 | OPTA-02 | Phase 12 | Complete |
 | OPTA-03 | Phase 12 | Complete |
-| SCAF-01 | Phase 13 | Pending |
-| SCAF-02 | Phase 13 | Pending |
-| SCAF-03 | Phase 13 | Pending |
+| SCAF-01 | Phase 13 | Complete |
+| SCAF-02 | Phase 13 | Complete |
+| SCAF-03 | Phase 13 | Complete |
 | EVAL-01 | Phase 14 | Pending |
 | EVAL-02 | Phase 14 | Pending |
 
