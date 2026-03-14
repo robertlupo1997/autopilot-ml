@@ -8,25 +8,34 @@ An autonomous ML research framework for traditional (tabular) machine learning, 
 
 Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline — running experiments, keeping improvements, reverting failures, and logging everything — without human intervention.
 
+## Current State (v1.0 shipped 2026-03-14)
+
+**Source:** 1,977 LOC Python across 14 modules | **Tests:** 3,496 LOC, 250 tests | **Commits:** 124
+**CLI:** `uv run automl data.csv target metric` → scaffolded project → `claude -p` autonomous loop
+**Swarm:** `--agents N` spawns parallel agents in git worktrees with scoreboard coordination
+**Resume:** `--resume` + checkpoint.json for session recovery
+
 ## Requirements
 
-### Validated
+### Validated (v1.0)
 
-(None yet — ship to validate)
+- ✓ Generic framework accepting any CSV + goal description + evaluation metric — v1.0
+- ✓ Frozen data pipeline (data loading, train/test split, evaluation function) — v1.0
+- ✓ Mutable modeling file (algorithm selection, hyperparameters, ensembles) — v1.0
+- ✓ Multi-draft start: 3-5 diverse initial solutions, pick best, iterate — v1.0
+- ✓ Linear keep/revert improvement loop (autoresearch pattern) — v1.0
+- ✓ Git-based state management (branch per run, commit/reset) — v1.0
+- ✓ results.tsv experiment tracking — v1.0
+- ✓ program.md for domain expertise injection — v1.0
+- ✓ Output redirected to run.log — v1.0
+- ✓ Autonomous "NEVER STOP" operation — v1.0
+- ✓ PreToolUse hooks for frozen file enforcement — v1.0
+- ✓ Checkpoint persistence and session resume — v1.0
+- ✓ Multi-agent swarm with scoreboard coordination — v1.0
 
 ### Active
 
-- [ ] Generic framework accepting any CSV + goal description + evaluation metric
-- [ ] Frozen data pipeline (data loading, train/test split, evaluation function) that the agent cannot modify
-- [ ] Mutable modeling file where the agent iterates on algorithm selection, hyperparameters, and ensemble strategies
-- [ ] Multi-draft start: generate 3-5 diverse initial solutions (different algorithms), pick the best, then iterate
-- [ ] Linear keep/revert improvement loop on the winning draft (autoresearch pattern)
-- [ ] Git-based state management (branch per run, commit on keep, reset on discard)
-- [ ] `results.tsv` experiment tracking (commit hash, metric, status, description)
-- [ ] `program.md` for human domain expertise injection (data context, known patterns, feature hints)
-- [ ] Output redirected to `run.log` to avoid flooding agent context
-- [ ] Simplicity criterion: improvements must justify their complexity cost
-- [ ] Autonomous "NEVER STOP" operation — agent runs indefinitely until manually interrupted
+(None — start next milestone to define)
 
 ### Out of Scope
 
@@ -101,12 +110,15 @@ Full landscape analysis available at: `Autonomous_ML_Agents_Research_Report.docx
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Claude Code as orchestrator (not AIDE/custom) | Leverages existing agentic infrastructure, sub-agents, CLAUDE.md, skills | — Pending |
-| Multi-draft + linear (not pure linear or tree search) | Best tradeoff of simplicity vs. search effectiveness for v1 | — Pending |
-| Staged mutable zones (not all-at-once) | Incrementally expand agent scope, prove loop before adding complexity | — Pending |
-| Git for state management (not custom DB) | Proven by autoresearch, atomic commits, clean rollback, audit trail | — Pending |
-| CPU-first (not GPU-required) | Traditional ML runs fast on CPU, lowers barrier to entry | — Pending |
-| uv as package manager | Consistent with autoresearch ecosystem, fast, reliable | — Pending |
+| Claude Code as orchestrator (not AIDE/custom) | Leverages existing agentic infrastructure, sub-agents, CLAUDE.md, skills | ✓ Good — agent drives entire loop autonomously |
+| Multi-draft + linear (not pure linear or tree search) | Best tradeoff of simplicity vs. search effectiveness for v1 | ✓ Good — diverse starting points, then focused iteration |
+| Staged mutable zones (not all-at-once) | Incrementally expand agent scope, prove loop before adding complexity | ✓ Good — v1 modeling-only proven, ready for v2 expansion |
+| Git for state management (not custom DB) | Proven by autoresearch, atomic commits, clean rollback, audit trail | ✓ Good — worktrees enable swarm isolation too |
+| CPU-first (not GPU-required) | Traditional ML runs fast on CPU, lowers barrier to entry | ✓ Good — experiments complete in ~30s |
+| uv as package manager | Consistent with autoresearch ecosystem, fast, reliable | ✓ Good |
+| Agent-driven architecture | Library modules provide utilities; agent follows CLAUDE.md protocol | ✓ Good — simpler than wiring complex import chains |
+| Broad Edit(*)/Write(*) + deny list | Narrow path patterns silently ignored in headless mode | ✓ Good — defense-in-depth with hook system |
+| File-locked scoreboard + TTL claims | Cross-agent coordination via filesystem, no external deps | ✓ Good — stdlib-only, no race conditions in tests |
 
 ---
-*Last updated: 2026-03-09 after initialization*
+*Last updated: 2026-03-14 after v1.0 milestone completion*
