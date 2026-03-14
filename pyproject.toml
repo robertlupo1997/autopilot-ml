@@ -9,6 +9,7 @@ dependencies = [
     "numpy>=2.0",
     "xgboost",
     "lightgbm",
+    "optuna>=4.7.0",
 ]
 
 [project.scripts]
