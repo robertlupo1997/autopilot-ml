@@ -66,12 +66,28 @@ def main(argv: list[str] | None = None) -> int:
             "and strategy state from the last session."
         ),
     )
+    parser.add_argument(
+        "--agents",
+        type=int,
+        default=1,
+        metavar="N",
+        help=(
+            "Number of parallel claude -p agents to spawn (default: 1). "
+            "When N > 1, spawns a multi-agent swarm where each agent explores "
+            "different algorithm families in isolated git worktrees. "
+            "IMPORTANT: Must be run from a terminal outside of Claude Code."
+        ),
+    )
 
     if argv is not None and len(argv) == 0:
         parser.print_usage(sys.stderr)
         return 1
 
     args = parser.parse_args(argv)
+
+    if args.agents < 1:
+        print("Error: --agents must be >= 1", file=sys.stderr)
+        return 1
 
     try:
         from automl.scaffold import scaffold_experiment
@@ -89,10 +105,40 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     print(f"\nExperiment scaffolded at: {project_dir.resolve()}\n")
-    print("Next steps:")
-    print(f"  cd {project_dir}")
-    print("  uv run train.py          # Run baseline experiment")
-    print("  claude                    # Start Claude Code for autonomous iteration")
+
+    if args.agents > 1:
+        from automl.prepare import load_data
+        from automl.swarm import SwarmManager
+
+        # Detect task_type from data for family partitioning
+        try:
+            _X, _y, task_type = load_data(args.data_path, args.target_column)
+        except Exception as e:
+            print(f"Error detecting task type: {e}", file=sys.stderr)
+            return 1
+
+        manager = SwarmManager(
+            experiment_dir=project_dir,
+            n_agents=args.agents,
+            task_type=task_type,
+            metric=args.metric,
+            time_budget=args.time_budget,
+        )
+        try:
+            assignments = manager.setup()
+            print(f"Starting {manager.n_agents}-agent swarm...")
+            print(f"Swarm directory: {manager.swarm_dir}")
+            print(f"Agents will run in parallel. Press Ctrl+C to stop.\n")
+            manager.run(assignments)
+        finally:
+            manager.teardown()
+        print("\nSwarm complete. Check .swarm/scoreboard.tsv for results.")
+    else:
+        print("Next steps:")
+        print(f"  cd {project_dir}")
+        print("  uv run train.py          # Run baseline experiment")
+        print("  claude                    # Start Claude Code for autonomous iteration")
+
     return 0
 
 

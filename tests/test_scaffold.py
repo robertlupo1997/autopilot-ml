@@ -166,6 +166,39 @@ class TestScaffoldGitignore:
         assert "checkpoint.json.tmp" in content, "Missing .gitignore pattern: checkpoint.json.tmp"
 
 
+class TestScaffoldGitignoreSwarm:
+    """.gitignore includes .swarm/ coordination file entries."""
+
+    def test_gitignore_swarm_entries(self, sample_classification_csv, tmp_path):
+        """_gitignore_content() includes .swarm/scoreboard.tsv and .swarm/claims/."""
+        from automl.scaffold import _gitignore_content
+
+        content = _gitignore_content()
+        assert ".swarm/scoreboard.tsv" in content, "Missing .swarm/scoreboard.tsv"
+        assert ".swarm/claims/" in content, "Missing .swarm/claims/"
+
+    def test_gitignore_swarm_lock_entry(self, sample_classification_csv, tmp_path):
+        """_gitignore_content() includes .swarm/scoreboard.lock."""
+        from automl.scaffold import _gitignore_content
+
+        content = _gitignore_content()
+        assert ".swarm/scoreboard.lock" in content, "Missing .swarm/scoreboard.lock"
+
+    def test_gitignore_swarm_config_entry(self, sample_classification_csv, tmp_path):
+        """_gitignore_content() includes .swarm/config.json."""
+        from automl.scaffold import _gitignore_content
+
+        content = _gitignore_content()
+        assert ".swarm/config.json" in content, "Missing .swarm/config.json"
+
+    def test_gitignore_swarm_best_train_entry(self, sample_classification_csv, tmp_path):
+        """_gitignore_content() includes .swarm/best_train.py."""
+        from automl.scaffold import _gitignore_content
+
+        content = _gitignore_content()
+        assert ".swarm/best_train.py" in content, "Missing .swarm/best_train.py"
+
+
 class TestScaffoldFailsIfDirExists:
     """Raises FileExistsError when output_dir already exists."""
 

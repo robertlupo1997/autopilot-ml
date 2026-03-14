@@ -274,6 +274,11 @@ def _gitignore_content() -> str:
         *.pyc
         .venv/
         .claude/settings.local.json
+        .swarm/scoreboard.tsv
+        .swarm/scoreboard.lock
+        .swarm/claims/
+        .swarm/config.json
+        .swarm/best_train.py
     """)
 
 

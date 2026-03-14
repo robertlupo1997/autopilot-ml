@@ -148,3 +148,73 @@ class TestCliResumeFlag:
 
         args = parser.parse_args(["data.csv", "target", "accuracy", "--resume"])
         assert args.resume is True
+
+
+# ---------------------------------------------------------------------------
+# --agents flag tests
+# ---------------------------------------------------------------------------
+
+class TestCliAgentsFlag:
+    """Tests for the --agents N CLI flag."""
+
+    def test_agents_flag_default(self):
+        """--agents defaults to 1 when not provided."""
+        import argparse
+
+        parser = argparse.ArgumentParser(prog="automl")
+        parser.add_argument("data_path")
+        parser.add_argument("target_column")
+        parser.add_argument("metric")
+        parser.add_argument("--agents", type=int, default=1, metavar="N")
+
+        args = parser.parse_args(["data.csv", "target", "accuracy"])
+        assert args.agents == 1
+
+    def test_agents_flag_accepted(self):
+        """--agents 3 stores args.agents=3."""
+        import argparse
+
+        parser = argparse.ArgumentParser(prog="automl")
+        parser.add_argument("data_path")
+        parser.add_argument("target_column")
+        parser.add_argument("metric")
+        parser.add_argument("--agents", type=int, default=1, metavar="N")
+
+        args = parser.parse_args(["data.csv", "target", "accuracy", "--agents", "3"])
+        assert args.agents == 3
+
+    def test_agents_flag_zero_error(self, sample_classification_csv, tmp_path, capsys):
+        """--agents 0 returns exit code 1 with error message."""
+        from automl.cli import main
+
+        ret = main([
+            str(sample_classification_csv),
+            "target",
+            "accuracy",
+            "--output-dir",
+            str(tmp_path / "exp-agents-zero"),
+            "--agents",
+            "0",
+        ])
+        assert ret == 1
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower() or "agents" in captured.err.lower()
+
+    def test_agents_flag_in_help(self, capsys):
+        """--help output includes --agents."""
+        from automl.cli import main
+
+        with pytest.raises(SystemExit):
+            main(["--help"])
+        captured = capsys.readouterr()
+        assert "--agents" in captured.out
+
+    def test_agents_flag_help_mentions_terminal(self, capsys):
+        """--agents help text mentions running from terminal outside Claude Code."""
+        from automl.cli import main
+
+        with pytest.raises(SystemExit):
+            main(["--help"])
+        captured = capsys.readouterr()
+        # Help text should mention terminal or Claude Code
+        assert "terminal" in captured.out.lower() or "claude code" in captured.out.lower()
