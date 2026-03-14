@@ -40,6 +40,7 @@ Give Claude Code a dataset and a metric, and it autonomously discovers the best-
 - ✓ Agent engineers time-series features (lags, rolling stats, growth rates, seasonality) from raw historicals — Phase 12
 - ✓ Optuna replaces manual hyperparameter guessing inside train.py — agent writes search space, optimizer runs trials — Phase 12
 - ✓ Agent can modify both feature engineering and modeling (mutable zone 2) — Phase 12
+- ✓ CLI scaffolds complete forecasting project with `--date-column` flag — Phase 13
 - [ ] System produces better forecasts than a basic regression script on real financial data
 
 ## Current Milestone: v2.0 Results-Driven Forecasting
@@ -134,4 +135,4 @@ Full landscape analysis available at: `Autonomous_ML_Agents_Research_Report.docx
 | Local imports in experiment templates | `from forecast import ...` not `from automl.forecast import ...` | ✓ Good — matches standalone experiment directory layout |
 
 ---
-*Last updated: 2026-03-14 after Phase 12*
+*Last updated: 2026-03-14 after Phase 13*
