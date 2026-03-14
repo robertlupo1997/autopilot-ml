@@ -76,10 +76,10 @@ Plans:
   1. Running `uv run automl data.csv revenue quarterly --date-column date` produces a scaffolded directory containing `forecast.py`, `train.py` (from forecast template), `CLAUDE.md`, and `program.md` — no manual file copying required
   2. The generated `program.md` includes the dataset's time range, inferred frequency, and naive + seasonal-naive MAPE scores computed at scaffold time
   3. Running the same command without `--date-column` scaffolds the v1.0 template unchanged — forecasting mode is strictly opt-in
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 13-01: `cli.py` `--date-column` flag + `scaffold.py` forecasting mode + `pyproject.toml` dependencies
+- [ ] 13-01-PLAN.md — --date-column CLI flag, scaffold_experiment forecasting branch, forecast program.md with baselines, tests
 
 ### Phase 14: E2E Validation
 **Goal**: The full v2.0 loop runs autonomously on synthetic quarterly data and produces a forecast that beats seasonal naive
