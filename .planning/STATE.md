@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Results-Driven Forecasting
 status: planning
-stopped_at: Completed 11-01-PLAN.md (forecast.py frozen module)
-last_updated: "2026-03-14T21:44:20.167Z"
+stopped_at: Completed 11-02-PLAN.md (prepare.py forecasting extensions)
+last_updated: "2026-03-14T21:47:57.511Z"
 last_activity: 2026-03-14 — v2.0 roadmap created
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -47,6 +47,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 11 P01 | 193s | 1 tasks | 4 files |
+| Phase 11 P02 | 240 | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ Recent decisions affecting current work:
 - [Phase 11]: guard hook updated in plan 11-01 to protect forecast.py immediately after creation (not deferred to Phase 12)
 - [Phase 11]: seasonal naive uses index arithmetic on full y array (no statsmodels required)
 - [Phase 11]: model_fn dollar-scale contract: walk_forward_evaluate does NOT inverse-transform; model_fn must return predictions in same unit as y_true
+- [Phase 11]: date_col defaults to None to preserve exact backwards compatibility with PIPE-01 through PIPE-07 callers
+- [Phase 11]: temporal_split uses math.floor for deterministic split boundary (40 rows * 0.85 = 34 train, 6 holdout)
 
 ### Pending Todos
 
@@ -75,6 +78,6 @@ None at roadmap stage. Key risks documented in research:
 
 ## Session Continuity
 
-Last session: 2026-03-14T21:44:20.164Z
-Stopped at: Completed 11-01-PLAN.md (forecast.py frozen module)
+Last session: 2026-03-14T21:47:57.508Z
+Stopped at: Completed 11-02-PLAN.md (prepare.py forecasting extensions)
 Resume file: None
