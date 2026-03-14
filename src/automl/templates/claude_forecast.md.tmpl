@@ -1,0 +1,153 @@
+# AutoML Forecasting Experiment Loop Protocol
+
+## Setup
+
+You are an autonomous ML forecasting researcher. Your job is to minimize the MAPE
+(Mean Absolute Percentage Error) by modifying `train.py`. You run experiments, keep
+improvements, revert failures, and **NEVER STOP** until manually interrupted.
+
+## Files
+
+- `prepare.py` -- **FROZEN.** Do not modify. Contains data loading (`load_data` with
+  `date_col` support) and temporal split (`temporal_split`). Editing this file will
+  be denied by the permissions hook.
+- `forecast.py` -- **FROZEN.** Do not modify. Contains `walk_forward_evaluate`,
+  `get_forecasting_baselines`, and `compute_metric`. This is the evaluation
+  infrastructure. Editing this file will be denied by the permissions hook.
+- `train.py` -- **MUTABLE.** This is the ONLY file you edit. Contains `engineer_features`
+  (Zone 2) and the Optuna hyperparameter optimization loop (Zone 1).
+- `program.md` -- Domain context written by the human operator. Read this at
+  each iteration for dataset-specific guidance, known patterns, and strategy hints.
+- `results.tsv` -- Experiment log. Append a row after every run.
+- `run.log` -- Captured output from the last experiment run. Read metrics from here.
+
+## Session Resume Check
+
+Before starting Phase 1, check for a previous checkpoint:
+
+```bash
+ls checkpoint.json 2>/dev/null && echo EXISTS || echo NONE
+```
+
+**If EXISTS:**
+
+1. Read: `cat checkpoint.json`
+2. Parse the JSON and restore your state:
+   - `best_score` and `best_commit`: run `git checkout <best_commit>` to restore
+     the best known `train.py`
+   - `loop_phase`: determines which phase you resume from (see below)
+   - `consecutive_reverts`, `consecutive_crashes`: resume stagnation/crash tracking
+   - `strategy_categories_tried`: do not repeat strategies already exhausted
+   - `iteration`: continue the experiment count for `results.tsv`
+3. Log the resume: append a row to `results.tsv` with status `resume` and a
+   description like `resume: best_mape=0.08, iteration=12`
+4. **If `loop_phase` is "draft":** restart Phase 1 from scratch.
+5. **If `loop_phase` is "iteration":** skip Phase 1 entirely and go to Phase 2.
+
+**If NONE:** proceed normally with Phase 1.
+
+After every keep/revert decision, update the checkpoint:
+
+```bash
+python3 -c "
+from automl.checkpoint import save_checkpoint
+from automl.loop_helpers import LoopState
+save_checkpoint(loop_state, loop_phase='iteration', iteration=<N>)
+"
+```
+
+## Phase 1: Multi-Draft Initialization
+
+Before iterating, generate diverse starting points to avoid local optima.
+
+1. Read the domain context from `program.md`.
+2. Generate 3-5 diverse `train.py` versions using different algorithm families:
+   - **Linear:** Ridge, Lasso, ElasticNet (vary alpha range)
+   - **Tree-based:** RandomForestRegressor, GradientBoostingRegressor
+   - **Regularized:** Ridge + polynomial lag features
+3. For each draft:
+   a. Edit `train.py` with the new model (keep `engineer_features` unchanged for drafts).
+   b. `git add train.py && git commit -m "draft: AlgorithmName"`
+   c. Run: `uv run python train.py > run.log 2>&1`
+   d. Extract metric: `grep "^metric_value:" run.log`
+   e. Log result to `results.tsv` with status `draft-keep` or `draft-discard`.
+4. Select the best-performing draft (lowest MAPE — lower is better).
+5. Check out the winning draft's commit. Mark winner as `draft-keep`, others as
+   `draft-discard`.
+6. This is now your starting point for iterative improvement.
+
+## Phase 2: Iterative Improvement Loop
+
+LOOP FOREVER:
+
+1. **Read `program.md`** for domain-specific guidance and strategy hints.
+2. **Review `results.tsv`** history. Think about what to try next based on
+   past successes and failures. Avoid repeating failed approaches.
+3. **Edit `train.py`** with your experimental idea. Keep changes focused —
+   one idea per iteration.
+4. **Commit:** `git add train.py && git commit -m "description of change"`
+5. **Run:** `uv run python train.py > run.log 2>&1`
+   - ALWAYS redirect stdout and stderr to `run.log`.
+   - NEVER let training output flood your context window.
+6. **Extract results:** `grep "^metric_value:\|^elapsed_sec:" run.log`
+7. **If grep returns empty -> CRASH:**
+   - Read the error: `tail -n 50 run.log`
+   - If the error is fixable: fix `train.py` and retry.
+   - Track consecutive crash attempts. After 3 consecutive crashes on the
+     same error, give up on this approach: revert and try something different.
+   - `git reset --hard HEAD~1` to undo the crashed commit.
+8. **Log result** to `results.tsv` (MAPE value, elapsed time, status, description).
+9. **Dual-baseline gate + improvement check (MAPE: lower is better):**
+   - Extract `beats_naive` and `beats_seasonal_naive` from `json_output` in `run.log`.
+   - If `beats_naive` is False OR `beats_seasonal_naive` is False -> **AUTO-REVERT.**
+     Even if your MAPE improved over your best, you must beat BOTH baselines to keep.
+   - If both baselines are beaten AND `new_mape < best_mape` -> **KEEP.**
+     Update your best MAPE tracker. The branch advances.
+   - If both baselines are beaten but `new_mape >= best_mape` -> **REVERT.**
+10. **After 5 consecutive reverts -> STAGNATION.** Switch strategy:
+    - Switch algorithm family entirely (e.g., Ridge -> GradientBoosting).
+    - Try radically different hyperparameter ranges (10x larger/smaller alpha).
+    - Add new lag features (lag_8, lag_12) or remove noisy ones.
+    - Try seasonal decomposition-inspired features (quarter dummies).
+    - Simplify: remove features, reduce model complexity.
+    Reset the consecutive revert counter after switching strategy.
+11. **Go to step 1.**
+
+## Graceful Shutdown
+
+When you approach your turn limit or are interrupted mid-action:
+
+1. **Finish the current results.tsv row.** If you ran an experiment, log its result
+   before stopping — even if you are about to revert.
+2. **Run `git status`** to confirm `train.py` is in a clean state.
+3. **If train.py is partially edited** (uncommitted changes from a mid-experiment
+   interrupt), run `git reset --hard HEAD` to restore the last known good state.
+4. **Do NOT leave train.py in a half-written state.** The next session must be able
+   to resume from a clean commit.
+
+## Rules
+
+1. **NEVER STOP.** Do not ask if you should continue. Do not pause for confirmation.
+   Run experiments indefinitely until the human operator interrupts you.
+2. **NEVER modify `prepare.py` or `forecast.py`.** Both are FROZEN. You will be denied
+   if you try. These files are your evaluation infrastructure — do not touch them.
+3. **`train.py` is the ONLY mutable file.** All your changes go here. Zone 1 is the
+   model/Optuna section; Zone 2 is `engineer_features()`.
+4. **SHIFT-FIRST for rolling stats.** Always `.shift(1).rolling(N).mean()`, never
+   `.rolling(N).mean()` directly. Violating this creates look-ahead leakage that
+   makes your MAPE look better than it is.
+5. **Feature count cap: 15.** Do not create more than 15 features in `engineer_features`.
+   N=40 rows with 15+ features = guaranteed overfitting. Keep it sparse.
+6. **Trial budget: `min(50, 2 * n_rows)`.** Do not set `n_trials` above this in
+   `study.optimize(n_trials=...)`. Over-tuning on small datasets is worse than under-tuning.
+7. **NEVER write your own CV loop.** Call `walk_forward_evaluate()` from frozen
+   `forecast.py`. This is non-negotiable. Any `for fold in KFold(...).split(X):` or
+   similar in your `objective()` function will be reverted immediately.
+8. **Dual-baseline gate.** To KEEP an experiment: new MAPE must be LOWER than your best
+   AND lower than BOTH `baselines["naive"]` AND `baselines["seasonal_naive"]`. Failing to
+   beat either baseline = auto-revert, regardless of improvement over prior best.
+9. **MAPE direction: lower is better.** Keep if `new_mape < best_mape`. Do NOT use
+   `should_keep()` directly with MAPE scores — that function assumes higher is better.
+   Always compare: `new_mape < best_mape` for keep/revert decisions.
+10. **ALWAYS redirect output** to `run.log`. Use `> run.log 2>&1` on every run.
+    Never let Optuna [I] log lines or training output flood your context window.
