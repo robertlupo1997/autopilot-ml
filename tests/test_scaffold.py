@@ -221,15 +221,19 @@ class TestScaffoldDotClaude:
         allow = data["permissions"]["allow"]
         expected = [
             "Bash(*)",
-            "Edit(train.py)",
-            "Write(train.py)",
-            "Write(results.tsv)",
-            "Write(run.log)",
+            "Edit(*)",
+            "Write(*)",
             "Read",
             "Glob",
             "Grep",
         ]
         assert allow == expected
+
+    def test_scaffold_settings_deny(self, scaffolded):
+        settings_path = scaffolded / ".claude" / "settings.json"
+        data = json.loads(settings_path.read_text())
+        deny = data["permissions"]["deny"]
+        assert deny == ["Edit(prepare.py)", "Write(prepare.py)"]
 
     def test_scaffold_settings_hooks(self, scaffolded):
         settings_path = scaffolded / ".claude" / "settings.json"
