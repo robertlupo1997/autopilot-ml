@@ -7,21 +7,21 @@
 
 ### Temporal Validation
 
-- [ ] **TVAL-01**: `forecast.py` provides `walk_forward_evaluate(model_fn, X, y, n_splits)` using expanding window with configurable gap
-- [ ] **TVAL-02**: Evaluation always runs in original dollar scale (inverse-transform before metric calculation)
-- [ ] **TVAL-03**: Minimum 3 walk-forward folds enforced; warning when training window < 20 rows
+- [x] **TVAL-01**: `forecast.py` provides `walk_forward_evaluate(model_fn, X, y, n_splits)` using expanding window with configurable gap
+- [x] **TVAL-02**: Evaluation always runs in original dollar scale (inverse-transform before metric calculation)
+- [x] **TVAL-03**: Minimum 3 walk-forward folds enforced; warning when training window < 20 rows
 
 ### Forecasting Metrics
 
-- [ ] **FMET-01**: MAPE is the primary metric for revenue forecasting; added to `METRIC_MAP`
-- [ ] **FMET-02**: MAE and RMSE available as secondary metrics
-- [ ] **FMET-03**: Directional accuracy (predicted growth vs actual growth direction) reported alongside primary metric
+- [x] **FMET-01**: MAPE is the primary metric for revenue forecasting; added to `METRIC_MAP`
+- [x] **FMET-02**: MAE and RMSE available as secondary metrics
+- [x] **FMET-03**: Directional accuracy (predicted growth vs actual growth direction) reported alongside primary metric
 
 ### Baselines
 
-- [ ] **BASE-01**: Naive forecast (repeat last known value) computed as mandatory floor
-- [ ] **BASE-02**: Seasonal naive (same quarter last year) computed as mandatory floor
-- [ ] **BASE-03a**: Baselines computed on same walk-forward splits as agent evaluation (infrastructure)
+- [x] **BASE-01**: Naive forecast (repeat last known value) computed as mandatory floor
+- [x] **BASE-02**: Seasonal naive (same quarter last year) computed as mandatory floor
+- [x] **BASE-03a**: Baselines computed on same walk-forward splits as agent evaluation (infrastructure)
 - [ ] **BASE-03b**: Agent must beat both baselines to "keep" an experiment; failing to beat naive = auto-revert (enforcement gate in CLAUDE.md protocol and/or `loop_helpers.should_keep()`)
 
 ### Feature Engineering
@@ -77,15 +77,15 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TVAL-01 | Phase 11 | Pending |
-| TVAL-02 | Phase 11 | Pending |
-| TVAL-03 | Phase 11 | Pending |
-| FMET-01 | Phase 11 | Pending |
-| FMET-02 | Phase 11 | Pending |
-| FMET-03 | Phase 11 | Pending |
-| BASE-01 | Phase 11 | Pending |
-| BASE-02 | Phase 11 | Pending |
-| BASE-03a | Phase 11 | Pending |
+| TVAL-01 | Phase 11 | Complete |
+| TVAL-02 | Phase 11 | Complete |
+| TVAL-03 | Phase 11 | Complete |
+| FMET-01 | Phase 11 | Complete |
+| FMET-02 | Phase 11 | Complete |
+| FMET-03 | Phase 11 | Complete |
+| BASE-01 | Phase 11 | Complete |
+| BASE-02 | Phase 11 | Complete |
+| BASE-03a | Phase 11 | Complete |
 | BASE-03b | Phase 12 | Pending |
 | FEAT-01 | Phase 12 | Pending |
 | FEAT-02 | Phase 12 | Pending |

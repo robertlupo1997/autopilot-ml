@@ -47,7 +47,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   4. `prepare.load_data(csv_path, target_col, date_col)` returns a DataFrame with a datetime index sorted in ascending order; `prepare.temporal_split()` returns time-ordered train/holdout without shuffling
   5. Walk-forward folds of fewer than 3 raise a warning; training windows below 20 rows log a warning rather than silently proceeding
   6. `guard-frozen.sh` FROZEN_FILES includes `forecast.py` immediately after module creation
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 11-01-PLAN.md — forecast.py: walk-forward evaluation, metrics, baselines, guard hook update, tests
@@ -112,7 +112,7 @@ Phases execute in numeric order: 11 → 12 → 13 → 14
 | 8. Permissions Simplification | v1.0 | 1/1 | Complete | 2026-03-14 |
 | 9. Resume Capability | v1.0 | 2/2 | Complete | 2026-03-14 |
 | 10. Multi-Agent Swarm | v1.0 | 3/3 | Complete | 2026-03-14 |
-| 11. Forecasting Infrastructure | v2.0 | 0/2 | Not started | - |
+| 11. Forecasting Infrastructure | 1/2 | In Progress|  | - |
 | 12. Forecast Template + Mutable Zone 2 | v2.0 | 0/2 | Not started | - |
 | 13. Scaffold and CLI Updates | v2.0 | 0/1 | Not started | - |
 | 14. E2E Validation | v2.0 | 0/1 | Not started | - |

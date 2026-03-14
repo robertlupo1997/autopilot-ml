@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Results-Driven Forecasting
-status: ready_to_plan
-stopped_at: Roadmap created — ready to plan Phase 11
-last_updated: "2026-03-14"
-last_activity: 2026-03-14 -- v2.0 roadmap created (4 phases, 21 requirements mapped)
+status: planning
+stopped_at: Completed 11-01-PLAN.md (forecast.py frozen module)
+last_updated: "2026-03-14T21:44:20.167Z"
+last_activity: 2026-03-14 — v2.0 roadmap created
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 6
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 | - | - | - | - |
 
 *Updated after each plan completion*
+| Phase 11 P01 | 193s | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -58,6 +59,9 @@ Recent decisions affecting current work:
 - [Roadmap]: Optuna objective must call frozen walk_forward_evaluate() — agent cannot write its own CV loop
 - [Roadmap]: feature-engine vs. manual shift() decision deferred to Phase 12 template authoring
 - [Roadmap]: statsmodels necessity (ETS baseline) to be resolved during Phase 11 implementation
+- [Phase 11]: guard hook updated in plan 11-01 to protect forecast.py immediately after creation (not deferred to Phase 12)
+- [Phase 11]: seasonal naive uses index arithmetic on full y array (no statsmodels required)
+- [Phase 11]: model_fn dollar-scale contract: walk_forward_evaluate does NOT inverse-transform; model_fn must return predictions in same unit as y_true
 
 ### Pending Todos
 
@@ -71,6 +75,6 @@ None at roadmap stage. Key risks documented in research:
 
 ## Session Continuity
 
-Last session: 2026-03-14
-Stopped at: v2.0 roadmap created — next action is /gsd:plan-phase 11
+Last session: 2026-03-14T21:44:20.164Z
+Stopped at: Completed 11-01-PLAN.md (forecast.py frozen module)
 Resume file: None
