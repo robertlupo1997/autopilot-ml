@@ -56,6 +56,16 @@ def main(argv: list[str] | None = None) -> int:
         default=60,
         help="Time budget in seconds per experiment run (default: 60).",
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        default=False,
+        help=(
+            "Resume from checkpoint.json if present in the experiment directory. "
+            "Skips the multi-draft phase and restores best score, commit, "
+            "and strategy state from the last session."
+        ),
+    )
 
     if argv is not None and len(argv) == 0:
         parser.print_usage(sys.stderr)

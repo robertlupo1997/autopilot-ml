@@ -17,6 +17,48 @@ failures, and **NEVER STOP** until manually interrupted.
 - `results.tsv` -- Experiment log. Append a row after every run.
 - `run.log` -- Captured output from the last experiment run. Read metrics from here.
 
+## Session Resume Check
+
+Before starting Phase 1, check for a previous checkpoint:
+
+```bash
+ls checkpoint.json 2>/dev/null && echo EXISTS || echo NONE
+```
+
+**If EXISTS:**
+
+1. Read: `cat checkpoint.json`
+2. Parse the JSON and restore your state:
+   - `best_score` and `best_commit`: run `git checkout <best_commit>` to restore
+     the best known `train.py`
+   - `loop_phase`: determines which phase you resume from (see below)
+   - `consecutive_reverts`, `consecutive_crashes`: resume stagnation/crash tracking
+   - `strategy_categories_tried`: do not repeat strategies already exhausted
+   - `iteration`: continue the experiment count for `results.tsv`
+3. Log the resume: append a row to `results.tsv` with status `resume` and a
+   description like `resume: best_score=0.8512, iteration=47`
+4. **If `loop_phase` is "draft":** restart Phase 1 from scratch. It is safe to
+   re-evaluate all algorithm families -- prior results are already in `results.tsv`.
+5. **If `loop_phase` is "iteration":** skip Phase 1 entirely and go to Phase 2.
+
+**If NONE:** proceed normally with Phase 1.
+
+After every keep/revert decision, update the checkpoint:
+
+```bash
+python3 -c "
+from automl.checkpoint import save_checkpoint
+from automl.loop_helpers import LoopState
+# Reconstruct current state and call save_checkpoint with loop_phase and iteration count
+save_checkpoint(loop_state, loop_phase='iteration', iteration=<N>)
+"
+```
+
+Write the checkpoint AFTER the keep/revert decision is final:
+- **Keep path:** write checkpoint AFTER `git commit` succeeds (HEAD is the new best).
+- **Revert path:** write checkpoint AFTER `git reset --hard HEAD~1` completes (HEAD
+  is back to the prior best).
+
 ## Phase 1: Multi-Draft Initialization
 
 Before iterating, generate diverse starting points to avoid local optima.
