@@ -19,6 +19,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Hooks and Enhanced Scaffolding** - PreToolUse mutable zone enforcement, .claude/settings.json generation, allowedTools, CLAUDE.md upgrade, UX polish (completed 2026-03-12)
 - [x] **Phase 6: Structured Output and Metrics Parsing** - Additive JSON output line in train.py, parse_run_result.py for Phase 7 test harness, optional runner.py JSON parser (completed 2026-03-13)
 - [x] **Phase 7: E2E Validation Test** - Re-run the autonomous loop after all changes, prove the system works unattended end-to-end (gap closure in progress) (completed 2026-03-13)
+- [ ] **Phase 8: Permissions Simplification** - Broaden permissions.allow, add permissions.deny, remove --allowedTools from scripts
+- [ ] **Phase 9: Resume Capability** - Checkpoint persistence for session resume via checkpoint.json and --resume CLI flag
+- [ ] **Phase 10: Multi-Agent Swarm** - Parallel claude -p agents with git worktrees, scoreboard coordination, and family partitioning
 
 ## Phase Details
 
@@ -84,6 +87,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 5. Hooks + Scaffolding | 2/2 | Complete   | 2026-03-12 |
 | 6. Structured Output | 2/2 | Complete   | 2026-03-13 |
 | 7. E2E Validation Test | 3/3 | Complete   | 2026-03-13 |
+| 8. Permissions Simplification | 0/1 | Planned | — |
+| 9. Resume Capability | 0/0 | Not planned | — |
+| 10. Multi-Agent Swarm | 0/0 | Not planned | — |
 
 ### Phase 4: E2E Baseline Test
 
@@ -128,3 +134,33 @@ Plans:
 - [x] 07-01-PLAN.md — Generate noisy dataset, run validation test, document findings
 - [ ] 07-02-PLAN.md — Fix scaffold.py permissions for headless mode, add VAL-xx to REQUIREMENTS.md (gap closure)
 - [ ] 07-03-PLAN.md — Re-run validation test after fix, re-populate FINDINGS.md (gap closure)
+
+### Phase 8: Permissions Simplification
+
+**Goal:** Broaden settings.json allow rules to match --allowedTools patterns, add permissions.deny for prepare.py as defense-in-depth, document the headless permissions limitation
+**Requirements**: PERM-01, PERM-02, PERM-03
+**Depends on:** Phase 7
+**Plans:** 1 plan
+
+Plans:
+- [ ] 08-01-PLAN.md — Broaden allow, add deny, document headless limitation
+
+### Phase 9: Resume Capability
+
+**Goal:** Add checkpoint persistence (checkpoint.json) so `claude -p` sessions can resume from where the last session left off — recording best commit, best score, loop phase, iteration count, and strategy state — with a --resume CLI flag and CLAUDE.md Resume Protocol section
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 9 to break down)
+
+### Phase 10: Multi-Agent Swarm
+
+**Goal:** Spawn N parallel `claude -p` agents exploring different algorithm families via git worktrees, with file-locked scoreboard for global best tracking, family-based partitioning during draft phase, TTL claim files during iteration phase, and a SwarmManager orchestrator — accessed via `--agents N` CLI flag
+**Requirements**: TBD
+**Depends on:** Phase 9
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 10 to break down)
