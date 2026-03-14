@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: Results-Driven Forecasting
 status: planning
 stopped_at: Completed 13-01-PLAN.md (scaffold and CLI updates)
-last_updated: "2026-03-14T23:41:14.303Z"
+last_updated: "2026-03-14T23:43:47.975Z"
 last_activity: 2026-03-14 — v2.0 roadmap created
 progress:
   total_phases: 4
