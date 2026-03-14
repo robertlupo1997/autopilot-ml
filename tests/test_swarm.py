@@ -129,31 +129,35 @@ class TestSetup:
             time_budget=60,
         )
 
+    def _mock_create_worktree(self, path, branch):
+        """Side effect that creates the agent directory (simulating git worktree add)."""
+        Path(path).mkdir(parents=True, exist_ok=True)
+
     def test_setup_creates_swarm_dir(self, manager, tmp_path):
         """setup() creates .swarm/ directory."""
         with patch.object(manager.git, "create_worktree") as mock_wt:
-            mock_wt.return_value = "branch-name"
+            mock_wt.side_effect = self._mock_create_worktree
             manager.setup()
         assert (tmp_path / ".swarm").is_dir()
 
     def test_setup_creates_claims_dir(self, manager, tmp_path):
         """setup() creates .swarm/claims/ directory."""
         with patch.object(manager.git, "create_worktree") as mock_wt:
-            mock_wt.return_value = "branch-name"
+            mock_wt.side_effect = self._mock_create_worktree
             manager.setup()
         assert (tmp_path / ".swarm" / "claims").is_dir()
 
     def test_setup_calls_create_worktree_n_times(self, manager):
         """setup() calls git.create_worktree once per agent."""
         with patch.object(manager.git, "create_worktree") as mock_wt:
-            mock_wt.return_value = "branch-name"
+            mock_wt.side_effect = self._mock_create_worktree
             manager.setup()
         assert mock_wt.call_count == 2
 
     def test_setup_worktree_paths(self, manager, tmp_path):
         """setup() creates worktrees at .swarm/agent-0 and .swarm/agent-1."""
         with patch.object(manager.git, "create_worktree") as mock_wt:
-            mock_wt.return_value = "branch-name"
+            mock_wt.side_effect = self._mock_create_worktree
             manager.setup()
         call_args = [c[0][0] for c in mock_wt.call_args_list]
         assert str(tmp_path / ".swarm" / "agent-0") in call_args
@@ -162,7 +166,7 @@ class TestSetup:
     def test_setup_writes_config_json(self, manager, tmp_path):
         """setup() writes .swarm/config.json with metadata."""
         with patch.object(manager.git, "create_worktree") as mock_wt:
-            mock_wt.return_value = "branch-name"
+            mock_wt.side_effect = self._mock_create_worktree
             manager.setup()
         config_path = tmp_path / ".swarm" / "config.json"
         assert config_path.exists()
@@ -176,7 +180,7 @@ class TestSetup:
     def test_setup_returns_assignments(self, manager):
         """setup() returns list of family assignment lists (one per agent)."""
         with patch.object(manager.git, "create_worktree") as mock_wt:
-            mock_wt.return_value = "branch-name"
+            mock_wt.side_effect = self._mock_create_worktree
             assignments = manager.setup()
         assert len(assignments) == 2
         # Classification has 5 families; 2 agents -> [3, 2] or [2, 3]
@@ -186,13 +190,25 @@ class TestSetup:
     def test_setup_config_assignments_are_names(self, manager, tmp_path):
         """config.json assignments are lists of family names (strings)."""
         with patch.object(manager.git, "create_worktree") as mock_wt:
-            mock_wt.return_value = "branch-name"
+            mock_wt.side_effect = self._mock_create_worktree
             manager.setup()
         config = json.loads((tmp_path / ".swarm" / "config.json").read_text())
         # Each assignment list contains strings (family names), not dicts
         for assignment_list in config["assignments"]:
             for item in assignment_list:
                 assert isinstance(item, str), f"Expected string family name, got {type(item)}"
+
+    def test_setup_writes_swarm_claude_md(self, manager, tmp_path):
+        """setup() writes swarm_claude.md into each agent worktree."""
+        with patch.object(manager.git, "create_worktree") as mock_wt:
+            mock_wt.side_effect = self._mock_create_worktree
+            manager.setup()
+        for i in range(2):
+            swarm_md = tmp_path / ".swarm" / f"agent-{i}" / "swarm_claude.md"
+            assert swarm_md.exists(), f"swarm_claude.md missing for agent-{i}"
+            content = swarm_md.read_text()
+            assert f"Agent-{i}" in content
+            assert "scoreboard" in content.lower()
 
 
 # ---------------------------------------------------------------------------

@@ -24,6 +24,7 @@ from pathlib import Path
 from automl.drafts import ALGORITHM_FAMILIES
 from automl.git_ops import GitManager
 from automl.swarm_scoreboard import SwarmScoreboard
+from automl.templates import render_swarm_claude_md
 
 
 class SwarmManager:
@@ -97,6 +98,16 @@ class SwarmManager:
             agent_dir = self.swarm_dir / f"agent-{i}"
             branch = f"automl/run-{run_tag}/agent-{i}"
             self.git.create_worktree(str(agent_dir), branch)
+            # Write rendered swarm coordination protocol into worktree
+            family_names = ", ".join(f["name"] for f in assignments[i])
+            rendered = render_swarm_claude_md(
+                agent_id=i,
+                n_agents=self.n_agents,
+                family_names=family_names,
+                swarm_dir=str(self.swarm_dir),
+                metric=self.metric,
+            )
+            (agent_dir / "swarm_claude.md").write_text(rendered)
 
         (self.swarm_dir / "config.json").write_text(
             json.dumps(

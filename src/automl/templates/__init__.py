@@ -32,3 +32,22 @@ def render_claude_md() -> str:
     """Render CLAUDE.md loop protocol (no substitution needed -- it is static)."""
     with open(os.path.join(_TEMPLATE_DIR, "claude.md.tmpl")) as f:
         return f.read()
+
+
+def render_swarm_claude_md(
+    agent_id: int,
+    n_agents: int,
+    family_names: str,
+    swarm_dir: str,
+    metric: str,
+) -> str:
+    """Render swarm_claude.md coordination protocol for a specific agent."""
+    with open(os.path.join(_TEMPLATE_DIR, "swarm_claude.md.tmpl")) as f:
+        template = f.read()
+    return template.format(
+        agent_id=agent_id,
+        n_agents=n_agents,
+        family_names=family_names,
+        swarm_dir=swarm_dir,
+        metric=metric,
+    )

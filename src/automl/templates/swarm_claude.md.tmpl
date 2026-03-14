@@ -45,7 +45,7 @@ status = "keep"                    # "keep", "discard", or "crash"
 description = "<experiment-desc>"  # e.g., "XGBoost n_estimators=200"
 
 timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
-line = f"{agent_id}\t{commit}\t{metric_value:.6f}\t{elapsed_sec:.1f}\t{status}\t{description}\t{timestamp}\n"
+line = f"{{agent_id}}\t{{commit}}\t{{metric_value:.6f}}\t{{elapsed_sec:.1f}}\t{{status}}\t{{description}}\t{{timestamp}}\n"
 
 scoreboard_tsv = "{swarm_dir}/scoreboard.tsv"
 scoreboard_lock = "{swarm_dir}/scoreboard.lock"
