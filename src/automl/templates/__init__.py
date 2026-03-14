@@ -34,6 +34,12 @@ def render_claude_md() -> str:
         return f.read()
 
 
+def render_claude_md_forecast() -> str:
+    """Render forecast CLAUDE.md loop protocol (no substitution -- static file)."""
+    with open(os.path.join(_TEMPLATE_DIR, "claude_forecast.md.tmpl")) as f:
+        return f.read()
+
+
 def render_swarm_claude_md(
     agent_id: int,
     n_agents: int,
