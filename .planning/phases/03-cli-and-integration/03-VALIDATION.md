@@ -1,10 +1,11 @@
 ---
 phase: 3
 slug: cli-and-integration
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-10
+audited: 2026-03-14
 ---
 
 # Phase 3 — Validation Strategy
@@ -38,10 +39,10 @@ created: 2026-03-10
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 3-01-01 | 01 | 1 | CLI-01 | integration | `uv run pytest tests/test_scaffold.py::test_scaffold_creates_all_files -x` | ❌ W0 | ⬜ pending |
-| 3-01-02 | 01 | 1 | CLI-02 | unit | `uv run pytest tests/test_cli.py::test_cli_argument_parsing -x` | ❌ W0 | ⬜ pending |
-| 3-01-03 | 01 | 1 | CLI-03 | integration | `uv run pytest tests/test_scaffold.py::test_scaffold_file_contents -x` | ❌ W0 | ⬜ pending |
-| 3-01-04 | 01 | 1 | CLI-04 | integration | `uv run pytest tests/test_scaffold.py::test_scaffolded_project_runs -x` | ❌ W0 | ⬜ pending |
+| 3-01-01 | 01 | 1 | CLI-01 | integration | `uv run pytest "tests/test_scaffold.py::TestScaffoldCreatesAllFiles::test_scaffold_creates_all_files" -x` | ✅ | ✅ green |
+| 3-01-02 | 01 | 1 | CLI-02 | unit | `uv run pytest tests/test_cli.py::test_cli_valid_args -x` | ✅ | ✅ green |
+| 3-01-03 | 01 | 1 | CLI-03 | integration | `uv run pytest "tests/test_scaffold.py::TestScaffoldTrainConfig::test_scaffold_train_py_config" -x` | ✅ | ✅ green |
+| 3-01-04 | 01 | 1 | CLI-04 | integration | `uv run pytest tests/test_e2e.py::test_scaffolded_project_runs -x` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -49,9 +50,10 @@ created: 2026-03-10
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_scaffold.py` — stubs for CLI-01, CLI-03, CLI-04
-- [ ] `tests/test_cli.py` — stubs for CLI-02
-- [ ] Test fixture: small CSV for scaffold testing (reuse from conftest.py)
+- [x] `tests/test_scaffold.py` — 23 tests covering CLI-01, CLI-03, CLI-04 (and phase 5, 8-10 additions)
+- [x] `tests/test_cli.py` — 15 tests covering CLI-02 (including --resume and --agents flags)
+- [x] `tests/test_e2e.py` — 2 tests covering CLI-04 end-to-end
+- [x] Test fixture: `sample_classification_csv` in conftest.py
 
 ---
 
@@ -65,11 +67,14 @@ created: 2026-03-10
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 25s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 25s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** audited 2026-03-14 — all 4 task requirements verified green
+
+### Audit Notes (2026-03-14)
+VALIDATION.md was drafted with placeholder test names before implementation. The actual tests were written with class-based organization and different node IDs. This audit cross-referenced all 4 task requirements against the 38 passing tests in test_scaffold.py and test_cli.py (plus 2 in test_e2e.py) and updated all commands to the correct pytest node IDs. No missing behavioral coverage was found — the implementation exceeds the original 9-test requirement with 40 total tests.

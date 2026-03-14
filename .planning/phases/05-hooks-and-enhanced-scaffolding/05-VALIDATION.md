@@ -1,10 +1,11 @@
 ---
 phase: 5
 slug: hooks-and-enhanced-scaffolding
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-12
+audited: 2026-03-14
 ---
 
 # Phase 5 — Validation Strategy
@@ -38,14 +39,14 @@ created: 2026-03-12
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 05-xx-01 | TBD | 0 | scaffold .claude/ | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude -x` | ❌ W0 | ⬜ pending |
-| 05-xx-02 | TBD | 0 | settings.json content | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldSettings -x` | ❌ W0 | ⬜ pending |
-| 05-xx-03 | TBD | 0 | hook script exists+exec | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldHookScript -x` | ❌ W0 | ⬜ pending |
-| 05-xx-04 | TBD | 0 | hook denies prepare.py | unit | `uv run pytest tests/test_scaffold.py::TestGuardFrozenHook -x` | ❌ W0 | ⬜ pending |
-| 05-xx-05 | TBD | 0 | hook allows train.py | unit | same test class | ❌ W0 | ⬜ pending |
-| 05-xx-06 | TBD | 0 | CLAUDE.md shutdown | unit | `uv run pytest tests/test_templates.py::TestClaudeMd -x` | ❌ W0 | ⬜ pending |
-| 05-xx-07 | TBD | 1 | file count 9 | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldCreatesAllFiles -x` | ✅ needs update | ⬜ pending |
-| 05-xx-08 | TBD | 1 | gitignore local settings | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldGitignore -x` | ❌ W0 | ⬜ pending |
+| 05-xx-01 | 01 | 1 | scaffold .claude/ | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude::test_scaffold_creates_dot_claude_dir -x` | ✅ | ✅ green |
+| 05-xx-02 | 01 | 1 | settings.json content | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude::test_scaffold_settings_json_valid -x` | ✅ | ✅ green |
+| 05-xx-03 | 01 | 1 | hook script exists+exec | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude::test_scaffold_hook_script_exists_and_executable -x` | ✅ | ✅ green |
+| 05-xx-04 | 01 | 1 | hook denies prepare.py | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude::test_scaffold_hook_denies_prepare_py -x` | ✅ | ✅ green |
+| 05-xx-05 | 01 | 1 | hook allows train.py | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude::test_scaffold_hook_allows_train_py -x` | ✅ | ✅ green |
+| 05-xx-06 | 02 | 1 | CLAUDE.md shutdown | unit | `uv run pytest tests/test_templates.py::TestClaudeMdTemplate::test_claude_md_has_graceful_shutdown -x` | ✅ | ✅ green |
+| 05-xx-07 | 01 | 1 | file count 8 (7 files + .claude/ dir) | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldCreatesAllFiles -x` | ✅ | ✅ green |
+| 05-xx-08 | 01 | 1 | gitignore local settings | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldGitignore::test_scaffold_gitignore -x` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -53,13 +54,30 @@ created: 2026-03-12
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_scaffold.py::TestScaffoldDotClaude` — .claude/ dir creation
-- [ ] `tests/test_scaffold.py::TestScaffoldSettings` — settings.json content validation
-- [ ] `tests/test_scaffold.py::TestScaffoldHookScript` — hook file exists + executable
-- [ ] `tests/test_scaffold.py::TestGuardFrozenHook` — hook deny/allow behavior
-- [ ] `tests/test_templates.py::TestClaudeMd` — graceful shutdown section in CLAUDE.md
-- [ ] Update `TestScaffoldCreatesAllFiles` — file count 7 → 9
-- [ ] Update `_gitignore_content()` — add `.claude/settings.local.json`
+- [x] `tests/test_scaffold.py::TestScaffoldDotClaude` — .claude/ dir creation
+- [x] `tests/test_scaffold.py::TestScaffoldDotClaude` — settings.json content validation
+- [x] `tests/test_scaffold.py::TestScaffoldDotClaude` — hook file exists + executable
+- [x] `tests/test_scaffold.py::TestScaffoldDotClaude` — hook deny/allow behavior
+- [x] `tests/test_templates.py::TestClaudeMdTemplate` — graceful shutdown section in CLAUDE.md
+- [x] `TestScaffoldCreatesAllFiles` — file count updated to 8 (7 files + .claude/ dir)
+- [x] `TestScaffoldGitignore` — `.claude/settings.local.json` pattern present
+
+---
+
+## Test Coverage Notes (from Nyquist Audit 2026-03-14)
+
+All 8 VALIDATION.md rows have passing tests. Cross-reference:
+
+- **05-xx-01:** `TestScaffoldDotClaude::test_scaffold_creates_dot_claude_dir` — PASSES
+- **05-xx-02:** `TestScaffoldDotClaude::test_scaffold_settings_json_valid`, `test_scaffold_settings_permissions`, `test_scaffold_settings_deny` — PASSES (note: impl uses broad allow `Bash(*)`, `Edit(*)`, `Write(*)` + explicit deny list, not the narrow `Edit(train.py)` from original plan; this is a deliberate deviation from Plan 01 — Phase 8 Permissions Simplification tracks this)
+- **05-xx-03:** `TestScaffoldDotClaude::test_scaffold_hook_script_exists_and_executable` — PASSES
+- **05-xx-04:** `TestScaffoldDotClaude::test_scaffold_hook_denies_prepare_py` — PASSES
+- **05-xx-05:** `TestScaffoldDotClaude::test_scaffold_hook_allows_train_py` — PASSES
+- **05-xx-06:** `TestClaudeMdTemplate::test_claude_md_has_graceful_shutdown`, `test_claude_md_shutdown_mentions_git_reset`, `test_claude_md_shutdown_mentions_results_tsv` — PASSES
+- **05-xx-07:** `TestScaffoldCreatesAllFiles::test_scaffold_creates_all_files` asserts `len(list(out.iterdir())) == 8` — PASSES
+- **05-xx-08:** `TestScaffoldGitignore::test_scaffold_gitignore` asserts `.claude/settings.local.json` in content — PASSES
+
+Full test run: 23/23 scaffold tests green, 31/31 template tests green.
 
 ---
 
@@ -74,11 +92,11 @@ created: 2026-03-12
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 10s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 10s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** nyquist_compliant — audited 2026-03-14

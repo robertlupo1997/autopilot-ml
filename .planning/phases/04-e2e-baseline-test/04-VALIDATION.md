@@ -1,10 +1,11 @@
 ---
 phase: 4
 slug: e2e-baseline-test
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-11
+audited: 2026-03-14
 ---
 
 # Phase 4 — Validation Strategy
@@ -17,11 +18,11 @@ created: 2026-03-11
 
 | Property | Value |
 |----------|-------|
-| **Framework** | pytest 7.x |
+| **Framework** | pytest 9.x |
 | **Config file** | `pyproject.toml` — `[tool.pytest.ini_options]` testpaths=["tests"] |
 | **Quick run command** | `uv run pytest tests/ -q --ignore=tests/test_e2e.py` |
 | **Full suite command** | `uv run pytest tests/ -q` |
-| **Estimated runtime** | ~20 seconds |
+| **Estimated runtime** | ~40 seconds (237 tests) |
 
 ---
 
@@ -38,10 +39,10 @@ created: 2026-03-11
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 04-01-01 | 01 | 1 | scaffold iris | smoke | `uv run automl iris.csv species accuracy` | ✅ | ⬜ pending |
-| 04-01-02 | 01 | 1 | train.py runs | smoke | `cd experiment-iris && uv run python train.py` | ✅ | ⬜ pending |
-| 04-01-03 | 01 | 1 | existing tests pass | regression | `uv run pytest tests/ -q` | ✅ | ⬜ pending |
-| 04-01-04 | 01 | 1 | FINDINGS.md exists | artifact | `test -f .planning/phases/04-e2e-baseline-test/FINDINGS.md` | ❌ W0 | ⬜ pending |
+| 04-01-01 | 01 | 1 | iris.csv fixture exists with 150 rows + 5 columns | integration | `uv run pytest tests/test_e2e_baseline.py::test_iris_fixture_has_correct_shape -v` | ✅ | ✅ green |
+| 04-01-02 | 01 | 1 | train.py runs and emits structured output | smoke | `uv run pytest tests/test_e2e.py -v` | ✅ | ✅ green |
+| 04-01-03 | 01 | 1 | existing tests pass | regression | `uv run pytest tests/ -q` | ✅ | ✅ green |
+| 04-01-04 | 01 | 1 | FINDINGS.md exists with Observations + Issues Found | artifact | `uv run pytest tests/test_e2e_baseline.py::test_findings_md_exists_with_required_sections -v` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -49,8 +50,9 @@ created: 2026-03-11
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_e2e_baseline.py` — smoke test that scaffolds iris.csv, runs train.py once, verifies structured output
-- Existing infrastructure covers regression testing (111 tests passing)
+- [x] `tests/test_e2e_baseline.py` — artifact verification for iris.csv, run-baseline-test.sh, and FINDINGS.md (4 tests, all green)
+- [x] `tests/test_e2e.py` — smoke tests that scaffold a project and run train.py; verify structured output (2 tests, all green)
+- [x] Existing infrastructure covers regression testing (237 tests passing as of audit 2026-03-14)
 
 ---
 
@@ -67,11 +69,11 @@ created: 2026-03-11
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 20s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have automated verify command
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (test_e2e_baseline.py created, all green)
+- [x] No watch-mode flags
+- [x] Feedback latency < 20s for quick command
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** nyquist-auditor 2026-03-14

@@ -1,10 +1,11 @@
 ---
 phase: 9
 slug: resume-capability
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-13
+audited: 2026-03-14
 ---
 
 # Phase 9 — Validation Strategy
@@ -21,7 +22,7 @@ created: 2026-03-13
 | **Config file** | none — pytest auto-discovers `tests/test_*.py` |
 | **Quick run command** | `uv run pytest tests/test_checkpoint.py -x -q` |
 | **Full suite command** | `uv run pytest tests/ -q` |
-| **Estimated runtime** | ~5 seconds |
+| **Estimated runtime** | ~47 seconds (233 tests) |
 
 ---
 
@@ -38,14 +39,14 @@ created: 2026-03-13
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 09-01-01 | 01 | 1 | checkpoint-save | unit | `uv run pytest tests/test_checkpoint.py::TestSaveCheckpoint -x` | W0 | pending |
-| 09-01-02 | 01 | 1 | checkpoint-load | unit | `uv run pytest tests/test_checkpoint.py::TestLoadCheckpoint -x` | W0 | pending |
-| 09-01-03 | 01 | 1 | checkpoint-roundtrip | unit | `uv run pytest tests/test_checkpoint.py::TestRoundTrip -x` | W0 | pending |
-| 09-01-04 | 01 | 1 | atomic-write | unit | `uv run pytest tests/test_checkpoint.py::TestAtomicWrite -x` | W0 | pending |
-| 09-01-05 | 01 | 1 | checkpoint-exists | unit | `uv run pytest tests/test_checkpoint.py::TestCheckpointExists -x` | W0 | pending |
-| 09-01-06 | 01 | 1 | gitignore-checkpoint | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldGitignore -x` | exists (extend) | pending |
-| 09-02-01 | 02 | 1 | cli-resume-flag | unit | `uv run pytest tests/test_cli.py::TestCliResumeFlag -x` | W0 | pending |
-| 09-02-02 | 02 | 1 | claudemd-resume-section | unit | `uv run pytest tests/test_templates.py::TestClaudeMdResumeSection -x` | W0 | pending |
+| 09-01-01 | 01 | 1 | checkpoint-save | unit | `uv run pytest tests/test_checkpoint.py::TestSaveCheckpoint -x` | yes | green |
+| 09-01-02 | 01 | 1 | checkpoint-load | unit | `uv run pytest tests/test_checkpoint.py::TestLoadCheckpoint -x` | yes | green |
+| 09-01-03 | 01 | 1 | checkpoint-roundtrip | unit | `uv run pytest tests/test_checkpoint.py::TestRoundTrip -x` | yes | green |
+| 09-01-04 | 01 | 1 | atomic-write | unit | `uv run pytest tests/test_checkpoint.py::TestAtomicWrite -x` | yes | green |
+| 09-01-05 | 01 | 1 | checkpoint-exists | unit | `uv run pytest tests/test_checkpoint.py::TestCheckpointExists -x` | yes | green |
+| 09-01-06 | 01 | 1 | gitignore-checkpoint | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldGitignore -x` | yes | green |
+| 09-02-01 | 02 | 1 | cli-resume-flag | unit | `uv run pytest tests/test_cli.py::TestCliResumeFlag -x` | yes | green |
+| 09-02-02 | 02 | 1 | claudemd-resume-section | unit | `uv run pytest tests/test_templates.py::TestClaudeMdResumeSection -x` | yes | green |
 
 *Status: pending / green / red / flaky*
 
@@ -53,10 +54,10 @@ created: 2026-03-13
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_checkpoint.py` — stubs for save, load, round-trip, atomic write, exists
-- [ ] Extend `tests/test_scaffold.py` — test `checkpoint.json` and `checkpoint.json.tmp` in .gitignore
-- [ ] Extend `tests/test_cli.py` — test `--resume` flag accepted without error
-- [ ] Extend `tests/test_templates.py` — test "Session Resume Check" section in CLAUDE.md
+- [x] `tests/test_checkpoint.py` — 24 tests across TestSaveCheckpoint, TestAtomicWrite, TestLoadCheckpoint, TestLoadLoopState, TestCheckpointExists, TestRoundTrip — all passing
+- [x] Extend `tests/test_scaffold.py` — TestScaffoldGitignore tests confirm checkpoint.json and checkpoint.json.tmp in .gitignore — all passing
+- [x] Extend `tests/test_cli.py` — TestCliResumeFlag (4 tests) confirms --resume flag accepted without error — all passing
+- [x] Extend `tests/test_templates.py` — TestClaudeMdResumeSection (9 tests) confirms "Session Resume Check" section in CLAUDE.md — all passing
 
 *Existing infrastructure covers framework install — pytest already present.*
 
@@ -70,13 +71,25 @@ created: 2026-03-13
 
 ---
 
+## Audit Notes (2026-03-14)
+
+Nyquist auditor verified all 8 task rows against actual test functions. No missing tests found — all test classes named in the verification map exist and pass. Full suite: 233 tests, 0 failures.
+
+Test class to file mapping confirmed:
+- `TestSaveCheckpoint`, `TestAtomicWrite`, `TestLoadCheckpoint`, `TestLoadLoopState`, `TestCheckpointExists`, `TestRoundTrip` → `tests/test_checkpoint.py`
+- `TestScaffoldGitignore` → `tests/test_scaffold.py`
+- `TestCliResumeFlag` → `tests/test_cli.py`
+- `TestClaudeMdResumeSection` → `tests/test_templates.py`
+
+---
+
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 5s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** green — audited 2026-03-14, 233/233 tests passing

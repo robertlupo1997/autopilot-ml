@@ -1,10 +1,11 @@
 ---
 phase: 8
 slug: permissions-simplification
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-13
+audited: 2026-03-14
 ---
 
 # Phase 8 — Validation Strategy
@@ -38,9 +39,9 @@ created: 2026-03-13
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 08-01-01 | 01 | 1 | Broaden allow | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude::test_scaffold_settings_permissions -x` | Yes (update needed) | ⬜ pending |
-| 08-01-02 | 01 | 1 | Add deny | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude -x` | Yes (new assertion needed) | ⬜ pending |
-| 08-01-03 | 01 | 1 | Script comment | manual | manual review | Yes | ⬜ pending |
+| 08-01-01 | 01 | 1 | Broaden allow | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude::test_scaffold_settings_permissions -x` | Yes | ✅ green |
+| 08-01-02 | 01 | 1 | Add deny | unit | `uv run pytest tests/test_scaffold.py::TestScaffoldDotClaude::test_scaffold_settings_deny -x` | Yes | ✅ green |
+| 08-01-03 | 01 | 1 | Script comment | manual | manual review | Yes | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -48,8 +49,8 @@ created: 2026-03-13
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_scaffold.py` — update `test_scaffold_settings_permissions` expected list to `["Bash(*)", "Edit(*)", "Write(*)", "Read", "Glob", "Grep"]`
-- [ ] `tests/test_scaffold.py` — add assertion for `data["permissions"]["deny"]` containing `"Edit(prepare.py)"` and `"Write(prepare.py)"`
+- [x] `tests/test_scaffold.py` — `test_scaffold_settings_permissions` expects `["Bash(*)", "Edit(*)", "Write(*)", "Read", "Glob", "Grep"]` — DONE
+- [x] `tests/test_scaffold.py` — `test_scaffold_settings_deny` asserts `data["permissions"]["deny"] == ["Edit(prepare.py)", "Write(prepare.py)"]` — DONE
 
 *Existing infrastructure covers all phase requirements — no new test files needed.*
 
@@ -57,19 +58,19 @@ created: 2026-03-13
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| run-validation-test.sh comment | Script docs | Comment is documentation, not behavior | Inspect script for explanatory comment about --allowedTools |
+| Behavior | Requirement | Why Manual | Result |
+|----------|-------------|------------|--------|
+| run-validation-test.sh comment | Script docs | Comment is documentation, not behavior | CONFIRMED: "HEADLESS PERMISSIONS NOTE (Phase 8)" block present with "settings.json alone isn't sufficient in headless -p mode" language |
 
 ---
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 5s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** audited 2026-03-14 by gsd-nyquist-auditor — all 3 tasks verified, 23/23 scaffold tests pass
