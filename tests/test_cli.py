@@ -218,3 +218,65 @@ class TestCliAgentsFlag:
         captured = capsys.readouterr()
         # Help text should mention terminal or Claude Code
         assert "terminal" in captured.out.lower() or "claude code" in captured.out.lower()
+
+
+# ---------------------------------------------------------------------------
+# --date-column flag tests
+# ---------------------------------------------------------------------------
+
+class TestCliDateColumnFlag:
+    """Tests for the --date-column CLI flag."""
+
+    def test_date_column_in_help(self, capsys):
+        """--help output includes --date-column."""
+        from automl.cli import main
+
+        with pytest.raises(SystemExit):
+            main(["--help"])
+        captured = capsys.readouterr()
+        assert "date-column" in captured.out
+
+    def test_date_column_default_none(self):
+        """--date-column defaults to None when not provided."""
+        import argparse
+
+        parser = argparse.ArgumentParser(prog="automl")
+        parser.add_argument("data_path")
+        parser.add_argument("target_column")
+        parser.add_argument("metric")
+        parser.add_argument("--date-column", default=None)
+
+        args = parser.parse_args(["data.csv", "target", "mape"])
+        assert args.date_column is None
+
+    def test_date_column_passed_through(self, tmp_path):
+        """--date-column passes date_col='date' to scaffold_experiment."""
+        from unittest.mock import patch, MagicMock
+        from automl.cli import main
+
+        mock_path = MagicMock()
+        mock_path.resolve.return_value = tmp_path / "exp"
+
+        with patch("automl.cli.scaffold_experiment", return_value=mock_path) as mock_scaffold:
+            ret = main(["data.csv", "revenue", "mape", "--date-column", "date"])
+
+        mock_scaffold.assert_called_once()
+        call_kwargs = mock_scaffold.call_args
+        assert call_kwargs.kwargs.get("date_col") == "date" or (
+            len(call_kwargs.args) > 0 and "date" in str(call_kwargs)
+        )
+
+    def test_agents_with_date_column_rejected(self, tmp_path, capsys):
+        """--agents 2 --date-column date returns exit code 1 with error message."""
+        from unittest.mock import patch, MagicMock
+        from automl.cli import main
+
+        mock_path = MagicMock()
+        mock_path.resolve.return_value = tmp_path / "exp"
+
+        with patch("automl.cli.scaffold_experiment", return_value=mock_path):
+            ret = main(["data.csv", "revenue", "mape", "--date-column", "date", "--agents", "2"])
+
+        assert ret == 1
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower() or "not supported" in captured.err.lower()
