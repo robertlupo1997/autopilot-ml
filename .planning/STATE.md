@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: AutoML MVP + Swarm
-status: complete
-stopped_at: Milestone v1.0 complete. All 10 phases, 22 plans, 69 requirements delivered.
+milestone: v2.0
+milestone_name: Results-Driven Forecasting
+status: defining
+stopped_at: Defining milestone v2.0 requirements
 last_updated: "2026-03-14"
-last_activity: 2026-03-14 -- Milestone v1.0 archived and tagged
+last_activity: 2026-03-14 -- Milestone v2.0 started
 progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 22
-  completed_plans: 22
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -20,18 +20,18 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-14)
 
-**Core value:** Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline -- running experiments, keeping improvements, reverting failures, and logging everything -- without human intervention.
-**Current focus:** v1.0 complete. Next: /gsd:new-milestone for v2.0 planning.
+**Core value:** Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline — running experiments, keeping improvements, reverting failures, and logging everything — without human intervention.
+**Current focus:** v2.0 Results-Driven Forecasting — feature engineering, optuna integration, temporal validation
 
 ## Current Position
 
-Milestone: v1.0 AutoML MVP + Swarm — SHIPPED 2026-03-14
-All 10 phases complete. 250 tests passing. 69/69 requirements satisfied.
-
-Progress: [██████████] 100% (10/10 phases, 22/22 plans)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-14 — Milestone v2.0 started
 
 ## Session Continuity
 
 Last session: 2026-03-14
-Stopped at: Milestone v1.0 complete and archived.
+Stopped at: Defining milestone v2.0 requirements
 Resume file: None

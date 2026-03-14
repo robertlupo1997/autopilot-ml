@@ -35,17 +35,27 @@ Give Claude Code a dataset and a metric, and it autonomously discovers the best-
 
 ### Active
 
-(None — start next milestone to define)
+- [ ] Agent engineers time-series features (lags, rolling stats, growth rates, seasonality) from raw historicals
+- [ ] Optuna/FLAML replaces manual hyperparameter guessing inside train.py — agent writes search space, optimizer runs 100s of trials
+- [ ] Walk-forward temporal validation replaces random CV splits — no future data leakage
+- [ ] Forecasting-appropriate metrics (MAPE, MAE, RMSE on dollar values) replace classification accuracy
+- [ ] Agent can modify both feature engineering and modeling (mutable zone 2)
+- [ ] System produces better forecasts than a basic regression script on real financial data
+
+## Current Milestone: v2.0 Results-Driven Forecasting
+
+**Goal:** Refactor the autonomous loop so the agent engineers features, uses efficient hyperparameter search (optuna), respects time ordering, and produces forecasts that beat traditional approaches on real corporate financial data.
+
+**Target use case:** Single-company quarterly revenue forecasting from historical financials.
 
 ### Out of Scope
 
-- Feature engineering by the agent — deferred to v2 (mutable zone 2)
-- Full pipeline modification — deferred to v3 (mutable zone 3)
+- Full pipeline modification (mutable zone 3) — v3
 - MLE-bench integration — future milestone (requires Docker harness)
-- Tree search / branching — v2 enhancement (v1 uses multi-draft + linear)
-- LLM-as-judge for metric extraction — v1 uses simple grep/parsing
-- Multi-GPU or distributed training — single machine only
 - Deep learning / neural network support — traditional ML only
+- Multi-GPU or distributed training — single machine only
+- Multi-company / cross-company models — v2 focuses on single-company forecasting
+- Real-time data ingestion — batch CSV input only
 
 ## Context
 
