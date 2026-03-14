@@ -268,6 +268,8 @@ def _gitignore_content() -> str:
     return textwrap.dedent("""\
         results.tsv
         run.log
+        checkpoint.json
+        checkpoint.json.tmp
         __pycache__/
         *.pyc
         .venv/

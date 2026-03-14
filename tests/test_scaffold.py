@@ -139,6 +139,32 @@ class TestScaffoldGitignore:
         for pattern in ["results.tsv", "run.log", "__pycache__/", ".venv/", ".claude/settings.local.json"]:
             assert pattern in content, f"Missing .gitignore pattern: {pattern}"
 
+    def test_scaffold_gitignore_includes_checkpoint_json(self, sample_classification_csv, tmp_path):
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+        )
+
+        content = (out / ".gitignore").read_text()
+        assert "checkpoint.json" in content, "Missing .gitignore pattern: checkpoint.json"
+
+    def test_scaffold_gitignore_includes_checkpoint_json_tmp(self, sample_classification_csv, tmp_path):
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+        )
+
+        content = (out / ".gitignore").read_text()
+        assert "checkpoint.json.tmp" in content, "Missing .gitignore pattern: checkpoint.json.tmp"
+
 
 class TestScaffoldFailsIfDirExists:
     """Raises FileExistsError when output_dir already exists."""
