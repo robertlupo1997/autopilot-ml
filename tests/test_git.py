@@ -160,3 +160,29 @@ class TestSubprocessUsed:
             source = f.read()
         assert "subprocess.run" in source
         assert re.search(r'subprocess\.run.*git', source)
+
+
+class TestWorktree:
+    def test_create_worktree(self, git_repo):
+        """create_worktree returns branch name and creates worktree directory."""
+        gm = GitManager(repo_dir=str(git_repo))
+        wt_path = str(git_repo / "worktree-1")
+        branch = gm.create_worktree(wt_path, "test-branch")
+        assert branch == "test-branch"
+        assert (git_repo / "worktree-1" / ".git").exists()
+
+    def test_remove_worktree(self, git_repo):
+        """remove_worktree removes the worktree directory and git metadata."""
+        gm = GitManager(repo_dir=str(git_repo))
+        wt_path = str(git_repo / "worktree-1")
+        gm.create_worktree(wt_path, "test-branch")
+        gm.remove_worktree(wt_path)
+        assert not (git_repo / "worktree-1").exists()
+
+    def test_worktree_has_git_file_not_dir(self, git_repo):
+        """Worktree .git is a file (pointer), not a directory."""
+        gm = GitManager(repo_dir=str(git_repo))
+        wt_path = str(git_repo / "worktree-1")
+        gm.create_worktree(wt_path, "test-branch")
+        git_path = git_repo / "worktree-1" / ".git"
+        assert git_path.is_file()  # .git is a file (pointer), not a directory

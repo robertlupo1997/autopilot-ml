@@ -67,3 +67,35 @@ class GitManager:
         """Return short hash of HEAD."""
         result = self._run("rev-parse", "--short", "HEAD")
         return result.stdout.strip()
+
+    def create_worktree(self, path: str, branch: str) -> str:
+        """Create a git worktree at path with a new branch.
+
+        The created directory contains a .git file (pointer), not a directory.
+        Requires the repo to have at least one commit (HEAD must exist).
+
+        Args:
+            path: Filesystem path for the new worktree.
+            branch: Name of the new branch to create in the worktree.
+
+        Returns:
+            The branch name (same as the branch argument).
+
+        Raises:
+            subprocess.CalledProcessError: If git worktree add fails.
+        """
+        self._run("worktree", "add", path, "-b", branch)
+        return branch
+
+    def remove_worktree(self, path: str) -> None:
+        """Remove a git worktree and its metadata.
+
+        Uses --force to handle dirty worktrees (uncommitted changes).
+
+        Args:
+            path: Filesystem path of the worktree to remove.
+
+        Raises:
+            subprocess.CalledProcessError: If git worktree remove fails.
+        """
+        self._run("worktree", "remove", path, "--force")
