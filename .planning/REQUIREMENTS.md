@@ -101,6 +101,18 @@
 - **RES-04**: CLAUDE.md template includes Session Resume Check section instructing the agent to check checkpoint.json on startup and update it after every keep/revert
 - **RES-05**: LoopState round-trips through checkpoint JSON serialization without data loss (all fields preserved including lists and None values)
 
+### Multi-Agent Swarm
+
+- **SWARM-01**: SwarmScoreboard class provides file-locked (fcntl.LOCK_EX) publish_result and lockless read_best for cross-agent result tracking via scoreboard.tsv
+- **SWARM-02**: TTL claim files (swarm_claims.py) prevent duplicate experiment claims within a configurable expiry window (default 300s)
+- **SWARM-03**: GitManager provides create_worktree() and remove_worktree() methods for agent isolation via git worktrees
+- **SWARM-04**: SwarmManager orchestrates N parallel claude -p agents: setup (worktrees, family assignment), spawn (subprocess.Popen with --allowedTools), monitor (poll + progress), teardown (cleanup worktrees)
+- **SWARM-05**: CLI accepts --agents N flag (default 1, validates >= 1) to enable swarm mode; help text documents external-terminal requirement
+- **SWARM-06**: Scaffold .gitignore includes .swarm/ coordination file entries (scoreboard.tsv, scoreboard.lock, claims/, config.json, best_train.py)
+- **SWARM-07**: swarm_claude.md.tmpl provides agent coordination protocol with scoreboard read/write instructions including exact fcntl locking code
+- **SWARM-08**: Algorithm families from drafts.py are partitioned round-robin across agents (agent-0 gets [0, N, 2N...], agent-1 gets [1, N+1...])
+- **SWARM-09**: run-swarm-test.sh validation script exists for manual 2-agent smoke testing, mirroring run-validation-test.sh conventions
+
 ## v2 Requirements
 
 ### Feature Engineering Zone
@@ -206,12 +218,21 @@
 | RES-03 | Phase 9 | Planned |
 | RES-04 | Phase 9 | Planned |
 | RES-05 | Phase 9 | Planned |
+| SWARM-01 | Phase 10 | Planned |
+| SWARM-02 | Phase 10 | Planned |
+| SWARM-03 | Phase 10 | Planned |
+| SWARM-04 | Phase 10 | Planned |
+| SWARM-05 | Phase 10 | Planned |
+| SWARM-06 | Phase 10 | Planned |
+| SWARM-07 | Phase 10 | Planned |
+| SWARM-08 | Phase 10 | Planned |
+| SWARM-09 | Phase 10 | Planned |
 
 **Coverage:**
-- v1 requirements: 60 total
-- Mapped to phases: 60
+- v1 requirements: 69 total
+- Mapped to phases: 69
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-14 after Phase 9 planning*
+*Last updated: 2026-03-14 after Phase 10 planning*

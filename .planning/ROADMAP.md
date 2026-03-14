@@ -89,7 +89,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 7. E2E Validation Test | 3/3 | Complete   | 2026-03-13 |
 | 8. Permissions Simplification | 1/1 | Complete   | 2026-03-14 |
 | 9. Resume Capability | 2/2 | Complete   | 2026-03-14 |
-| 10. Multi-Agent Swarm | 0/0 | Not planned | — |
+| 10. Multi-Agent Swarm | 0/3 | Planned | — |
 
 ### Phase 4: E2E Baseline Test
 
@@ -164,10 +164,19 @@ Plans:
 
 ### Phase 10: Multi-Agent Swarm
 
-**Goal:** Spawn N parallel `claude -p` agents exploring different algorithm families via git worktrees, with file-locked scoreboard for global best tracking, family-based partitioning during draft phase, TTL claim files during iteration phase, and a SwarmManager orchestrator — accessed via `--agents N` CLI flag
-**Requirements**: TBD
+**Goal:** Spawn N parallel `claude -p` agents exploring different algorithm families via git worktrees, with file-locked scoreboard for global best tracking, family-based partitioning during draft phase, TTL claim files during iteration phase, and a SwarmManager orchestrator -- accessed via `--agents N` CLI flag
+**Requirements**: SWARM-01, SWARM-02, SWARM-03, SWARM-04, SWARM-05, SWARM-06, SWARM-07, SWARM-08, SWARM-09
 **Depends on:** Phase 9
-**Plans:** 0 plans
+**Success Criteria** (what must be TRUE):
+  1. N parallel claude -p agents run in separate git worktrees, each exploring assigned algorithm families
+  2. A file-locked scoreboard.tsv tracks all agent results without corruption under concurrent writes
+  3. TTL claim files prevent duplicate experiments during the iteration phase
+  4. SwarmManager orchestrates setup, spawning, monitoring, and teardown of all agents
+  5. CLI accepts --agents N flag to enable swarm mode
+  6. A validation script exists for manual smoke testing of 2-agent swarm
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 10 to break down)
+- [ ] 10-01-PLAN.md — Swarm infrastructure: scoreboard, claims, git worktree methods
+- [ ] 10-02-PLAN.md — SwarmManager orchestrator, CLI integration, scaffold updates, agent template
+- [ ] 10-03-PLAN.md — Swarm validation script and human verification
