@@ -376,6 +376,177 @@ class TestScaffoldDotClaude:
         assert hook_output["permissionDecision"] == "deny"
 
 
+class TestScaffoldForecasting:
+    """Tests for forecasting scaffold path (date_col branch)."""
+
+    def test_forecast_scaffold_creates_all_files(self, sample_forecast_csv, tmp_path):
+        """scaffold with date_col='date' creates all expected files."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        expected_files = [
+            "prepare.py",
+            "forecast.py",
+            "train.py",
+            "program.md",
+            "CLAUDE.md",
+            ".gitignore",
+            "pyproject.toml",
+            sample_forecast_csv.name,
+        ]
+        actual_files = [f.name for f in out.iterdir() if f.is_file()]
+        for fname in expected_files:
+            assert fname in actual_files, f"Missing file: {fname}"
+
+    def test_forecast_train_uses_forecast_template(self, sample_forecast_csv, tmp_path):
+        """Generated train.py contains forecast-template markers."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        content = (out / "train.py").read_text()
+        assert "from forecast import" in content
+        assert "walk_forward_evaluate" in content
+
+    def test_forecast_train_date_column_substituted(self, sample_forecast_csv, tmp_path):
+        """Generated train.py has DATE_COLUMN substituted with the actual date column name."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        content = (out / "train.py").read_text()
+        assert 'DATE_COLUMN = "date"' in content
+
+    def test_forecast_claude_md_uses_forecast_template(self, sample_forecast_csv, tmp_path):
+        """Generated CLAUDE.md uses the forecast template (not the standard one)."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        content = (out / "CLAUDE.md").read_text()
+        # claude_forecast.md.tmpl contains forecasting-specific text
+        assert any(kw in content for kw in ["dual-baseline", "seasonal", "walk_forward"])
+
+    def test_forecast_program_md_time_range(self, sample_forecast_csv, tmp_path):
+        """Generated program.md contains the date range of the dataset."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        content = (out / "program.md").read_text()
+        assert "2015" in content
+        assert "2024" in content
+
+    def test_forecast_program_md_frequency(self, sample_forecast_csv, tmp_path):
+        """Generated program.md contains the inferred frequency."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        content = (out / "program.md").read_text()
+        assert "QS" in content or "frequency" in content.lower()
+
+    def test_forecast_program_md_naive_mape(self, sample_forecast_csv, tmp_path):
+        """Generated program.md contains Naive MAPE score."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        content = (out / "program.md").read_text()
+        assert "Naive MAPE" in content
+        # Check a decimal number is present
+        import re
+        assert re.search(r"\d+\.\d+", content), "No decimal number found in program.md"
+
+    def test_forecast_program_md_seasonal_naive_mape(self, sample_forecast_csv, tmp_path):
+        """Generated program.md contains Seasonal Naive MAPE score."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        content = (out / "program.md").read_text()
+        assert "Seasonal Naive MAPE" in content
+
+    def test_forecast_program_md_direction(self, sample_forecast_csv, tmp_path):
+        """Generated program.md says 'minimize' and does NOT say 'higher is always better'."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        content = (out / "program.md").read_text()
+        assert "minimize" in content
+        assert "higher is always better" not in content.lower()
+
+
+class TestScaffoldStandardPathUnchanged:
+    """Ensure date_col=None preserves the v1.0 scaffold path exactly."""
+
+    def test_standard_scaffold_unchanged(self, sample_classification_csv, tmp_path):
+        """scaffold with date_col=None produces standard train.py and CLAUDE.md."""
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+            date_col=None,
+        )
+        train_content = (out / "train.py").read_text()
+        claude_content = (out / "CLAUDE.md").read_text()
+        # Standard template uses prepare module imports (not forecast imports)
+        assert "from prepare import" in train_content
+        # Standard CLAUDE.md should NOT contain forecast-specific text
+        assert "walk_forward" not in claude_content
+        assert "seasonal" not in claude_content.lower() or "Forecasting" not in claude_content
+
+
 class TestScaffoldForecast:
     """Tests for forecast.py copy and optuna dependency."""
 
