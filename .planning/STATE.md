@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline — running experiments, keeping improvements, reverting failures, and logging everything — without human intervention.
-**Current focus:** Phase 11 — Forecasting Infrastructure (forecast.py + prepare.py refactor)
+**Current focus:** Phase 13 — Scaffold and CLI Updates (--date-column flag, scaffold forecasting mode)
 
 ## Current Position
 
@@ -83,10 +83,10 @@ None.
 
 None at roadmap stage. Key risks documented in research:
 - [Phase 11]: Temporal leakage in lag/rolling features is the dominant risk — walk_forward_evaluate() must call engineer_features() inside each fold
-- [Phase 12]: Optuna trial budget split between draft phase and iteration phase must be clarified in CLAUDE.md
+- [Phase 12]: Optuna trial budget split between draft phase and iteration phase — clarified in claude_forecast.md.tmpl Rule 7: min(50, 2*n_rows) cap
 
 ## Session Continuity
 
-Last session: 2026-03-14T23:21:51.218Z
-Stopped at: Completed 12-01-PLAN.md (forecast template and claude_forecast.md.tmpl)
+Last session: 2026-03-14
+Stopped at: Phase 12 complete, ready to plan Phase 13
 Resume file: None

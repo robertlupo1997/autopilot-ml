@@ -35,11 +35,11 @@ Give Claude Code a dataset and a metric, and it autonomously discovers the best-
 
 ### Active
 
-- [ ] Agent engineers time-series features (lags, rolling stats, growth rates, seasonality) from raw historicals
-- [ ] Optuna/FLAML replaces manual hyperparameter guessing inside train.py — agent writes search space, optimizer runs 100s of trials
-- [ ] Walk-forward temporal validation replaces random CV splits — no future data leakage
-- [ ] Forecasting-appropriate metrics (MAPE, MAE, RMSE on dollar values) replace classification accuracy
-- [ ] Agent can modify both feature engineering and modeling (mutable zone 2)
+- ✓ Walk-forward temporal validation replaces random CV splits — no future data leakage — Phase 11
+- ✓ Forecasting-appropriate metrics (MAPE, MAE, RMSE on dollar values) replace classification accuracy — Phase 11
+- ✓ Agent engineers time-series features (lags, rolling stats, growth rates, seasonality) from raw historicals — Phase 12
+- ✓ Optuna replaces manual hyperparameter guessing inside train.py — agent writes search space, optimizer runs trials — Phase 12
+- ✓ Agent can modify both feature engineering and modeling (mutable zone 2) — Phase 12
 - [ ] System produces better forecasts than a basic regression script on real financial data
 
 ## Current Milestone: v2.0 Results-Driven Forecasting
@@ -129,6 +129,9 @@ Full landscape analysis available at: `Autonomous_ML_Agents_Research_Report.docx
 | Agent-driven architecture | Library modules provide utilities; agent follows CLAUDE.md protocol | ✓ Good — simpler than wiring complex import chains |
 | Broad Edit(*)/Write(*) + deny list | Narrow path patterns silently ignored in headless mode | ✓ Good — defense-in-depth with hook system |
 | File-locked scoreboard + TTL claims | Cross-agent coordination via filesystem, no external deps | ✓ Good — stdlib-only, no race conditions in tests |
+| Shift-first rolling features | Prevents temporal leakage in lag/rolling features — `.shift(1)` before any `.rolling()` | ✓ Good — enforced in template and CLAUDE.md protocol |
+| Dual-baseline gate | Agent must beat both naive and seasonal-naive to keep a result | ✓ Good — protocol rule in CLAUDE.md, not hardcoded in loop_helpers |
+| Local imports in experiment templates | `from forecast import ...` not `from automl.forecast import ...` | ✓ Good — matches standalone experiment directory layout |
 
 ---
-*Last updated: 2026-03-14 after v1.0 milestone completion*
+*Last updated: 2026-03-14 after Phase 12*
