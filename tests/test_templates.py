@@ -178,3 +178,75 @@ class TestRenderFunctions:
         assert len(result) > 100, "CLAUDE.md should be a substantial document"
         assert "NEVER STOP" in result
         assert "Graceful Shutdown" in result, "render_claude_md() output must include Graceful Shutdown"
+
+
+# ---------------------------------------------------------------------------
+# Resume Protocol section tests
+# ---------------------------------------------------------------------------
+
+class TestClaudeMdResumeSection:
+    """Tests for the Session Resume Check section in claude.md.tmpl."""
+
+    def _get_content(self):
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        return open(path).read()
+
+    def test_resume_section_exists(self):
+        """CLAUDE.md template contains '## Session Resume Check' heading."""
+        content = self._get_content()
+        assert "## Session Resume Check" in content
+
+    def test_resume_section_before_phase_1(self):
+        """'Session Resume Check' section appears before '## Phase 1'."""
+        content = self._get_content()
+        resume_pos = content.find("## Session Resume Check")
+        phase1_pos = content.find("## Phase 1")
+        assert resume_pos != -1, "Session Resume Check section not found"
+        assert phase1_pos != -1, "Phase 1 section not found"
+        assert resume_pos < phase1_pos, (
+            "Session Resume Check must appear before Phase 1, "
+            f"but found at pos {resume_pos} vs {phase1_pos}"
+        )
+
+    def test_resume_section_references_checkpoint_json(self):
+        """Resume section references 'checkpoint.json'."""
+        content = self._get_content()
+        assert "checkpoint.json" in content
+
+    def test_resume_section_references_automl_checkpoint(self):
+        """Resume section references 'automl.checkpoint' for save calls."""
+        content = self._get_content()
+        assert "automl.checkpoint" in content
+
+    def test_resume_section_distinguishes_draft_vs_iteration(self):
+        """Resume section handles both loop_phase='draft' and 'iteration'."""
+        content = self._get_content()
+        assert "draft" in content
+        assert "iteration" in content
+
+    def test_resume_section_instructs_checkpoint_update(self):
+        """Resume section instructs updating checkpoint after keep/revert."""
+        content = self._get_content()
+        content_lower = content.lower()
+        # Should mention updating checkpoint after keep/revert decisions
+        assert "keep" in content_lower and "revert" in content_lower
+        # Checkpoint update instruction
+        assert "save_checkpoint" in content or "checkpoint" in content_lower
+
+    def test_render_claude_md_contains_resume_section(self):
+        """render_claude_md() output contains 'Session Resume Check'."""
+        from automl.templates import render_claude_md
+
+        result = render_claude_md()
+        assert "## Session Resume Check" in result
+
+    def test_render_claude_md_resume_before_phase1(self):
+        """render_claude_md() output: Session Resume Check before Phase 1."""
+        from automl.templates import render_claude_md
+
+        result = render_claude_md()
+        resume_pos = result.find("## Session Resume Check")
+        phase1_pos = result.find("## Phase 1")
+        assert resume_pos != -1, "Session Resume Check not in render_claude_md() output"
+        assert phase1_pos != -1, "Phase 1 not in render_claude_md() output"
+        assert resume_pos < phase1_pos
