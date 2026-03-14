@@ -46,11 +46,11 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   3. `forecast.get_forecasting_baselines()` returns naive and seasonal-naive MAPE scores computed on the same walk-forward splits the agent will use
   4. `prepare.load_data(csv_path, target_col, date_col)` returns a DataFrame with a datetime index sorted in ascending order; `prepare.temporal_split()` returns time-ordered train/holdout without shuffling
   5. Walk-forward folds of fewer than 3 raise a warning; training windows below 20 rows log a warning rather than silently proceeding
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 11-01: `forecast.py` — walk-forward evaluation, metrics, baselines, tests
-- [ ] 11-02: `prepare.py` refactor — date_col support, temporal_split, tests
+- [ ] 11-01-PLAN.md — forecast.py: walk-forward evaluation, metrics, baselines, tests
+- [ ] 11-02-PLAN.md — prepare.py refactor: date_col support, temporal_split, tests
 
 ### Phase 12: Forecast Template and Mutable Zone 2
 **Goal**: Agent has a correct starting template and explicit protocol for feature engineering and Optuna, so first drafts are structurally leakage-free
