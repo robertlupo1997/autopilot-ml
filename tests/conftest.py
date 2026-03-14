@@ -67,6 +67,35 @@ def quarterly_revenue_series() -> np.ndarray:
 
 
 @pytest.fixture
+def sample_forecast_csv(tmp_path: Path) -> Path:
+    """Generate a forecasting CSV with 40 rows of quarterly revenue data.
+
+    Columns: date (Q1 2015 to Q4 2024), feature1 (numeric), feature2 (numeric),
+    revenue (target, dollar values with trend).
+    """
+    rng = np.random.RandomState(7)
+    dates = pd.date_range(start="2015-01-01", periods=40, freq="QS")
+    quarters = np.arange(40)
+    revenue = (
+        1000.0
+        + 50.0 * quarters
+        + 200.0 * np.sin(quarters * np.pi / 2)
+        + rng.randn(40) * 30.0
+    )
+
+    df = pd.DataFrame({
+        "date": dates.strftime("%Y-%m-%d"),
+        "feature1": rng.randn(40),
+        "feature2": rng.randn(40) * 5 + 10,
+        "revenue": revenue,
+    })
+
+    csv_path = tmp_path / "forecast_data.csv"
+    df.to_csv(csv_path, index=False)
+    return csv_path
+
+
+@pytest.fixture
 def sample_csv_with_missing(tmp_path: Path) -> Path:
     """Generate a classification CSV with ~10% missing values in numeric and categorical columns."""
     rng = np.random.RandomState(42)

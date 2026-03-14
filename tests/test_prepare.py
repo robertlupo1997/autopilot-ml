@@ -14,6 +14,7 @@ from automl.prepare import (
     build_preprocessor,
     get_data_summary,
     validate_metric,
+    temporal_split,
     METRIC_MAP,
 )
 
@@ -169,3 +170,62 @@ class TestValidateMetric:
     def test_metric_map_exists(self):
         assert isinstance(METRIC_MAP, dict)
         assert len(METRIC_MAP) >= 10
+
+
+# -- Forecast extensions: load_data with date_col -------------------------
+
+class TestLoadDataForecast:
+    def test_date_col_sets_datetime_index(self, sample_forecast_csv):
+        """load_data with date_col returns X with DatetimeIndex."""
+        X, y, task = load_data(sample_forecast_csv, "revenue", date_col="date")
+        assert isinstance(X.index, pd.DatetimeIndex)
+
+    def test_date_col_sorted_ascending(self, sample_forecast_csv):
+        """X.index is monotonically increasing when date_col is provided."""
+        X, y, task = load_data(sample_forecast_csv, "revenue", date_col="date")
+        assert X.index.is_monotonic_increasing
+
+    def test_date_col_drops_date_from_features(self, sample_forecast_csv):
+        """date column must not appear in X.columns."""
+        X, y, task = load_data(sample_forecast_csv, "revenue", date_col="date")
+        assert "date" not in X.columns
+
+    def test_date_col_infers_regression(self, sample_forecast_csv):
+        """Continuous revenue target should be inferred as regression."""
+        X, y, task = load_data(sample_forecast_csv, "revenue", date_col="date")
+        assert task == "regression"
+
+    def test_no_date_col_unchanged(self, sample_classification_csv):
+        """Without date_col, behavior matches existing (RangeIndex, same shape)."""
+        X, y, task = load_data(sample_classification_csv, "target")
+        assert isinstance(X.index, pd.RangeIndex)
+        assert len(X) == 200
+
+
+# -- Forecast extensions: temporal_split ----------------------------------
+
+class TestTemporalSplit:
+    def test_returns_four_parts(self, sample_forecast_csv):
+        """temporal_split returns (X_train, X_holdout, y_train, y_holdout)."""
+        X, y, task = load_data(sample_forecast_csv, "revenue", date_col="date")
+        result = temporal_split(X, y)
+        assert len(result) == 4
+
+    def test_holdout_is_last_fraction(self, sample_forecast_csv):
+        """With 40 rows and 0.15, holdout is last 6 rows, train is first 34."""
+        X, y, task = load_data(sample_forecast_csv, "revenue", date_col="date")
+        X_train, X_holdout, y_train, y_holdout = temporal_split(X, y, holdout_fraction=0.15)
+        assert len(X_train) == 34
+        assert len(X_holdout) == 6
+
+    def test_no_shuffle_invariant(self, sample_forecast_csv):
+        """X_train.index[-1] < X_holdout.index[0] when DatetimeIndex."""
+        X, y, task = load_data(sample_forecast_csv, "revenue", date_col="date")
+        X_train, X_holdout, y_train, y_holdout = temporal_split(X, y)
+        assert X_train.index[-1] < X_holdout.index[0]
+
+    def test_no_data_loss(self, sample_forecast_csv):
+        """len(train) + len(holdout) == len(original)."""
+        X, y, task = load_data(sample_forecast_csv, "revenue", date_col="date")
+        X_train, X_holdout, y_train, y_holdout = temporal_split(X, y)
+        assert len(X_train) + len(X_holdout) == len(X)
