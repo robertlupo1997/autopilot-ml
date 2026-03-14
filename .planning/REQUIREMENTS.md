@@ -29,7 +29,7 @@
 - [ ] **FEAT-01**: `train.py` template includes starter feature engineering (lag_1, lag_4, YoY growth rate, rolling_mean_4q)
 - [ ] **FEAT-02**: Agent can add/modify feature engineering code in `train.py` (mutable zone 2 — no separate features.py)
 - [ ] **FEAT-03**: Feature count capped at 15 in CLAUDE.md guidance (small-N overfitting guard)
-- [ ] **FEAT-04**: Guard hook updated to protect both `prepare.py` and `forecast.py`
+- [x] **FEAT-04**: Guard hook updated to protect both `prepare.py` and `forecast.py`
 
 ### Optuna Integration
 
@@ -90,7 +90,7 @@
 | FEAT-01 | Phase 12 | Pending |
 | FEAT-02 | Phase 12 | Pending |
 | FEAT-03 | Phase 12 | Pending |
-| FEAT-04 | Phase 12 | Pending |
+| FEAT-04 | Phase 12 | Complete |
 | OPTA-01 | Phase 12 | Pending |
 | OPTA-02 | Phase 12 | Pending |
 | OPTA-03 | Phase 12 | Pending |

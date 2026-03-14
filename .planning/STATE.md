@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Results-Driven Forecasting
 status: planning
-stopped_at: Completed 11-02-PLAN.md (prepare.py forecasting extensions)
-last_updated: "2026-03-14T21:51:04.054Z"
+stopped_at: Completed 12-02-PLAN.md (scaffold forecast freeze and optuna dependency)
+last_updated: "2026-03-14T23:20:39.600Z"
 last_activity: 2026-03-14 — v2.0 roadmap created
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 0
 ---
 
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 11 P01 | 193s | 1 tasks | 4 files |
 | Phase 11 P02 | 240 | 1 tasks | 3 files |
+| Phase 12 P02 | 480 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [Phase 11]: model_fn dollar-scale contract: walk_forward_evaluate does NOT inverse-transform; model_fn must return predictions in same unit as y_true
 - [Phase 11]: date_col defaults to None to preserve exact backwards compatibility with PIPE-01 through PIPE-07 callers
 - [Phase 11]: temporal_split uses math.floor for deterministic split boundary (40 rows * 0.85 = 34 train, 6 holdout)
+- [Phase 12]: settings.json deny list extended to include Edit(forecast.py)/Write(forecast.py) for defense-in-depth alongside guard-frozen.sh hook
+- [Phase 12]: forecast.py copied byte-identical via inspect.getfile(_forecast_module) matching the established prepare.py pattern
+- [Phase 12]: optuna>=4.0 added to experiment pyproject.toml so Optuna is available in all experiment virtualenvs
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None at roadmap stage. Key risks documented in research:
 
 ## Session Continuity
 
-Last session: 2026-03-14T21:47:57.508Z
-Stopped at: Completed 11-02-PLAN.md (prepare.py forecasting extensions)
+Last session: 2026-03-14T23:20:39.597Z
+Stopped at: Completed 12-02-PLAN.md (scaffold forecast freeze and optuna dependency)
 Resume file: None
