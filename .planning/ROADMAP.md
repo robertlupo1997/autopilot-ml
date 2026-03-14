@@ -88,7 +88,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 6. Structured Output | 2/2 | Complete   | 2026-03-13 |
 | 7. E2E Validation Test | 3/3 | Complete   | 2026-03-13 |
 | 8. Permissions Simplification | 1/1 | Complete   | 2026-03-14 |
-| 9. Resume Capability | 0/0 | Not planned | — |
+| 9. Resume Capability | 0/2 | Planned | — |
 | 10. Multi-Agent Swarm | 0/0 | Not planned | — |
 
 ### Phase 4: E2E Baseline Test
@@ -148,12 +148,19 @@ Plans:
 ### Phase 9: Resume Capability
 
 **Goal:** Add checkpoint persistence (checkpoint.json) so `claude -p` sessions can resume from where the last session left off — recording best commit, best score, loop phase, iteration count, and strategy state — with a --resume CLI flag and CLAUDE.md Resume Protocol section
-**Requirements**: TBD
+**Requirements**: RES-01, RES-02, RES-03, RES-04, RES-05
 **Depends on:** Phase 8
-**Plans:** 0 plans
+**Success Criteria** (what must be TRUE):
+  1. checkpoint.py module saves LoopState + metadata to checkpoint.json with atomic write-then-rename
+  2. checkpoint.json round-trips LoopState without data loss (all fields including lists and None values preserved)
+  3. Scaffolded .gitignore includes checkpoint.json and checkpoint.json.tmp
+  4. CLI accepts --resume flag without error
+  5. CLAUDE.md template includes Session Resume Check section that instructs the agent to check for checkpoint.json on startup, restore state, and update checkpoint after every keep/revert
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 9 to break down)
+- [ ] 09-01-PLAN.md — Checkpoint persistence module and scaffold gitignore update
+- [ ] 09-02-PLAN.md — CLI --resume flag and CLAUDE.md Resume Protocol section
 
 ### Phase 10: Multi-Agent Swarm
 

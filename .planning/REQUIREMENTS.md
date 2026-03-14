@@ -93,6 +93,14 @@
 - [x] **PERM-02**: settings.json permissions.deny blocks Edit(prepare.py) and Write(prepare.py) as defense-in-depth
 - [x] **PERM-03**: run-validation-test.sh documents headless permissions limitation (--allowedTools required)
 
+### Resume Capability
+
+- **RES-01**: checkpoint.py module provides save_checkpoint(), load_checkpoint(), load_loop_state(), checkpoint_exists() with atomic write-then-rename
+- **RES-02**: checkpoint.json and checkpoint.json.tmp are git-ignored in scaffolded experiment directories
+- **RES-03**: CLI accepts --resume flag (store_true, informational for v1, hook point for Phase 10 swarm)
+- **RES-04**: CLAUDE.md template includes Session Resume Check section instructing the agent to check checkpoint.json on startup and update it after every keep/revert
+- **RES-05**: LoopState round-trips through checkpoint JSON serialization without data loss (all fields preserved including lists and None values)
+
 ## v2 Requirements
 
 ### Feature Engineering Zone
@@ -193,12 +201,17 @@
 | PERM-01 | Phase 8 | Planned |
 | PERM-02 | Phase 8 | Planned |
 | PERM-03 | Phase 8 | Planned |
+| RES-01 | Phase 9 | Planned |
+| RES-02 | Phase 9 | Planned |
+| RES-03 | Phase 9 | Planned |
+| RES-04 | Phase 9 | Planned |
+| RES-05 | Phase 9 | Planned |
 
 **Coverage:**
-- v1 requirements: 55 total
-- Mapped to phases: 55
+- v1 requirements: 60 total
+- Mapped to phases: 60
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-13 after Phase 7 gap closure*
+*Last updated: 2026-03-14 after Phase 9 planning*
