@@ -62,11 +62,11 @@ Plans:
   2. The template's Optuna `objective(trial)` function calls `walk_forward_evaluate()` from the frozen `forecast` module — not a custom CV loop — verifiable by inspection of the template file
   3. `CLAUDE.md` template states the 15-feature cap, the shift-first mandate for rolling stats, the `min(50, 2*n_rows)` trial budget cap, and the dual-baseline gate (must beat both naive and seasonal-naive to keep) as explicit numbered rules
   4. `guard-frozen.sh` and `settings.json` deny list include both `prepare.py` and `forecast.py` as protected files, verified by running the guard hook against a simulated write to `forecast.py`
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 12-01: `train_template_forecast.py` + `CLAUDE.md` + `program.md` template updates
-- [ ] 12-02: Guard hook and `settings.json` deny list expansion
+- [ ] 12-01-PLAN.md — train_template_forecast.py with engineer_features + Optuna + walk_forward_evaluate; claude_forecast.md.tmpl agent protocol; structural tests
+- [ ] 12-02-PLAN.md — scaffold.py patches: forecast.py deny list, optuna dependency, forecast.py copy into experiment dir
 
 ### Phase 13: Scaffold and CLI Updates
 **Goal**: `uv run automl data.csv target metric --date-column date` scaffolds a complete forecasting project with baselines pre-computed in `program.md`
