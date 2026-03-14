@@ -26,6 +26,7 @@ class TestScaffoldCreatesAllFiles:
 
         expected_files = [
             "prepare.py",
+            "forecast.py",
             "train.py",
             "program.md",
             "CLAUDE.md",
@@ -36,8 +37,8 @@ class TestScaffoldCreatesAllFiles:
         actual_files = [f.name for f in out.iterdir() if f.is_file()]
         for fname in expected_files:
             assert fname in actual_files, f"Missing file: {fname}"
-        # 7 files + .claude/ dir = 8 top-level items
-        assert len(list(out.iterdir())) == 8
+        # 8 files + .claude/ dir = 9 top-level items
+        assert len(list(out.iterdir())) == 9
         assert (out / ".claude").is_dir()
 
 
@@ -292,7 +293,12 @@ class TestScaffoldDotClaude:
         settings_path = scaffolded / ".claude" / "settings.json"
         data = json.loads(settings_path.read_text())
         deny = data["permissions"]["deny"]
-        assert deny == ["Edit(prepare.py)", "Write(prepare.py)"]
+        assert deny == [
+            "Edit(prepare.py)",
+            "Write(prepare.py)",
+            "Edit(forecast.py)",
+            "Write(forecast.py)",
+        ]
 
     def test_scaffold_settings_hooks(self, scaffolded):
         settings_path = scaffolded / ".claude" / "settings.json"
@@ -342,3 +348,62 @@ class TestScaffoldDotClaude:
         )
         assert result.returncode == 0
         assert result.stdout.strip() == "", "Hook should output nothing for train.py"
+
+    def test_settings_deny_forecast(self, scaffolded):
+        settings_path = scaffolded / ".claude" / "settings.json"
+        data = json.loads(settings_path.read_text())
+        deny = data["permissions"]["deny"]
+        assert "Edit(forecast.py)" in deny, f"Missing Edit(forecast.py) in deny list: {deny}"
+        assert "Write(forecast.py)" in deny, f"Missing Write(forecast.py) in deny list: {deny}"
+
+    def test_scaffold_hook_denies_forecast_py(self, scaffolded):
+        hook_path = scaffolded / ".claude" / "hooks" / "guard-frozen.sh"
+        input_json = json.dumps({
+            "tool_name": "Edit",
+            "tool_input": {"file_path": "/some/experiment/forecast.py"},
+        })
+        result = subprocess.run(
+            ["bash", str(hook_path)],
+            input=input_json,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0
+        output = result.stdout.strip()
+        assert output, "Hook should output deny JSON for forecast.py"
+        deny_data = json.loads(output)
+        hook_output = deny_data["hookSpecificOutput"]
+        assert hook_output["permissionDecision"] == "deny"
+
+
+class TestScaffoldForecast:
+    """Tests for forecast.py copy and optuna dependency."""
+
+    def test_scaffold_pyproject_has_optuna(self, sample_classification_csv, tmp_path):
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+        )
+        content = (out / "pyproject.toml").read_text()
+        assert "optuna" in content, "Missing optuna dependency in pyproject.toml"
+
+    def test_scaffold_copies_forecast_py(self, sample_classification_csv, tmp_path):
+        import automl.forecast as forecast_mod
+
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+        )
+        assert (out / "forecast.py").exists(), "forecast.py not found in experiment directory"
+        source_path = inspect.getfile(forecast_mod)
+        source_bytes = Path(source_path).read_bytes()
+        copied_bytes = (out / "forecast.py").read_bytes()
+        assert copied_bytes == source_bytes, "forecast.py in experiment dir does not match installed source"
