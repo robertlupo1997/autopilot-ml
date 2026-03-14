@@ -88,7 +88,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 6. Structured Output | 2/2 | Complete   | 2026-03-13 |
 | 7. E2E Validation Test | 3/3 | Complete   | 2026-03-13 |
 | 8. Permissions Simplification | 1/1 | Complete   | 2026-03-14 |
-| 9. Resume Capability | 0/2 | Planned | — |
+| 9. Resume Capability | 1/2 | In Progress|  |
 | 10. Multi-Agent Swarm | 0/0 | Not planned | — |
 
 ### Phase 4: E2E Baseline Test
@@ -156,7 +156,7 @@ Plans:
   3. Scaffolded .gitignore includes checkpoint.json and checkpoint.json.tmp
   4. CLI accepts --resume flag without error
   5. CLAUDE.md template includes Session Resume Check section that instructs the agent to check for checkpoint.json on startup, restore state, and update checkpoint after every keep/revert
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 09-01-PLAN.md — Checkpoint persistence module and scaffold gitignore update
