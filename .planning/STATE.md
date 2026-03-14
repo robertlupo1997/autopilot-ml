@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 10-01-PLAN.md (Core Swarm Infrastructure). Created SwarmScoreboard, swarm_claims, and GitManager worktree methods.
-last_updated: "2026-03-14T05:18:11.053Z"
+stopped_at: Completed 10-02-PLAN.md (SwarmManager Orchestrator). Created SwarmManager, spawn_agent, CLI --agents flag, scaffold .gitignore .swarm/ entries, and swarm_claude.md.tmpl.
+last_updated: "2026-03-14T05:24:47.398Z"
 last_activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 progress:
   total_phases: 10
   completed_phases: 9
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
   percent: 60
 ---
 
@@ -62,6 +62,7 @@ Progress: [████████░░] 60% (4/7 phases, 10/11 plans)
 | Phase 09-resume-capability P01 | 2min | 2 tasks | 4 files |
 | Phase 09-resume-capability P02 | 3min | 1 tasks | 4 files |
 | Phase 10-multi-agent-swarm P01 | 8min | 2 tasks | 6 files |
+| Phase 10-multi-agent-swarm P02 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,8 @@ Recent decisions affecting current work:
 - [Phase 10-multi-agent-swarm]: fcntl.LOCK_EX on scoreboard.lock sidecar (not scoreboard.tsv): lockfile is purely a lock primitive, never read
 - [Phase 10-multi-agent-swarm]: Lockless read_best: TSV append writes are effectively atomic on Linux; stale-by-one-row is acceptable
 - [Phase 10-multi-agent-swarm]: CLAIM_TTL=300s: generous for slow ML experiments, claims clear in 5 minutes maximum
+- [Phase 10-multi-agent-swarm]: Cap n_agents at len(ALGORITHM_FAMILIES[task_type]) with stderr warning -- prevents empty draft phase for over-requested agents
+- [Phase 10-multi-agent-swarm]: spawn_agent includes --max-turns 50 (same as run-validation-test.sh) for bounded experiment runs
 
 ### Roadmap Evolution
 
@@ -143,6 +146,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-14T05:18:11.050Z
-Stopped at: Completed 10-01-PLAN.md (Core Swarm Infrastructure). Created SwarmScoreboard, swarm_claims, and GitManager worktree methods.
+Last session: 2026-03-14T05:24:47.395Z
+Stopped at: Completed 10-02-PLAN.md (SwarmManager Orchestrator). Created SwarmManager, spawn_agent, CLI --agents flag, scaffold .gitignore .swarm/ entries, and swarm_claude.md.tmpl.
 Resume file: None
