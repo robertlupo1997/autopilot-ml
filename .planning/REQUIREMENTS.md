@@ -75,7 +75,7 @@
 - [x] **HOOK-03**: Hook script is executable (chmod 755) and uses jq with Python fallback for JSON parsing
 - [x] **HOOK-04**: .gitignore includes .claude/settings.local.json to prevent personal overrides from being committed
 - [x] **HOOK-05**: CLAUDE.md includes graceful shutdown section addressing max_turns mid-action interrupt
-- [x] **HOOK-06**: Scaffolded project requires no --dangerously-skip-permissions or manual --allowedTools flags
+- [x] **HOOK-06**: Scaffolded project requires no --dangerously-skip-permissions flag (--allowedTools still required for headless mode per GitHub issue #18160)
 
 ### Validation
 
@@ -86,6 +86,12 @@
 - [x] **VAL-05**: Hook fires on prepare.py write attempt OR agent never attempts (both acceptable outcomes)
 - [x] **VAL-06**: json_output line present and parseable in run.log (Phase 6 structured output verified)
 - [x] **VAL-07**: Stagnation behavior documented (consecutive reverts counted, strategy shift observed or noted as not triggered)
+
+### Permissions Simplification
+
+- [ ] **PERM-01**: settings.json permissions.allow uses broad patterns (Edit(*), Write(*)) matching --allowedTools
+- [ ] **PERM-02**: settings.json permissions.deny blocks Edit(prepare.py) and Write(prepare.py) as defense-in-depth
+- [ ] **PERM-03**: run-validation-test.sh documents headless permissions limitation (--allowedTools required)
 
 ## v2 Requirements
 
@@ -184,10 +190,13 @@
 | VAL-05 | Phase 7 | Complete |
 | VAL-06 | Phase 7 | Complete |
 | VAL-07 | Phase 7 | Complete |
+| PERM-01 | Phase 8 | Planned |
+| PERM-02 | Phase 8 | Planned |
+| PERM-03 | Phase 8 | Planned |
 
 **Coverage:**
-- v1 requirements: 52 total
-- Mapped to phases: 52
+- v1 requirements: 55 total
+- Mapped to phases: 55
 - Unmapped: 0
 
 ---

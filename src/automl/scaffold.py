@@ -231,14 +231,16 @@ def _dot_claude_settings(out: Path) -> None:
         "permissions": {
             "allow": [
                 "Bash(*)",
-                "Edit(train.py)",
-                "Write(train.py)",
-                "Write(results.tsv)",
-                "Write(run.log)",
+                "Edit(*)",
+                "Write(*)",
                 "Read",
                 "Glob",
                 "Grep",
-            ]
+            ],
+            "deny": [
+                "Edit(prepare.py)",
+                "Write(prepare.py)",
+            ],
         },
         "hooks": {
             "PreToolUse": [

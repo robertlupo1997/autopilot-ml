@@ -172,6 +172,15 @@ echo "      Output: $EXPERIMENT_DIR/validation-run-output.json"
 echo "      NOTE: --allowedTools passed for headless mode (settings.json alone is insufficient)"
 echo ""
 
+# ---------------------------------------------------------------------------
+# HEADLESS PERMISSIONS NOTE (Phase 8):
+# settings.json permissions.allow rules are silently ignored in headless
+# claude -p mode (GitHub issue #18160, open as of 2026-03-13).
+# The --allowedTools flag below is REQUIRED for tool access. Do NOT remove it.
+# The scaffolded settings.json allow rules serve as documentation of intent
+# for interactive mode only. The guard-frozen.sh hook remains the primary
+# enforcement mechanism for frozen file protection.
+# ---------------------------------------------------------------------------
 claude -p "Follow the CLAUDE.md protocol exactly. NEVER STOP until max-turns is reached." \
     --max-turns 50 \
     --max-budget-usd 4.00 \
