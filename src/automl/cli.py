@@ -10,6 +10,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from automl.scaffold import scaffold_experiment
+
 
 def main(argv: list[str] | None = None) -> int:
     """Run the AutoML scaffold CLI.
@@ -78,6 +80,15 @@ def main(argv: list[str] | None = None) -> int:
             "IMPORTANT: Must be run from a terminal outside of Claude Code."
         ),
     )
+    parser.add_argument(
+        "--date-column",
+        default=None,
+        help=(
+            "Name of the date column to enable forecasting mode. "
+            "Scaffolds a forecasting experiment with time-series templates "
+            "and pre-computed naive/seasonal-naive MAPE baselines in program.md."
+        ),
+    )
 
     if argv is not None and len(argv) == 0:
         parser.print_usage(sys.stderr)
@@ -89,9 +100,14 @@ def main(argv: list[str] | None = None) -> int:
         print("Error: --agents must be >= 1", file=sys.stderr)
         return 1
 
-    try:
-        from automl.scaffold import scaffold_experiment
+    if args.agents > 1 and args.date_column is not None:
+        print(
+            "Error: --agents is not supported with --date-column in this version.",
+            file=sys.stderr,
+        )
+        return 1
 
+    try:
         project_dir = scaffold_experiment(
             data_path=args.data_path,
             target_column=args.target_column,
@@ -99,6 +115,7 @@ def main(argv: list[str] | None = None) -> int:
             goal=args.goal,
             output_dir=args.output_dir,
             time_budget=args.time_budget,
+            date_col=args.date_column,
         )
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
