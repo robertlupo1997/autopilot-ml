@@ -1,213 +1,288 @@
 # Technology Stack
 
-**Project:** AutoML -- Autonomous ML Research Framework
-**Researched:** 2026-03-09
-**Primary source:** Training data (cutoff ~May 2025) + PROJECT.md context
-**Verification note:** WebSearch/WebFetch/Bash were unavailable during research. Versions reflect best knowledge from training data. Flag items marked LOW confidence for manual verification with `pip index versions <package>` before finalizing `pyproject.toml`.
+**Project:** AutoML v2.0 — Results-Driven Forecasting additions
+**Domain:** Hyperparameter search, time-series feature engineering, walk-forward validation, forecasting metrics
+**Researched:** 2026-03-14
+**Confidence:** MEDIUM-HIGH (WebSearch + official docs verified; exact latest minor versions confirmed via PyPI search results)
 
-## Recommended Stack
+---
 
-### Runtime
+## Scope Note
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Python | >=3.11, <3.13 | Runtime | 3.11 is the sweet spot: fast, stable, broad library support. 3.12 is fine too. Avoid 3.13 -- some ML libraries may lag on support. PROJECT.md specifies 3.11+. | HIGH |
-| uv | >=0.4 | Package manager + venv | Follows autoresearch pattern. 10-100x faster than pip. Handles venv creation, lockfiles, and Python version management. Replaces pip, pip-tools, virtualenv, and pyenv in one tool. | HIGH |
+This document covers ONLY the stack additions needed for v2.0. The v1.0 stack (scikit-learn, XGBoost, LightGBM, pandas, numpy, uv, subprocess git) is already validated and in production. Do not re-research or re-discuss what already works.
 
-### ML Libraries (Core)
+**Existing pyproject.toml dependencies (carry forward unchanged):**
+```
+scikit-learn>=1.5
+pandas>=2.0
+numpy>=2.0
+xgboost
+lightgbm
+```
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| scikit-learn | >=1.5,<2.0 | Base ML framework | Industry standard for tabular ML. Provides RandomForest, LogisticRegression, GradientBoosting, preprocessing, model selection, metrics. v1.5 added improved metadata routing and HistGradientBoosting improvements. Pin below 2.0 to avoid potential breaking API changes. | MEDIUM -- verify latest is 1.5.x or 1.6.x |
-| xgboost | >=2.1,<3.0 | Gradient boosting | Best-in-class for tabular data. v2.0+ unified the API and added better categorical support. Typically wins or ties LightGBM on most tabular benchmarks. CPU training is fast enough for this project's scope. | MEDIUM -- verify 2.1.x is latest |
-| lightgbm | >=4.5,<5.0 | Gradient boosting | Faster training than XGBoost on large datasets, excellent categorical handling. Complementary to XGBoost -- having both lets the multi-draft approach try each. v4.x modernized the Python API. | MEDIUM -- verify 4.5.x is latest |
-| catboost | >=1.2,<2.0 | Gradient boosting (optional) | Strong on categorical-heavy datasets without manual encoding. Include as optional dependency for multi-draft diversity. | LOW -- verify current version |
+---
 
-### Data Handling
+## New Additions: Core Technologies
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| pandas | >=2.2,<3.0 | Data loading + manipulation | Standard for CSV loading and tabular data manipulation. v2.x has better Arrow backend and copy-on-write. Pin below 3.0 for stability. | MEDIUM -- verify 2.2.x is latest |
-| numpy | >=1.26,<3.0 | Numerical arrays | Required by all ML libraries. v1.26 is the last 1.x; v2.0 has breaking changes but most libraries now support it. Allow v2.x but ensure compatibility. | MEDIUM -- numpy 2.x compatibility needs testing |
+### Hyperparameter Optimization
 
-### Git Integration
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| optuna | >=4.0,<5.0 | Bayesian hyperparameter search inside agent-written train.py | Current stable is 4.7.0 (Nov 2025). TPE sampler converges faster than grid/random search. Define-by-run API means the agent can write a search space as plain Python — no special syntax or decorators. Agent writes the objective function; optuna runs the trials. Integrates with XGBoost and LightGBM natively via optuna-integration. |
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| subprocess (stdlib) | N/A | Git operations | **Use subprocess.run() to call git directly, NOT GitPython.** This is critical. Autoresearch calls `git` via shell commands. GitPython adds abstraction that hides failures, has memory leaks with large repos, and adds a dependency for no real benefit when your operations are simple (commit, reset, branch, log). | HIGH |
+**Why Optuna over FLAML:** FLAML is a full AutoML system that picks algorithms AND hyperparameters autonomously. That conflicts with our architecture — Claude Code is the algorithm selector. Optuna is a pure hyperparameter optimizer: the agent defines the search space, optuna samples it efficiently. This preserves agent agency while making search faster than manual iteration.
 
-**Anti-recommendation: GitPython.** Do NOT use it. The operations needed (commit, reset --hard, checkout, branch, log) are simple shell commands. GitPython introduces: (1) memory leaks from unclosed repo objects, (2) opaque error handling, (3) unnecessary abstraction over simple CLI calls, (4) another dependency to maintain. subprocess + git CLI is simpler, more debuggable, and what autoresearch uses.
+**Why not FLAML:** FLAML's BlendSearch showed 2.52% average improvement vs Optuna's 1.96% on benchmarks, but FLAML takes over model selection — incompatible with our agent-driven multi-draft architecture where Claude picks the model family. Optuna is the right primitive here.
 
-### Experiment Tracking
+**Small-N regime note (20-80 rows):** With 20-80 training samples, overfitting via hyperparameter search is a real risk. Mitigate by: (1) using CV score (not holdout) as the Optuna objective, (2) keeping `n_trials` low (30-50 is enough — TPE needs only ~10 trials to beat random), (3) reducing `n_startup_trials` to 5-10 so TPE kicks in early (default is 20, which would use all trials in random mode for 30-trial budgets). Agent should write conservative search spaces with regularization-heavy ranges.
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| TSV file (results.tsv) | N/A | Experiment log | Follows autoresearch pattern exactly. Simple append-only TSV with columns: commit_hash, metric_value, status (keep/revert), description, timestamp. No external service needed. Git tracks the file. Grep-able, diff-able, human-readable. | HIGH |
-| csv (stdlib) | N/A | TSV reading/writing | Use stdlib csv module with delimiter='\t'. No external dependency needed. | HIGH |
+### Walk-Forward Temporal Validation
 
-**Anti-recommendation: MLflow, Weights & Biases, Neptune.** Do NOT use these for v1. They add: (1) server dependencies (MLflow needs a tracking server), (2) network calls that can fail during autonomous runs, (3) complexity that's unnecessary when git IS your experiment tracker. The whole point of the autoresearch pattern is that git commits ARE the experiment log. A TSV file provides the summary view.
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| sklearn.model_selection.TimeSeriesSplit | (part of scikit-learn>=1.5, already installed) | Walk-forward cross-validation — no future data leakage | Already in the installed stack. Accepts `n_splits`, `gap`, `test_size`, `max_train_size`. The `gap` parameter (added in sklearn 0.24) inserts a buffer between train and test to prevent leakage from overlapping features. No new dependency needed. |
 
-### Process Management
+**Why not tscv (the standalone library):** `tscv.GapRollForward` offers `min_train_size` and `roll_size` parameters that sklearn's `TimeSeriesSplit` lacks, but those features are only valuable when you have enough data to make sliding windows meaningful. With 20-80 quarterly rows, you can configure sklearn's `TimeSeriesSplit` directly: `TimeSeriesSplit(n_splits=3, test_size=2, gap=1)` gives 3 folds with a 1-quarter gap — enough for temporal validation without an extra dependency.
 
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| subprocess (stdlib) | N/A | Run experiments | subprocess.run() to execute the training script, capture stdout/stderr to run.log, enforce timeouts. This is how autoresearch does it. | HIGH |
-| signal (stdlib) | N/A | Timeout enforcement | Use signal.alarm() or subprocess timeout parameter to kill hung experiments. Essential for autonomous operation. | HIGH |
+**Walk-forward configuration for 20-80 quarterly rows:**
+```python
+# 20-40 rows: 3 folds, test_size=2 quarters (one holdout period)
+TimeSeriesSplit(n_splits=3, test_size=2, gap=0)
 
-**Anti-recommendation: Celery, Ray, multiprocessing.** Do NOT use these for v1. Single-machine, single-experiment-at-a-time is the autoresearch pattern. Adding distributed execution adds complexity with zero benefit when experiments take ~30 seconds each.
+# 40-80 rows: 4-5 folds, test_size=2-4 quarters
+TimeSeriesSplit(n_splits=4, test_size=4, gap=1)
+```
+Keep `n_splits` low — with 20 rows and 5 splits, each training fold has only ~3 rows.
 
-### Supporting Libraries
+### Time-Series Feature Engineering
 
-| Library | Version | Purpose | When to Use | Confidence |
-|---------|---------|---------|-------------|------------|
-| optuna | >=3.6,<4.0 | Hyperparameter optimization | Optional. The agent can do manual hyperparameter iteration, but Optuna can be used WITHIN an experiment (the agent writes code that uses Optuna). Not as an orchestrator. | MEDIUM |
-| scipy | >=1.13 | Statistical functions | Transitive dependency of scikit-learn. Pin for reproducibility. | MEDIUM |
-| joblib | >=1.4 | Parallel model fitting | Transitive dependency of scikit-learn. Used for parallel cross-validation. | MEDIUM |
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| feature-engine | >=1.8,<2.0 | Lag features, rolling window features, expanding window features — sklearn-compatible transformers | Current version is 1.9.4 (2025). Provides `LagFeatures`, `WindowFeatures`, and `ExpandingWindowFeatures` as sklearn-compatible transformers that fit into `Pipeline` and work with `cross_val_score`. The agent can insert these into the feature engineering step of train.py without breaking the evaluate() contract in prepare.py. |
 
-### Development Dependencies
+**Why feature-engine over building from scratch:** The agent can certainly write `df['lag_1'] = df['revenue'].shift(1)` by hand. But feature-engine transformers: (1) handle the fit/transform split correctly (no leakage), (2) integrate with sklearn's TimeSeriesSplit via Pipeline, (3) handle NaN rows from lagging without manual dropna logic. For 20-80 rows, the transformer overhead is negligible.
 
-| Library | Version | Purpose | Confidence |
-|---------|---------|---------|------------|
-| ruff | >=0.5 | Linting + formatting | Fast Python linter/formatter. Replaces flake8+black+isort. | HIGH |
-| pytest | >=8.0 | Testing | For framework tests (not ML experiment tests). | HIGH |
+**Why not tsfresh:** tsfresh extracts hundreds of statistical features automatically, which is excellent for large time series but catastrophically bad for 20-80 rows. With 20 samples and 200 extracted features, you get extreme high-dimensionality — guaranteed overfitting. For small-N quarterly forecasting, hand-chosen or agent-chosen lag/rolling features (5-15 features max) are the right approach. Tsfresh is wrong for this use case.
 
-## How Autoresearch Structures Dependencies
+**Why not sktime or darts:** Both are forecasting-first frameworks with native time-series model APIs (ARIMA, Prophet, etc.). This project uses tabular ML (XGBoost, LightGBM) in a supervised regression framing — treating forecasting as "predict y from engineered features of past y." Sktime and Darts would require a paradigm shift away from the existing pipeline. Feature-engine fits naturally into the current sklearn-compatible architecture.
 
-Based on training data analysis of Karpathy's autoresearch (HIGH confidence on patterns, MEDIUM on exact versions):
+---
 
-**Key patterns:**
-- Uses `uv` for package management (uv pip install, uv venv)
-- Minimal dependencies: PyTorch + a few data libraries
-- No experiment tracking library -- just `results.tsv` appended after each run
-- Git operations via shell commands (`subprocess` or direct shell in the agent loop)
-- Single `train.py` file that the agent modifies
-- `run.log` for stdout/stderr capture to avoid flooding the agent context
-- `program.md` as human-editable guidance file
+## New Additions: Metrics
 
-**Translated to this project's domain:**
-- Replace PyTorch with scikit-learn + XGBoost + LightGBM
-- Keep everything else identical: uv, results.tsv, subprocess git, run.log, program.md
+Forecasting metrics do not require new dependencies. All needed metrics are available in scikit-learn (already installed) or implementable as one-liners using numpy (already installed).
 
-## How AIDE Structures Dependencies
+| Metric | Source | Notes |
+|--------|--------|-------|
+| MAE | `sklearn.metrics.mean_absolute_error` | Already in METRIC_MAP as `"mae"` |
+| RMSE | `sklearn.metrics.root_mean_squared_error` (sklearn>=1.4) | Already in METRIC_MAP as `"rmse"` |
+| MAPE | `sklearn.metrics.mean_absolute_percentage_error` | Added in sklearn 0.24. Available in current stack. Add to METRIC_MAP as `"mape"`. |
+| SMAPE | Not in sklearn — implement with numpy | 3-line function: `np.mean(2 * np.abs(y_pred - y_true) / (np.abs(y_true) + np.abs(y_pred)))`. Add as custom scorer. |
 
-Based on training data analysis of Weco AI's AIDE (MEDIUM confidence):
+**Add to prepare.py METRIC_MAP:**
+```python
+"mape": ("neg_mean_absolute_percentage_error", "maximize"),  # sklearn negates error metrics
+"smape": ("neg_smape", "maximize"),  # custom scorer — see below
+```
 
-**Key patterns:**
-- Python package with `pyproject.toml`
-- Dependencies: openai (for LLM calls), tree-sitter (for code analysis), docker (for sandboxing)
-- ML libraries are NOT dependencies of AIDE itself -- they're installed in the execution environment
-- Separate concerns: AIDE is the orchestrator, the experiment code runs in isolation
-- Uses a "journal" data structure (tree of solution nodes) rather than TSV
+**SMAPE as custom sklearn scorer:**
+```python
+from sklearn.metrics import make_scorer
+import numpy as np
 
-**Translated to this project:**
-- This project does NOT need AIDE's approach because Claude Code IS the orchestrator
-- ML libraries ARE direct dependencies (they run in the same environment, not in Docker)
-- No need for tree-sitter or code parsing -- Claude Code handles that natively
-- No need for openai SDK -- Claude Code handles LLM calls natively
+def smape_score(y_true, y_pred):
+    """Symmetric Mean Absolute Percentage Error (lower is better)."""
+    return np.mean(2.0 * np.abs(y_pred - y_true) / (np.abs(y_true) + np.abs(y_pred)))
+
+neg_smape_scorer = make_scorer(smape_score, greater_is_better=False)
+```
+
+**Small-N regime warning on percentage metrics:** MAPE and SMAPE are undefined or extreme when actual values are near zero. For revenue forecasting of real companies, this is rarely a problem (revenue is always positive). If near-zero actuals occur, fall back to MAE.
+
+---
+
+## Updated pyproject.toml
+
+```toml
+[project]
+name = "automl"
+version = "2.0.0"
+description = "Autonomous ML research framework for traditional tabular ML"
+requires-python = ">=3.11"
+dependencies = [
+    "scikit-learn>=1.5",
+    "pandas>=2.0",
+    "numpy>=2.0",
+    "xgboost",
+    "lightgbm",
+    "optuna>=4.0,<5.0",
+    "feature-engine>=1.8,<2.0",
+]
+
+[project.scripts]
+automl = "automl.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/automl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (e.g. scaffold + run train.py)",
+]
+```
+
+---
+
+## Installation Commands
+
+```bash
+# Add new dependencies (uv handles resolution)
+uv add "optuna>=4.0,<5.0"
+uv add "feature-engine>=1.8,<2.0"
+
+# Verify install
+uv run python -c "import optuna; print(optuna.__version__)"
+uv run python -c "import feature_engine; print(feature_engine.__version__)"
+```
+
+---
+
+## Integration Points with Existing Code
+
+### prepare.py (frozen — minimal changes)
+
+`prepare.py` is the frozen data pipeline. Changes must be additive and backward-compatible.
+
+**Required additions to prepare.py:**
+1. Add `"mape"` and `"smape"` to `METRIC_MAP` and `_REGRESSION_METRICS`
+2. Register `neg_smape_scorer` with sklearn's scorer registry so it works with `cross_val_score`
+3. Add `walk_forward_split()` function (wraps `TimeSeriesSplit`) so agent can call it from train.py
+
+**New function signature for prepare.py:**
+```python
+def walk_forward_split(
+    X: pd.DataFrame,
+    y: pd.Series,
+    n_splits: int = 3,
+    test_size: int = 2,
+    gap: int = 0,
+) -> sklearn.model_selection.TimeSeriesSplit:
+    """Return a configured TimeSeriesSplit for temporal validation.
+
+    Use instead of evaluate() when data has a time ordering.
+    Caller is responsible for ordering X/y by time before splitting.
+    """
+```
+
+### train_template.py (mutable — agent replaces this per experiment)
+
+The agent rewrites train.py each experiment. The v2.0 train.py template should demonstrate:
+1. Importing `walk_forward_split` from prepare (alongside existing imports)
+2. Time-ordering data before splitting: `X = X.sort_values('period')` or similar
+3. Using `LagFeatures` from feature-engine inside the sklearn pipeline
+4. Running an Optuna study as the hyperparameter search mechanism
+
+**Key constraint:** Optuna's `study.optimize()` call must complete within `TIME_BUDGET` seconds. The agent should write `study.optimize(objective, n_trials=30, timeout=TIME_BUDGET - 10)` to leave buffer for logging.
+
+### drafts.py (minor change)
+
+Add forecasting-specific algorithm families for the draft phase:
+- `XGBoostForecaster`: XGBoost with lag features
+- `LightGBMForecaster`: LightGBM with rolling mean features
+- `RidgeForecaster`: Ridge regression (strong baseline for small N)
+- `ElasticNetForecaster`: ElasticNet (regularized, good for small N)
+
+Drop SVM from regression families (poor for time series with lag features due to feature scaling sensitivity).
+
+---
 
 ## Alternatives Considered
 
 | Category | Recommended | Alternative | Why Not |
 |----------|-------------|-------------|---------|
-| Package Manager | uv | pip + venv | uv is faster, handles lockfiles, PROJECT.md specifies it |
-| Git Integration | subprocess + git CLI | GitPython | Memory leaks, unnecessary abstraction, harder to debug |
-| Experiment Tracking | results.tsv + git | MLflow | Server dependency, network calls, overkill for file-based tracking |
-| Experiment Tracking | results.tsv + git | Weights & Biases | External service, network dependency, overkill |
-| Process Management | subprocess | Ray | Distributed computing overhead, single-machine project |
-| Hyperparameters | Agent-driven (manual) | Optuna (as orchestrator) | Agent should explore creatively, not delegate to optimization library |
-| Data Validation | pandas assertions | Great Expectations | Heavyweight, the frozen data pipeline handles validation |
-| Boosting | XGBoost + LightGBM | CatBoost only | Less ecosystem support, XGBoost/LightGBM are more commonly used |
+| HPO library | optuna | FLAML | FLAML does algorithm selection too — conflicts with agent-driven model choice. Optuna is a pure optimizer. |
+| HPO library | optuna | hyperopt | Hyperopt has older API, less actively maintained. Optuna's TPE is slightly better and has more sampling algorithms. |
+| Time-series features | feature-engine | tsfresh | tsfresh generates 100s of features — catastrophically overfit at 20-80 rows. Wrong tool for small-N. |
+| Time-series features | feature-engine | manual pandas | Manual `df.shift()` works but loses sklearn Pipeline compatibility, risks train-test leakage in feature creation. feature-engine's fit/transform handles this correctly. |
+| Time-series CV | sklearn TimeSeriesSplit | tscv GapRollForward | tscv has `min_train_size` which is useful at larger N, but with 20-80 rows, sklearn's TimeSeriesSplit with explicit `n_splits=3` and `test_size=2` is sufficient. Avoid the extra dependency. |
+| Forecasting framework | tabular ML + feature engineering | sktime | sktime would require replacing the entire modeling paradigm. Keep tabular ML approach — it generalizes. |
+| Forecasting framework | tabular ML + feature engineering | darts | Same issue as sktime — paradigm mismatch. Also heavyweight (neuralprophet, torch dependencies). |
+| SMAPE implementation | numpy one-liner | ts-metrics library | Any library providing SMAPE is a 3-line numpy implementation wrapped in a package. Not worth the dependency. |
 
-## Project Structure
+---
 
-```
-AutoML/
-  pyproject.toml           # uv-managed dependencies
-  uv.lock                  # Lockfile for reproducibility
-  .python-version          # Pin Python version (e.g., 3.11)
-  src/
-    automl/
-      __init__.py
-      data.py              # FROZEN: data loading, splitting, evaluation
-      model.py             # MUTABLE: agent modifies this
-      run.py               # Entry point: load data, train, evaluate, print metric
-      git_ops.py           # Git operations via subprocess
-      experiment_log.py    # TSV append/read for results.tsv
-  program.md               # Human domain expertise
-  results.tsv              # Experiment log
-  run.log                  # Stdout/stderr from last run
-  CLAUDE.md                # Instructions for Claude Code agent
-```
+## What NOT to Add
 
-## pyproject.toml Skeleton
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| tsfresh | Extracts 700+ features. At 20-80 rows, this is pure overfitting. Curse of dimensionality. | feature-engine with 5-15 manually chosen lag/rolling features |
+| sktime | Full forecasting framework — replaces sklearn, not extends it. Massive paradigm shift. | sklearn TimeSeriesSplit + feature-engine |
+| prophet / neuralprophet | Neural/curve-fitting models. Out of scope (traditional ML only per PROJECT.md). | XGBoost/LightGBM with lag features |
+| statsmodels (ARIMA, SARIMA) | Statistical forecasting models, not tabular ML. Out of scope. | XGBoost/LightGBM with lag features |
+| optuna-dashboard | Web UI for optimization runs. Adds complexity, zero value for autonomous CLI operation. | Read trial results from study object directly |
+| optuna-integration | Adds LightGBMTunerCV etc. Those tools replace the agent's role. Only needed if you want optuna to run its own CV internally. The agent writes the CV loop and calls optuna for sampling. | optuna core only |
+| mlforecast | End-to-end time series ML framework (nixtla). Competes with agent-written pipelines. | Compose primitives manually inside agent-written train.py |
+| ray tune | Distributed HPO. Single machine project. Massive overhead for 30-trial search. | optuna |
 
-```toml
-[project]
-name = "automl"
-version = "0.1.0"
-requires-python = ">=3.11,<3.13"
-dependencies = [
-    "scikit-learn>=1.5,<2.0",
-    "xgboost>=2.1,<3.0",
-    "lightgbm>=4.5,<5.0",
-    "pandas>=2.2,<3.0",
-    "numpy>=1.26,<3.0",
-]
+---
 
-[project.optional-dependencies]
-extra-models = [
-    "catboost>=1.2,<2.0",
-]
-dev = [
-    "ruff>=0.5",
-    "pytest>=8.0",
-]
+## Stack Patterns by Variant
 
-[tool.ruff]
-line-length = 120
-target-version = "py311"
+**If N < 30 quarterly rows (very small):**
+- Reduce to `n_splits=2` in TimeSeriesSplit — you cannot spare more rows for validation
+- Reduce Optuna `n_trials` to 20 — with 3-fold CV, each trial trains 3 models
+- Prefer Ridge/ElasticNet over XGBoost — fewer hyperparameters, less overfitting risk
+- Use MAE or RMSE (not MAPE) — percentage metrics are noisy at small N
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-```
+**If N >= 60 quarterly rows (comfortable):**
+- Use `n_splits=5` in TimeSeriesSplit — enough data per fold
+- Optuna `n_trials=50` is reasonable
+- XGBoost/LightGBM are competitive
+- MAPE and SMAPE are reliable
 
-## Installation
+**If target has zero or near-zero values:**
+- Never use MAPE (undefined at zero) or SMAPE (degenerate at zero)
+- Use MAE or RMSE
+- Add a guard in prepare.py: warn if min(y) < 1% of mean(y)
 
-```bash
-# Install uv (if not already installed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
+---
 
-# Create project and install dependencies
-uv venv
-uv pip install -e ".[dev]"
+## Version Compatibility
 
-# Or with lockfile
-uv lock
-uv sync
-```
+| Package A | Compatible With | Notes |
+|-----------|-----------------|-------|
+| optuna>=4.0 | Python 3.9-3.13 | Confirmed in optuna-integration docs (supports 3.9-3.13) |
+| optuna>=4.0 | xgboost>=2.0 | Integration verified via optuna-examples repo |
+| optuna>=4.0 | lightgbm>=4.0 | LightGBMTunerCV in optuna-integration 4.6.0 |
+| feature-engine>=1.8 | scikit-learn>=1.3 | Tested; feature-engine follows sklearn's API contracts |
+| feature-engine>=1.8 | pandas>=2.0 | Confirmed (feature-engine 1.8.3 released Jan 2025) |
+| sklearn TimeSeriesSplit | Already installed | gap parameter available since sklearn 0.24 |
 
-## Critical Version Verification Needed
-
-The following versions are based on training data (cutoff ~May 2025) and MUST be verified before writing the final pyproject.toml:
-
-| Package | Stated Version | How to Verify |
-|---------|---------------|---------------|
-| scikit-learn | >=1.5 | `pip index versions scikit-learn` |
-| xgboost | >=2.1 | `pip index versions xgboost` |
-| lightgbm | >=4.5 | `pip index versions lightgbm` |
-| pandas | >=2.2 | `pip index versions pandas` |
-| numpy | >=1.26 | `pip index versions numpy` |
-| uv | >=0.4 | `uv --version` |
-
-**Note:** Use `>=` lower bounds (not `==` pins) so that `uv lock` captures the exact resolution. The lockfile provides reproducibility; the pyproject.toml specifies compatibility ranges.
+---
 
 ## Sources
 
-- PROJECT.md (project constraints and decisions)
-- Training data knowledge of autoresearch (Karpathy, late 2024 - early 2025)
-- Training data knowledge of AIDE/Weco AI (2024-2025)
-- Training data knowledge of scikit-learn, XGBoost, LightGBM, pandas, numpy release cycles
-- Training data knowledge of uv (Astral, 2024-2025)
+- [Optuna 4.7.0 official docs](https://optuna.readthedocs.io/en/stable/) — current stable version confirmed HIGH confidence
+- [Optuna PyPI page](https://pypi.org/project/optuna/) — version 4.6+ confirmed Nov 2025
+- [sklearn TimeSeriesSplit docs](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html) — gap parameter, n_splits, test_size parameters confirmed HIGH confidence
+- [sklearn MAPE](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html) — built-in since sklearn 0.24 HIGH confidence
+- [feature-engine PyPI](https://pypi.org/project/feature-engine/) — version 1.9.4 current (Jan 2025) MEDIUM confidence
+- [feature-engine LagFeatures docs](https://feature-engine.trainindata.com/en/1.8.x/api_doc/timeseries/forecasting/LagFeatures.html) — sklearn Pipeline compatibility confirmed MEDIUM confidence
+- [tscv GapRollForward](https://tscv.readthedocs.io/en/latest/generated/tscv.GapRollForward.html) — considered and rejected for small-N regime
+- [Optuna TPE n_startup_trials](https://optuna.readthedocs.io/en/stable/reference/samplers/generated/optuna.samplers.TPESampler.html) — default 20, confirmed via search MEDIUM confidence
+- FLAML vs Optuna comparison — FLAML 2.52% vs Optuna 1.96% improvement over random search (FLAIRS conference paper, WebSearch verified LOW-MEDIUM confidence)
 
-**Confidence caveat:** All version numbers are MEDIUM confidence. They are based on training data and may be one minor version behind current releases. The version ranges (>=X, <Y) are designed to accommodate this -- `uv lock` will resolve to the actual latest compatible versions at install time.
+---
+
+*Stack research for: AutoML v2.0 Results-Driven Forecasting*
+*Researched: 2026-03-14*
