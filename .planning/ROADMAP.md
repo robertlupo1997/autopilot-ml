@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Hooks and Enhanced Scaffolding** - PreToolUse mutable zone enforcement, .claude/settings.json generation, allowedTools, CLAUDE.md upgrade, UX polish (completed 2026-03-12)
 - [x] **Phase 6: Structured Output and Metrics Parsing** - Additive JSON output line in train.py, parse_run_result.py for Phase 7 test harness, optional runner.py JSON parser (completed 2026-03-13)
 - [x] **Phase 7: E2E Validation Test** - Re-run the autonomous loop after all changes, prove the system works unattended end-to-end (gap closure in progress) (completed 2026-03-13)
-- [ ] **Phase 8: Permissions Simplification** - Broaden permissions.allow, add permissions.deny, remove --allowedTools from scripts
+- [x] **Phase 8: Permissions Simplification** - Broaden permissions.allow, add permissions.deny, remove --allowedTools from scripts (completed 2026-03-14)
 - [ ] **Phase 9: Resume Capability** - Checkpoint persistence for session resume via checkpoint.json and --resume CLI flag
 - [ ] **Phase 10: Multi-Agent Swarm** - Parallel claude -p agents with git worktrees, scoreboard coordination, and family partitioning
 
@@ -87,7 +87,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 5. Hooks + Scaffolding | 2/2 | Complete   | 2026-03-12 |
 | 6. Structured Output | 2/2 | Complete   | 2026-03-13 |
 | 7. E2E Validation Test | 3/3 | Complete   | 2026-03-13 |
-| 8. Permissions Simplification | 0/1 | Planned | — |
+| 8. Permissions Simplification | 1/1 | Complete   | 2026-03-14 |
 | 9. Resume Capability | 0/0 | Not planned | — |
 | 10. Multi-Agent Swarm | 0/0 | Not planned | — |
 
@@ -140,7 +140,7 @@ Plans:
 **Goal:** Broaden settings.json allow rules to match --allowedTools patterns, add permissions.deny for prepare.py as defense-in-depth, document the headless permissions limitation
 **Requirements**: PERM-01, PERM-02, PERM-03
 **Depends on:** Phase 7
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 08-01-PLAN.md — Broaden allow, add deny, document headless limitation

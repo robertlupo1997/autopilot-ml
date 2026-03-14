@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 07-03-PLAN.md (Re-validation after permissions fix). v1.0 loop machinery validated: 10 experiments, 0 denials, all Phase 5-6 features confirmed working."
-last_updated: "2026-03-13T03:33:43.603Z"
+stopped_at: Completed 08-01-PLAN.md (Permissions Simplification). Broadened allow rules, added deny rules, documented headless limitation.
+last_updated: "2026-03-14T02:38:08.609Z"
 last_activity: 2026-03-12 -- Completed 05-01 (Hooks + Enhanced Scaffolding - .claude/ generation)
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 16
-  completed_plans: 16
+  total_phases: 10
+  completed_phases: 8
+  total_plans: 17
+  completed_plans: 17
   percent: 60
 ---
 
@@ -58,6 +58,7 @@ Progress: [████████░░] 60% (4/7 phases, 10/11 plans)
 | Phase 07-e2e-validation-test P01 | 15 | 3 tasks | 3 files |
 | Phase 07-e2e-validation-test P02 | 2 | 2 tasks | 3 files |
 | Phase 07-e2e-validation-test P03 | 10 | 2 tasks | 1 files |
+| Phase 08-permissions-simplification P01 | 2 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - [Phase 07-e2e-validation-test]: settings.json permissions.allow ignored in headless claude -p mode; --allowedTools flag is required
 - [Phase 07-e2e-validation-test]: Write(*)/Edit(*) broad patterns required; relative path patterns don't match absolute paths in headless mode
 - [Phase 07-e2e-validation-test]: v1.0 conditional pass: 10 experiments, 0 denials, Phase 5-6 validated; graceful shutdown at max_turns documented as known quality gap
+- [Phase 08-01]: Broad Edit(*)/Write(*) allow rules chosen over narrow path patterns -- narrow paths are silently ignored in headless claude -p mode (GitHub issue #18160)
+- [Phase 08-01]: permissions.deny added for prepare.py as defense-in-depth; guard-frozen.sh hook remains primary enforcement
+- [Phase 08-01]: HOOK-06 updated: --allowedTools still required for headless mode; only --dangerously-skip-permissions eliminated
 
 ### Roadmap Evolution
 
@@ -114,6 +118,9 @@ Recent decisions affecting current work:
 - Phase 5 added: Enhanced scaffolding → restructured to Hooks + enhanced scaffolding (merged old 4+5)
 - Phase 6 added: Structured output and metrics parsing (conditional on Phase 4 findings)
 - Phase 7 added: End-to-end autonomous loop test → restructured to E2E validation test (re-test after fixes)
+- Phase 8 added: Permissions Simplification (v1.1 — broaden permissions.allow, add deny rules, remove --allowedTools from scripts)
+- Phase 9 added: Resume Capability (v1.1 — checkpoint.json persistence, --resume CLI flag, CLAUDE.md Resume Protocol)
+- Phase 10 added: Multi-Agent Swarm (v1.1 — parallel claude -p agents, git worktrees, scoreboard coordination)
 
 ### Pending Todos
 
@@ -125,6 +132,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T03:24:57.799Z
-Stopped at: Completed 07-03-PLAN.md (Re-validation after permissions fix). v1.0 loop machinery validated: 10 experiments, 0 denials, all Phase 5-6 features confirmed working.
+Last session: 2026-03-14T02:38:08.604Z
+Stopped at: Completed 08-01-PLAN.md (Permissions Simplification). Broadened allow rules, added deny rules, documented headless limitation.
 Resume file: None

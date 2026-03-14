@@ -89,9 +89,9 @@
 
 ### Permissions Simplification
 
-- [ ] **PERM-01**: settings.json permissions.allow uses broad patterns (Edit(*), Write(*)) matching --allowedTools
-- [ ] **PERM-02**: settings.json permissions.deny blocks Edit(prepare.py) and Write(prepare.py) as defense-in-depth
-- [ ] **PERM-03**: run-validation-test.sh documents headless permissions limitation (--allowedTools required)
+- [x] **PERM-01**: settings.json permissions.allow uses broad patterns (Edit(*), Write(*)) matching --allowedTools
+- [x] **PERM-02**: settings.json permissions.deny blocks Edit(prepare.py) and Write(prepare.py) as defense-in-depth
+- [x] **PERM-03**: run-validation-test.sh documents headless permissions limitation (--allowedTools required)
 
 ## v2 Requirements
 
