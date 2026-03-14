@@ -30,7 +30,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Refactor the autonomous loop so the agent engineers features, uses Optuna for hyperparameter search, respects time ordering via walk-forward validation, and produces revenue forecasts that beat naive baselines on synthetic quarterly data.
 
 - [x] **Phase 11: Forecasting Infrastructure** - New `forecast.py` frozen module with walk-forward validation, forecasting metrics, and naive baselines; simplified `prepare.py` with date-column support (completed 2026-03-14)
-- [ ] **Phase 12: Forecast Template and Mutable Zone 2** - `train_template_forecast.py` demonstrating correct lag features + Optuna pattern; updated `CLAUDE.md` and `program.md` templates with v2 agent protocol; dual-baseline enforcement gate
+- [x] **Phase 12: Forecast Template and Mutable Zone 2** - `train_template_forecast.py` demonstrating correct lag features + Optuna pattern; updated `CLAUDE.md` and `program.md` templates with v2 agent protocol; dual-baseline enforcement gate (completed 2026-03-14)
 - [ ] **Phase 13: Scaffold and CLI Updates** - `--date-column` CLI flag, scaffold wiring to copy `forecast.py`, compute baselines, render updated templates, expand deny list and guard hook
 - [ ] **Phase 14: E2E Validation** - Full autonomous loop on synthetic 40-quarter dataset; confirm agent beats seasonal naive and completes 5+ keep/revert cycles within 50 turns
 
@@ -62,7 +62,7 @@ Plans:
   2. The template's Optuna `objective(trial)` function calls `walk_forward_evaluate()` from the frozen `forecast` module — not a custom CV loop — verifiable by inspection of the template file
   3. `CLAUDE.md` template states the 15-feature cap, the shift-first mandate for rolling stats, the `min(50, 2*n_rows)` trial budget cap, and the dual-baseline gate (must beat both naive and seasonal-naive to keep) as explicit numbered rules
   4. `guard-frozen.sh` and `settings.json` deny list include both `prepare.py` and `forecast.py` as protected files, verified by running the guard hook against a simulated write to `forecast.py`
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 12-01-PLAN.md — train_template_forecast.py with engineer_features + Optuna + walk_forward_evaluate; claude_forecast.md.tmpl agent protocol; structural tests
@@ -113,6 +113,6 @@ Phases execute in numeric order: 11 → 12 → 13 → 14
 | 9. Resume Capability | v1.0 | 2/2 | Complete | 2026-03-14 |
 | 10. Multi-Agent Swarm | v1.0 | 3/3 | Complete | 2026-03-14 |
 | 11. Forecasting Infrastructure | 2/2 | Complete    | 2026-03-14 | - |
-| 12. Forecast Template + Mutable Zone 2 | 1/2 | In Progress|  | - |
+| 12. Forecast Template + Mutable Zone 2 | 2/2 | Complete   | 2026-03-14 | - |
 | 13. Scaffold and CLI Updates | v2.0 | 0/1 | Not started | - |
 | 14. E2E Validation | v2.0 | 0/1 | Not started | - |

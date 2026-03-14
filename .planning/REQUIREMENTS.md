@@ -22,20 +22,20 @@
 - [x] **BASE-01**: Naive forecast (repeat last known value) computed as mandatory floor
 - [x] **BASE-02**: Seasonal naive (same quarter last year) computed as mandatory floor
 - [x] **BASE-03a**: Baselines computed on same walk-forward splits as agent evaluation (infrastructure)
-- [ ] **BASE-03b**: Agent must beat both baselines to "keep" an experiment; failing to beat naive = auto-revert (enforcement gate in CLAUDE.md protocol and/or `loop_helpers.should_keep()`)
+- [x] **BASE-03b**: Agent must beat both baselines to "keep" an experiment; failing to beat naive = auto-revert (enforcement gate in CLAUDE.md protocol and/or `loop_helpers.should_keep()`)
 
 ### Feature Engineering
 
-- [ ] **FEAT-01**: `train.py` template includes starter feature engineering (lag_1, lag_4, YoY growth rate, rolling_mean_4q)
-- [ ] **FEAT-02**: Agent can add/modify feature engineering code in `train.py` (mutable zone 2 — no separate features.py)
-- [ ] **FEAT-03**: Feature count capped at 15 in CLAUDE.md guidance (small-N overfitting guard)
+- [x] **FEAT-01**: `train.py` template includes starter feature engineering (lag_1, lag_4, YoY growth rate, rolling_mean_4q)
+- [x] **FEAT-02**: Agent can add/modify feature engineering code in `train.py` (mutable zone 2 — no separate features.py)
+- [x] **FEAT-03**: Feature count capped at 15 in CLAUDE.md guidance (small-N overfitting guard)
 - [x] **FEAT-04**: Guard hook updated to protect both `prepare.py` and `forecast.py`
 
 ### Optuna Integration
 
-- [ ] **OPTA-01**: `train.py` template demonstrates optuna `create_study()` with `trial.suggest_*` for hyperparameters
-- [ ] **OPTA-02**: Trial budget capped at `min(50, 2 * n_rows)` in CLAUDE.md guidance
-- [ ] **OPTA-03**: Optuna objective function calls frozen `walk_forward_evaluate()` — agent cannot write own validation loop
+- [x] **OPTA-01**: `train.py` template demonstrates optuna `create_study()` with `trial.suggest_*` for hyperparameters
+- [x] **OPTA-02**: Trial budget capped at `min(50, 2 * n_rows)` in CLAUDE.md guidance
+- [x] **OPTA-03**: Optuna objective function calls frozen `walk_forward_evaluate()` — agent cannot write own validation loop
 
 ### Scaffold & CLI
 
@@ -86,14 +86,14 @@
 | BASE-01 | Phase 11 | Complete |
 | BASE-02 | Phase 11 | Complete |
 | BASE-03a | Phase 11 | Complete |
-| BASE-03b | Phase 12 | Pending |
-| FEAT-01 | Phase 12 | Pending |
-| FEAT-02 | Phase 12 | Pending |
-| FEAT-03 | Phase 12 | Pending |
+| BASE-03b | Phase 12 | Complete |
+| FEAT-01 | Phase 12 | Complete |
+| FEAT-02 | Phase 12 | Complete |
+| FEAT-03 | Phase 12 | Complete |
 | FEAT-04 | Phase 12 | Complete |
-| OPTA-01 | Phase 12 | Pending |
-| OPTA-02 | Phase 12 | Pending |
-| OPTA-03 | Phase 12 | Pending |
+| OPTA-01 | Phase 12 | Complete |
+| OPTA-02 | Phase 12 | Complete |
+| OPTA-03 | Phase 12 | Complete |
 | SCAF-01 | Phase 13 | Pending |
 | SCAF-02 | Phase 13 | Pending |
 | SCAF-03 | Phase 13 | Pending |
