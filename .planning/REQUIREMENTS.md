@@ -197,36 +197,36 @@
 | CLI-02 | Phase 3 | Complete |
 | CLI-03 | Phase 3 | Complete |
 | CLI-04 | Phase 3 | Complete |
-| HOOK-01 | Phase 5 | Planned |
-| HOOK-02 | Phase 5 | Planned |
-| HOOK-03 | Phase 5 | Planned |
-| HOOK-04 | Phase 5 | Planned |
-| HOOK-05 | Phase 5 | Planned |
-| HOOK-06 | Phase 5 | Planned |
-| VAL-01 | Phase 7 | Planned |
-| VAL-02 | Phase 7 | Planned |
+| HOOK-01 | Phase 5 | Complete |
+| HOOK-02 | Phase 5 | Complete |
+| HOOK-03 | Phase 5 | Complete |
+| HOOK-04 | Phase 5 | Complete |
+| HOOK-05 | Phase 5 | Complete |
+| HOOK-06 | Phase 5 | Complete |
+| VAL-01 | Phase 7 | Complete |
+| VAL-02 | Phase 7 | Complete |
 | VAL-03 | Phase 7 | Complete |
 | VAL-04 | Phase 7 | Complete |
 | VAL-05 | Phase 7 | Complete |
 | VAL-06 | Phase 7 | Complete |
 | VAL-07 | Phase 7 | Complete |
-| PERM-01 | Phase 8 | Planned |
-| PERM-02 | Phase 8 | Planned |
-| PERM-03 | Phase 8 | Planned |
-| RES-01 | Phase 9 | Planned |
-| RES-02 | Phase 9 | Planned |
-| RES-03 | Phase 9 | Planned |
-| RES-04 | Phase 9 | Planned |
-| RES-05 | Phase 9 | Planned |
-| SWARM-01 | Phase 10 | Planned |
-| SWARM-02 | Phase 10 | Planned |
-| SWARM-03 | Phase 10 | Planned |
-| SWARM-04 | Phase 10 | Planned |
-| SWARM-05 | Phase 10 | Planned |
-| SWARM-06 | Phase 10 | Planned |
-| SWARM-07 | Phase 10 | Planned |
-| SWARM-08 | Phase 10 | Planned |
-| SWARM-09 | Phase 10 | Planned |
+| PERM-01 | Phase 8 | Complete |
+| PERM-02 | Phase 8 | Complete |
+| PERM-03 | Phase 8 | Complete |
+| RES-01 | Phase 9 | Complete |
+| RES-02 | Phase 9 | Complete |
+| RES-03 | Phase 9 | Complete |
+| RES-04 | Phase 9 | Complete |
+| RES-05 | Phase 9 | Complete |
+| SWARM-01 | Phase 10 | Complete |
+| SWARM-02 | Phase 10 | Complete |
+| SWARM-03 | Phase 10 | Complete |
+| SWARM-04 | Phase 10 | Complete |
+| SWARM-05 | Phase 10 | Complete |
+| SWARM-06 | Phase 10 | Complete |
+| SWARM-07 | Phase 10 | Complete |
+| SWARM-08 | Phase 10 | Complete |
+| SWARM-09 | Phase 10 | Complete |
 
 **Coverage:**
 - v1 requirements: 69 total
@@ -235,4 +235,4 @@
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-14 after Phase 10 planning*
+*Last updated: 2026-03-14 — all 69 requirements complete*
