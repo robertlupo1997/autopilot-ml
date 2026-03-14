@@ -16,6 +16,7 @@ PIPE-07: validate_metric
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Any
 
@@ -107,7 +108,9 @@ def validate_metric(metric_name: str, task: str) -> tuple[str, str]:
 # ---------------------------------------------------------------------------
 
 def load_data(
-    csv_path: str | Path, target_column: str
+    csv_path: str | Path,
+    target_column: str,
+    date_col: str | None = None,
 ) -> tuple[pd.DataFrame, pd.Series, str]:
     """Read a CSV and return features, target, and inferred task type.
 
@@ -117,13 +120,23 @@ def load_data(
         Path to the CSV file.
     target_column : str
         Name of the target column.
+    date_col : str or None
+        Optional name of a date column to parse as datetime and set as the
+        DataFrame index (sorted ascending). When provided the returned X has a
+        DatetimeIndex and the date column is excluded from features.
+        Default is None (backwards-compatible behaviour: RangeIndex).
 
     Returns
     -------
     tuple[DataFrame, Series, str]
         (X, y, task) where task is "classification" or "regression".
     """
-    df = pd.read_csv(csv_path)
+    if date_col is not None:
+        df = pd.read_csv(csv_path, parse_dates=[date_col])
+        df = df.set_index(date_col).sort_index()
+    else:
+        df = pd.read_csv(csv_path)
+
     y = df[target_column]
     X = df.drop(columns=[target_column])
 
@@ -136,6 +149,46 @@ def load_data(
         task = "regression"
 
     return X, y, task
+
+
+# ---------------------------------------------------------------------------
+# PIPE-08: Temporal split (forecasting)
+# ---------------------------------------------------------------------------
+
+def temporal_split(
+    X: pd.DataFrame,
+    y: pd.Series,
+    holdout_fraction: float = 0.15,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+    """Split time-ordered data into train and holdout sets without shuffling.
+
+    Data must be pre-sorted in ascending time order (e.g. by calling
+    load_data with date_col). The last ``holdout_fraction`` of rows become the
+    holdout set. No shuffle is performed, preserving temporal order.
+
+    Invariant: X_train.index[-1] < X_holdout.index[0]
+
+    Parameters
+    ----------
+    X : DataFrame
+        Feature matrix sorted in ascending time order.
+    y : Series
+        Target vector aligned with X.
+    holdout_fraction : float
+        Fraction of rows reserved for holdout (default 0.15).
+
+    Returns
+    -------
+    tuple
+        (X_train, X_holdout, y_train, y_holdout)
+    """
+    split_idx = math.floor(len(X) * (1 - holdout_fraction))
+    return (
+        X.iloc[:split_idx],
+        X.iloc[split_idx:],
+        y.iloc[:split_idx],
+        y.iloc[split_idx:],
+    )
 
 
 # ---------------------------------------------------------------------------
