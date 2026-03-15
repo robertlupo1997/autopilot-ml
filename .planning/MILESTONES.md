@@ -1,5 +1,20 @@
 # Milestones
 
+## v3.0 Intelligent Iteration (Shipped: 2026-03-15)
+
+**Phases completed:** 4 phases, 6 plans | 2,803 LOC source, 5,210 LOC tests (392 tests)
+**Timeline:** 1 day (2026-03-15) | 30 commits
+**Requirements:** 14/14 satisfied | Audit: passed
+
+**Key accomplishments:**
+- `diagnose()` function in forecast.py exposing worst periods, bias, error-growth correlation, and seasonal error patterns
+- `experiments.md` journal seeded at scaffold time with dataset context, baselines, and 4 knowledge sections
+- Full v3.0 protocol in both CLAUDE.md templates: journal read/write, diff-aware iteration, diagnostic recording, hypothesis commits
+- Branch-on-stagnation: best-commit tracking, 3-revert threshold, `git checkout -b explore-{family}` exploration branching
+- E2E validated: MAPE 0.028172, journal actively used by agent (37 to 52 lines), $3.19 cost
+
+---
+
 ## v2.0 Results-Driven Forecasting (Shipped: 2026-03-15)
 
 **Phases completed:** 4 phases, 6 plans, 9 tasks | 2,562 LOC source, 4,417 LOC tests (330 tests)

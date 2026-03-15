@@ -91,6 +91,48 @@
 
 ---
 
+## Milestone: v3.0 — Intelligent Iteration
+
+**Shipped:** 2026-03-15
+**Phases:** 4 | **Plans:** 6 | **Timeline:** 1 day
+
+### What Was Built
+- `diagnose()` function in forecast.py: worst periods, bias direction/magnitude, error-growth correlation, seasonal patterns
+- `experiments.md` journal template seeded at scaffold time with dataset context and baselines
+- Full v3.0 protocol in both CLAUDE.md templates: journal read/write, diff-aware iteration, diagnostic recording, hypothesis commits
+- Branch-on-stagnation: best-commit tracking, 3-revert threshold, `git checkout -b explore-{family}` exploration branching
+- E2E validation harness + FINDINGS.md with live run evidence
+- 62 new tests (330 → 392), 241 LOC new source
+
+### What Worked
+- **Auto-advance across all 4 phases:** Phases 15→16→17→18 planned and executed in a single continuous session — zero manual intervention until Phase 18's human-action checkpoint
+- **Plan checker caught real issue:** Phase 16 plans had a parallel file conflict (both plans modifying claude_forecast.md.tmpl). Checker identified it, planner fixed it (wave 2 + depends_on), second check passed. Without this, execution would have produced merge conflicts.
+- **Template-first protocol design:** All v3.0 behaviors are CLAUDE.md text rules, not code enforcement — the agent reads instructions and follows them. This was proven in the E2E run where the agent correctly used the journal without any code requiring it.
+- **Honest EVAL-04 reporting:** The validation harness and FINDINGS.md documented the stagnation non-triggering honestly rather than faking a pass. Structural tests from Phase 17 provided backup evidence.
+
+### What Was Inefficient
+- **Research disabled:** Skipped research for all 4 phases due to config setting. The phases were template/protocol work where research adds less value, but missing VALIDATION.md files (Nyquist) is a consequence.
+- **CONTEXT.md skipped for all phases:** No discuss-phase was run. For template-focused phases this was acceptable (requirements were clear), but context would have caught the EVAL-04 behavioral coverage issue earlier.
+- **Harness grep pattern mismatch:** `scripts/run-v3-validation-test.sh` line 475 uses `Commit:.*[a-f0-9]{7}` but template writes `**Best commit:**` — a false-negative that concealed a valid PASS as INFO. Caught during integration check but not during execution.
+
+### Patterns Established
+- **Protocol rules scale well:** v3.0 added 5 new protocol rules to both templates without modifying any loop code — CLAUDE.md is the agent's instruction set
+- **Second-pass diagnostic collection:** `_collecting_model_fn` wrapper + second `walk_forward_evaluate` keeps Optuna objective clean while collecting predictions for diagnose()
+- **Probabilistic E2E criteria need structural backup:** EVAL-04 (stagnation branching) depends on agent behavior that may not trigger in every run. Structural tests provide verifiable backup when live observation fails.
+
+### Key Lessons
+1. **Plan checker revision loop works:** The 3-iteration planner→checker→revise loop caught a real dependency issue (Phase 16 parallel file conflict) and fixed it in one revision. This prevented execution-time merge conflicts.
+2. **Skip research judiciously:** For protocol/template phases with clear requirements, research adds overhead. For phases with novel implementation (like diagnose()), research would have added value.
+3. **E2E validation of probabilistic behaviors is hard:** EVAL-04 requires the agent to get stuck, which depends on the dataset difficulty. Future E2E phases should include a "hard mode" dataset option alongside the standard one.
+4. **Auto-advance + auto-approve checkpoints works for verification gates** but correctly stops at human-action gates (Phase 18 live run).
+
+### Cost Observations
+- Model mix: ~15% opus (orchestration), ~85% sonnet (planning, execution, verification)
+- E2E validation run: $3.19 (75 turns, 9 experiments, MAPE 0.028172)
+- Notable: Full v3.0 pipeline (plan+execute all 4 phases + audit) completed in a single session
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -99,6 +141,7 @@
 |-----------|----------|--------|------------|
 | v1.0 | 6 days | 10 | Initial build — research-first, test-fix-test pattern |
 | v2.0 | 2 days | 4 | Auto-advance chain, TDD eliminates Nyquist gaps |
+| v3.0 | 1 day | 4 | Full auto-advance pipeline, plan checker catches real issues |
 
 ### Cumulative Quality
 
@@ -106,10 +149,12 @@
 |-----------|-------|-----------|-----------|---------|
 | v1.0 | 250 | 16 | 1,977 | 3,496 |
 | v2.0 | 330 | 21 | 2,562 | 4,417 |
+| v3.0 | 392 | 21 | 2,803 | 5,210 |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Research existing solutions deeply before building — prevents reinventing solved problems (v1.0, v2.0)
 2. Test in the actual deployment mode (headless claude -p) — interactive and headless have different behaviors (v1.0, v2.0)
 3. TDD during execution is the best validation strategy — 0 Wave 0 gaps in both milestones when tests written inline (v1.0, v2.0)
-4. Auto-advance works for autonomous phases but stops correctly at human gates (v2.0)
+4. Auto-advance works for autonomous phases but stops correctly at human gates (v2.0, v3.0)
+5. Plan checker revision loop catches real dependency issues before execution (v3.0)

@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Intelligent Iteration
-status: planning
-stopped_at: Completed 18-01-PLAN.md (v3.0 E2E validation)
-last_updated: "2026-03-15T19:43:28.358Z"
-last_activity: 2026-03-15 — v3.0 roadmap created, 14/14 requirements mapped
+milestone: null
+milestone_name: null
+status: between_milestones
+stopped_at: v3.0 Intelligent Iteration milestone completed
+last_updated: "2026-03-15T20:30:00Z"
+last_activity: 2026-03-15 — v3.0 milestone completed, archived, tagged
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -21,55 +21,31 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline — running experiments, keeping improvements, reverting failures, and logging everything — without human intervention.
-**Current focus:** v3.0 Intelligent Iteration — Phase 15: Diagnosis and Journal Infrastructure
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 15 of 18 (Diagnosis and Journal Infrastructure)
-Plan: — (ready to plan)
-Status: Ready to plan
-Last activity: 2026-03-15 — v3.0 roadmap created, 14/14 requirements mapped
-
-Progress: [░░░░░░░░░░] 0%
+Phase: — (between milestones)
+Plan: —
+Status: v3.0 complete, ready for next milestone
+Last activity: 2026-03-15 — v3.0 Intelligent Iteration shipped
 
 ## Performance Metrics
 
 **Velocity:**
 - v1.0: 10 phases, 22 plans (6 days)
 - v2.0: 4 phases, 6 plans (2 days)
+- v3.0: 4 phases, 6 plans (1 day)
 
 ## Accumulated Context
 
 ### Decisions
 
-Key decisions from v2.0 (full log in PROJECT.md):
-- Shift-first rolling features for leakage prevention
-- Dual-baseline gate as CLAUDE.md protocol rule
-- Local imports in experiment templates
-- engineer_features called inside model_fn (per-fold)
-
-v3.0 architectural decisions:
+Key decisions carried forward (full log in PROJECT.md):
+- Agent-driven architecture: CLAUDE.md protocol rules over code enforcement
+- Staged mutable zones: v1 modeling → v2 features+Optuna → v3 intelligence → v4 full pipeline
 - Branch-on-stagnation over full MCTS (80% value, 10% complexity)
-- Experiment journal over multi-agent decomposition (simpler, agent-native)
-- Error diagnosis as novel differentiator (neither AIDE nor R&D-Agent does this well)
-- Protocol rules in CLAUDE.md over code enforcement (proven pattern from v2.0)
-- DIAG-01 (diagnose function) must land in Phase 15 before DIAG-02 calls it in Phase 16
-- EXPL-01 (best-commit tracking) must land before EXPL-02/03 use it in Phase 17
-- [Phase 15]: experiments.md is NOT added to .gitignore — it should be committed so knowledge persists across iterations
-- [Phase 15]: Both scaffold paths (standard v1.0 and forecasting) generate experiments.md using the same render_experiments_md function
-- [Phase 15]: diagnose() returns NaN (not 0.0) for zero-variance Pearson r to preserve distinguishability from true zero correlation
-- [Phase 15]: np.corrcoef with explicit std guard avoids scipy dependency for Pearson correlation
-- [Phase 15]: Normalise dates to pd.DatetimeIndex inside diagnose() so callers can pass numpy datetime64 or DatetimeIndex without conversion
-- [Phase 16]: Collect diagnose() predictions via second walk_forward_evaluate pass with _collecting_model_fn wrapper to keep Optuna objective clean
-- [Phase 16]: Use synthetic pd.date_range dates for diagnose() in template since actual DatetimeIndex not available at template level
-- [Phase 16]: Print diagnostic_output: after json_output: to maintain grep-able structured output consistency
-- [Phase 16]: Both templates carry identical v3.0 protocol steps (journal read, diff review, hypothesis commits, journal update) for consistent agent behavior across task types
-- [Phase 16]: Journal update step placed after keep/revert decision so agent records confirmed outcome, not tentative result
-- [Phase 17-branch-on-stagnation]: Stagnation threshold reduced from 5 to 3 consecutive reverts — earlier recovery more efficient with branch-on-stagnation
-- [Phase 17-branch-on-stagnation]: Exploration branches share results.tsv — unified experiment history across all branches
-- [Phase 17-branch-on-stagnation]: Best Result section uses no new template placeholders — agent fills dynamically, render_experiments_md() signature unchanged
-- [Phase 18-e2e-validation]: EVAL-03 PASSED: agent correctly reads/writes experiments.md journal throughout the run
-- [Phase 18-e2e-validation]: EVAL-04 NOT TRIGGERED: max 2 consecutive reverts, agent found good solutions before 3-revert stagnation threshold — expected outcome, structural tests confirm protocol is correct
+- Protocol rules in CLAUDE.md templates, not hardcoded in Python
 
 ### Pending Todos
 
@@ -81,6 +57,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T19:37:03.878Z
-Stopped at: Completed 18-01-PLAN.md (v3.0 E2E validation)
+Last session: 2026-03-15
+Stopped at: v3.0 milestone completed
 Resume file: None

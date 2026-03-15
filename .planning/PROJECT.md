@@ -8,14 +8,15 @@ An autonomous ML research framework for traditional (tabular) machine learning, 
 
 Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline — running experiments, keeping improvements, reverting failures, and logging everything — without human intervention.
 
-## Current State (v2.0 shipped 2026-03-15)
+## Current State (v3.0 shipped 2026-03-15)
 
-**Source:** 2,562 LOC Python across 16 modules | **Tests:** 4,417 LOC, 330 tests | **Commits:** 169
+**Source:** 2,803 LOC Python across 16 modules | **Tests:** 5,210 LOC, 392 tests | **Commits:** ~200
 **CLI:** `uv run automl data.csv target metric` → scaffolded project → `claude -p` autonomous loop
 **Forecasting:** `--date-column date` enables walk-forward CV, Optuna search, shift-first features, dual-baseline gate
 **Swarm:** `--agents N` spawns parallel agents in git worktrees with scoreboard coordination
 **Resume:** `--resume` + checkpoint.json for session recovery
-**E2E validated:** Ridge MAPE 0.029 beats seasonal naive 0.061 (52% improvement) on synthetic quarterly data
+**v3.0 Intelligence:** `diagnose()` error analysis, `experiments.md` journal with knowledge accumulation, diff-aware iteration, hypothesis-driven commits, branch-on-stagnation exploration
+**E2E validated:** MAPE 0.028172 on quarterly data, agent actively reads/writes journal between iterations
 
 ## Requirements
 
@@ -42,14 +43,15 @@ Give Claude Code a dataset and a metric, and it autonomously discovers the best-
 - ✓ CLI `--date-column` flag for forecasting scaffold — v2.0
 - ✓ Dual-baseline gate (beat naive + seasonal naive) — v2.0
 - ✓ E2E validation: agent beats seasonal naive on synthetic data — v2.0
+- ✓ Experiment journal for structured knowledge accumulation across iterations — v3.0
+- ✓ Error diagnosis telling the agent WHERE the model fails — v3.0
+- ✓ Branch-on-stagnation search strategy (AIDE-inspired backtracking) — v3.0
+- ✓ Diff-aware iteration protocol (agent reviews own recent changes) — v3.0
+- ✓ Hypothesis-first iteration protocol in CLAUDE.md — v3.0
 
 ### Active
 
-- [ ] Experiment journal for structured knowledge accumulation across iterations
-- [ ] Error diagnosis telling the agent WHERE the model fails, not just how much
-- [ ] Branch-on-stagnation search strategy (AIDE-inspired backtracking)
-- [ ] Diff-aware iteration protocol (agent reviews own recent changes)
-- [ ] Hypothesis-first iteration protocol in CLAUDE.md
+(No active requirements — next milestone not yet defined)
 
 ### Out of Scope
 
@@ -63,11 +65,9 @@ Give Claude Code a dataset and a metric, and it autonomously discovers the best-
 - LLM-as-judge for solution novelty — real metrics are authoritative
 - Multi-agent research/dev split (R&D-Agent) — single agent + protocol is simpler
 
-## Current Milestone: v3.0 Intelligent Iteration
+## Next Milestone: TBD
 
-**Goal:** Make the agent smarter per iteration — learning from past experiments, diagnosing model weaknesses, and strategically exploring solution space instead of improvising.
-
-**Inspired by:** AIDE (systematic exploration), R&D-Agent (knowledge accumulation), plus novel error diagnosis that neither does well.
+Run `/gsd:new-milestone` to define the next milestone.
 
 ## Context
 
@@ -90,7 +90,8 @@ The framework uses a "staged zones" approach to incrementally expand the agent's
 
 - **v1 (shipped):** Agent modifies modeling only (algorithm, hyperparameters, ensembles)
 - **v2 (shipped):** Agent can also modify feature engineering + Optuna hyperparameter search
-- **v3:** Agent owns the full pipeline (preprocessing, feature engineering, modeling)
+- **v3 (shipped):** Agent has intelligent iteration — journal, diagnosis, diff-aware protocol, exploration branching
+- **v4:** Agent owns the full pipeline (preprocessing, feature engineering, modeling)
 
 This mirrors autoresearch's key insight: constrain the agent to a small, comprehensible scope where changes are attributable and reversible.
 
@@ -147,6 +148,11 @@ Full landscape analysis available at: `Autonomous_ML_Agents_Research_Report.docx
 
 | Separate forecast program.md renderer | Avoids "higher is always better" text from v1.0 template | ✓ Good — `_render_forecast_program_md()` generates minimize-aware content |
 | Optuna for hyperparameter search | Agent writes search space, optimizer explores efficiently | ✓ Good — trial budget capped at min(50, 2*n_rows) |
+| Branch-on-stagnation over full MCTS | 80% of AIDE's value at 10% complexity | ✓ Good — simple threshold + branch, no tree data structure |
+| experiments.md journal over multi-agent decomposition | Single agent + journal simpler than research/dev agent split | ✓ Good — agent actively used journal in E2E validation |
+| diagnose() as novel differentiator | Neither AIDE nor R&D-Agent does structured error diagnosis | ✓ Good — worst periods, bias, seasonal patterns exposed |
+| Protocol rules in CLAUDE.md over code enforcement | Proven pattern from v2.0 dual-baseline gate | ✓ Good — all v3.0 rules are template text, not hardcoded |
+| Second walk_forward_evaluate pass for diagnose() | Keeps Optuna objective clean, collects predictions separately | ✓ Good — no side effects in training loop |
 
 ---
-*Last updated: 2026-03-15 after v3.0 milestone start*
+*Last updated: 2026-03-15 after v3.0 milestone completion*
