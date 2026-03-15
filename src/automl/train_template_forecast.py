@@ -33,7 +33,7 @@ t_start = time.time()
 
 # --- Frozen imports (DO NOT CHANGE THESE IMPORTS) ---
 from prepare import load_data, temporal_split
-from forecast import walk_forward_evaluate, get_forecasting_baselines, compute_metric
+from forecast import walk_forward_evaluate, get_forecasting_baselines, compute_metric, diagnose
 
 # --- Load data ---
 X_raw, y, task = load_data(CSV_PATH, TARGET_COLUMN, date_col=DATE_COLUMN)
@@ -122,6 +122,23 @@ fold_scores = walk_forward_evaluate(best_model_fn, X_input, y_raw, metric=METRIC
 score_mean = float(np.mean(fold_scores))
 score_std = float(np.std(fold_scores))
 
+# --- Diagnostic pass (v3.0: DIAG-02 — collect predictions for diagnose) ---
+_diag_y_true, _diag_y_pred = [], []
+
+
+def _collecting_model_fn(X_train_raw, y_train_raw, X_test_raw):
+    preds = best_model_fn(X_train_raw, y_train_raw, X_test_raw)
+    n_test = len(X_test_raw)
+    n_train = len(y_train_raw)
+    _diag_y_true.extend(y_raw[n_train:n_train + n_test].tolist())
+    _diag_y_pred.extend(preds.tolist())
+    return preds
+
+
+walk_forward_evaluate(_collecting_model_fn, X_input, y_raw, metric=METRIC, n_splits=5)
+_diag_dates = pd.date_range("2000-01-01", periods=len(_diag_y_true), freq="QS")
+_diag_result = diagnose(np.array(_diag_y_true), np.array(_diag_y_pred), _diag_dates)
+
 # --- Print structured output (DO NOT MODIFY THIS BLOCK) ---
 elapsed = time.time() - t_start
 signal.alarm(0)
@@ -146,3 +163,4 @@ _result = {
     "beats_seasonal_naive": score_mean < baselines["seasonal_naive"],
 }
 print(f"json_output: {_json.dumps(_result)}")
+print(f"diagnostic_output: {_json.dumps(_diag_result, default=str)}")
