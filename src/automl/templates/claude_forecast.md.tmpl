@@ -20,6 +20,9 @@ improvements, revert failures, and **NEVER STOP** until manually interrupted.
   each iteration for dataset-specific guidance, known patterns, and strategy hints.
 - `results.tsv` -- Experiment log. Append a row after every run.
 - `run.log` -- Captured output from the last experiment run. Read metrics from here.
+- `experiments.md` -- Experiment journal. Read before each iteration for accumulated
+  knowledge. Update after each experiment with findings. Contains sections: What Works,
+  What Doesn't, Hypotheses Queue, Error Patterns.
 
 ## Session Resume Check
 
@@ -89,7 +92,7 @@ LOOP FOREVER:
 5. **Run:** `uv run python train.py > run.log 2>&1`
    - ALWAYS redirect stdout and stderr to `run.log`.
    - NEVER let training output flood your context window.
-6. **Extract results:** `grep "^metric_value:\|^elapsed_sec:" run.log`
+6. **Extract results:** `grep "^metric_value:\|^elapsed_sec:\|^diagnostic_output:" run.log`
 7. **If grep returns empty -> CRASH:**
    - Read the error: `tail -n 50 run.log`
    - If the error is fixable: fix `train.py` and retry.
@@ -151,3 +154,12 @@ When you approach your turn limit or are interrupted mid-action:
    Always compare: `new_mape < best_mape` for keep/revert decisions.
 10. **ALWAYS redirect output** to `run.log`. Use `> run.log 2>&1` on every run.
     Never let Optuna [I] log lines or training output flood your context window.
+11. **Record diagnostic patterns.** After each experiment, read the `diagnostic_output:`
+    line from `run.log`. It contains worst periods, bias direction, error-growth
+    correlation, and seasonal error pattern. Record actionable findings in the
+    `## Error Patterns` section of `experiments.md`. Example entry:
+    ```
+    - Iteration 3 (Ridge alpha=0.5): bias=over (+12.3), worst=Q4-2023, seasonal Q4 errors 2x avg
+    ```
+    Use these patterns to inform your next hypothesis — e.g., if Q4 errors dominate, add
+    quarter dummy features; if bias is "over", consider regularization or outlier handling.

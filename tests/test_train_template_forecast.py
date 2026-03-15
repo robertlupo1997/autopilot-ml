@@ -231,3 +231,19 @@ class TestClaudeForecastTemplate:
         text = _claude_forecast_text()
         assert "prepare.py" in text, "prepare.py not mentioned as frozen in template"
         assert "forecast.py" in text, "forecast.py not mentioned as frozen in template"
+
+    def test_diag_rule_record_error_patterns(self):
+        """Template must instruct agent to read diagnostic_output and record Error Patterns in experiments.md."""
+        text = _claude_forecast_text()
+        assert "diagnostic_output" in text, (
+            "'diagnostic_output' missing — template must instruct agent to read the "
+            "diagnostic_output line from run.log"
+        )
+        assert "experiments.md" in text, (
+            "'experiments.md' missing — template must instruct agent to record patterns "
+            "in experiments.md"
+        )
+        assert "Error Patterns" in text, (
+            "'Error Patterns' section name missing — template must reference the "
+            "Error Patterns section of experiments.md"
+        )
