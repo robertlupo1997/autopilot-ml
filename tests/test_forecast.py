@@ -10,6 +10,7 @@ Covers:
   BASE-01: get_forecasting_baselines returns "naive" key
   BASE-02: get_forecasting_baselines returns "seasonal_naive" key
   BASE-03a: Baselines use same TimeSeriesSplit as walk_forward_evaluate
+  DIAG-01: diagnose() returns structured error analysis dict
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import (
@@ -28,6 +30,7 @@ from sklearn.metrics import (
 from automl.forecast import (
     METRIC_MAP,
     compute_metric,
+    diagnose,
     get_forecasting_baselines,
     walk_forward_evaluate,
 )
@@ -297,3 +300,186 @@ class TestBaselines:
         # Should not raise; returns valid floats
         assert isinstance(result["seasonal_naive"], float)
         assert not math.isnan(result["seasonal_naive"])
+
+
+# ---------------------------------------------------------------------------
+# TestDiagnose
+# ---------------------------------------------------------------------------
+
+
+class TestDiagnose:
+    """DIAG-01: diagnose() returns structured error analysis dict."""
+
+    @pytest.fixture
+    def diag_inputs(self):
+        """Synthetic y_true, y_pred, dates for diagnosis tests.
+
+        20 quarterly data points, 2015-Q1 through 2019-Q4.
+        y_true: simple upward trend.
+        y_pred: mostly good, a few intentional outliers.
+        """
+        rng = np.random.RandomState(42)
+        dates = pd.date_range(start="2015-01-01", periods=20, freq="QS")
+        y_true = np.arange(1, 21, dtype=float) * 100.0  # [100, 200, ..., 2000]
+        # Mostly close, but index 3 and 15 have large errors
+        y_pred = y_true.copy() + rng.randn(20) * 5.0
+        y_pred[3] += 300.0   # large over-prediction
+        y_pred[15] -= 400.0  # large under-prediction
+        return y_true, y_pred, dates
+
+    def test_diagnose_returns_dict_with_four_keys(self, diag_inputs):
+        """DIAG-01: diagnose() returns dict with exactly worst_periods, bias,
+        error_growth_correlation, seasonal_pattern keys."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates)
+        assert isinstance(result, dict)
+        assert set(result.keys()) == {
+            "worst_periods",
+            "bias",
+            "error_growth_correlation",
+            "seasonal_pattern",
+        }
+
+    def test_diagnose_worst_periods_count(self, diag_inputs):
+        """DIAG-01: worst_periods returns top_n entries (default 5)."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates, top_n=5)
+        assert len(result["worst_periods"]) == 5
+
+    def test_diagnose_worst_periods_sorted_desc(self, diag_inputs):
+        """DIAG-01: worst_periods sorted by abs_error descending."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates, top_n=5)
+        abs_errors = [p["abs_error"] for p in result["worst_periods"]]
+        assert abs_errors == sorted(abs_errors, reverse=True), (
+            f"worst_periods not sorted desc: {abs_errors}"
+        )
+
+    def test_diagnose_worst_periods_fields(self, diag_inputs):
+        """DIAG-01: each worst_period entry has date, y_true, y_pred, error, abs_error."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates)
+        for period in result["worst_periods"]:
+            assert "date" in period
+            assert "y_true" in period
+            assert "y_pred" in period
+            assert "error" in period
+            assert "abs_error" in period
+            # abs_error == abs(error)
+            assert math.isclose(period["abs_error"], abs(period["error"]), rel_tol=1e-9)
+
+    def test_diagnose_worst_periods_contains_known_outliers(self, diag_inputs):
+        """DIAG-01: The two injected outliers (index 3 and 15) appear in worst_periods."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates, top_n=5)
+        worst_dates = [p["date"] for p in result["worst_periods"]]
+        # Dates at index 3 and 15
+        date_3 = dates[3]
+        date_15 = dates[15]
+        assert date_3 in worst_dates or date_3.to_pydatetime() in worst_dates, (
+            f"Expected index-3 date {date_3} in worst_dates: {worst_dates}"
+        )
+        assert date_15 in worst_dates or date_15.to_pydatetime() in worst_dates, (
+            f"Expected index-15 date {date_15} in worst_dates: {worst_dates}"
+        )
+
+    def test_diagnose_bias_direction_over(self):
+        """DIAG-01: bias.direction='over' when mean(y_pred - y_true) > 0."""
+        y_true = np.array([100.0, 200.0, 300.0])
+        y_pred = np.array([120.0, 220.0, 320.0])  # consistently over
+        dates = pd.date_range(start="2020-01-01", periods=3, freq="QS")
+        result = diagnose(y_true, y_pred, dates)
+        assert result["bias"]["direction"] == "over"
+        assert result["bias"]["magnitude"] > 0
+
+    def test_diagnose_bias_direction_under(self):
+        """DIAG-01: bias.direction='under' when mean(y_pred - y_true) < 0."""
+        y_true = np.array([100.0, 200.0, 300.0])
+        y_pred = np.array([80.0, 180.0, 280.0])  # consistently under
+        dates = pd.date_range(start="2020-01-01", periods=3, freq="QS")
+        result = diagnose(y_true, y_pred, dates)
+        assert result["bias"]["direction"] == "under"
+        assert result["bias"]["magnitude"] < 0
+
+    def test_diagnose_bias_direction_neutral(self):
+        """DIAG-01: bias.direction='neutral' when mean(y_pred - y_true) == 0."""
+        y_true = np.array([100.0, 200.0])
+        y_pred = np.array([110.0, 190.0])  # mean diff = 0
+        dates = pd.date_range(start="2020-01-01", periods=2, freq="QS")
+        result = diagnose(y_true, y_pred, dates)
+        assert result["bias"]["direction"] == "neutral"
+        assert result["bias"]["magnitude"] == 0.0
+
+    def test_diagnose_bias_magnitude_value(self):
+        """DIAG-01: bias.magnitude == mean(y_pred - y_true)."""
+        y_true = np.array([100.0, 200.0, 300.0])
+        y_pred = np.array([120.0, 220.0, 320.0])
+        dates = pd.date_range(start="2020-01-01", periods=3, freq="QS")
+        result = diagnose(y_true, y_pred, dates)
+        expected_magnitude = float(np.mean(y_pred - y_true))
+        assert math.isclose(result["bias"]["magnitude"], expected_magnitude, rel_tol=1e-9)
+
+    def test_diagnose_error_growth_correlation_type(self, diag_inputs):
+        """DIAG-01: error_growth_correlation returns float."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates)
+        assert isinstance(result["error_growth_correlation"], float)
+
+    def test_diagnose_error_growth_correlation_range(self, diag_inputs):
+        """DIAG-01: Pearson r in [-1, 1] for valid data."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates)
+        r = result["error_growth_correlation"]
+        assert -1.0 <= r <= 1.0 or math.isnan(r), (
+            f"correlation {r} out of [-1, 1]"
+        )
+
+    def test_diagnose_error_growth_correlation_constant_error(self):
+        """DIAG-01: Constant abs(error) should give NaN correlation (zero variance)."""
+        y_true = np.array([100.0, 200.0, 300.0, 400.0])
+        y_pred = y_true + 10.0  # constant error = 10, abs_error constant
+        dates = pd.date_range(start="2020-01-01", periods=4, freq="QS")
+        result = diagnose(y_true, y_pred, dates)
+        r = result["error_growth_correlation"]
+        # Pearson r with constant std -> NaN
+        assert math.isnan(r), f"Expected NaN for constant error, got {r}"
+
+    def test_diagnose_seasonal_pattern_keys(self, diag_inputs):
+        """DIAG-01: seasonal_pattern has Q1-Q4 keys."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates)
+        sp = result["seasonal_pattern"]
+        assert isinstance(sp, dict)
+        # All quarters present in 20 data points (5 years x 4 quarters)
+        for q in ("Q1", "Q2", "Q3", "Q4"):
+            assert q in sp, f"Missing quarter key {q} in seasonal_pattern: {sp}"
+
+    def test_diagnose_seasonal_pattern_values_are_floats(self, diag_inputs):
+        """DIAG-01: seasonal_pattern values are mean absolute errors (floats >= 0)."""
+        y_true, y_pred, dates = diag_inputs
+        result = diagnose(y_true, y_pred, dates)
+        for q, v in result["seasonal_pattern"].items():
+            assert isinstance(v, float), f"{q} value is not float: {v}"
+            assert v >= 0.0, f"{q} MAE {v} is negative"
+
+    def test_diagnose_top_n_fewer_than_data(self):
+        """DIAG-01: top_n larger than data returns all data points, not top_n."""
+        y_true = np.array([100.0, 200.0, 300.0])
+        y_pred = np.array([110.0, 190.0, 310.0])
+        dates = pd.date_range(start="2020-01-01", periods=3, freq="QS")
+        result = diagnose(y_true, y_pred, dates, top_n=10)  # top_n > len
+        assert len(result["worst_periods"]) == 3  # returns all 3
+
+    def test_diagnose_works_with_numpy_array_dates(self, diag_inputs):
+        """DIAG-01: diagnose() works with numpy datetime64 array for dates."""
+        y_true, y_pred, dates = diag_inputs
+        # Convert DatetimeIndex to numpy datetime64 array
+        dates_np = dates.values
+        result = diagnose(y_true, y_pred, dates_np)
+        assert isinstance(result, dict)
+        assert len(result["worst_periods"]) == 5
+
+    def test_diagnose_import(self):
+        """DIAG-01: from automl.forecast import diagnose works."""
+        # Already imported at top of module; this is a canary
+        assert callable(diagnose)
