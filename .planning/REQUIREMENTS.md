@@ -7,9 +7,9 @@
 
 ### Knowledge Accumulation
 
-- [ ] **KNOW-01**: Agent maintains an `experiments.md` journal in the experiment directory with sections: What Works, What Doesn't, Hypotheses Queue, Error Patterns
+- [x] **KNOW-01**: Agent maintains an `experiments.md` journal in the experiment directory with sections: What Works, What Doesn't, Hypotheses Queue, Error Patterns
 - [ ] **KNOW-02**: CLAUDE.md template instructs the agent to read `experiments.md` before each iteration and update it after results
-- [ ] **KNOW-03**: Scaffold creates a starter `experiments.md` with dataset summary and baseline scores pre-populated
+- [x] **KNOW-03**: Scaffold creates a starter `experiments.md` with dataset summary and baseline scores pre-populated
 
 ### Error Diagnosis
 
@@ -63,9 +63,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| KNOW-01 | Phase 15 | Pending |
+| KNOW-01 | Phase 15 | Complete |
 | KNOW-02 | Phase 16 | Pending |
-| KNOW-03 | Phase 15 | Pending |
+| KNOW-03 | Phase 15 | Complete |
 | DIAG-01 | Phase 15 | Pending |
 | DIAG-02 | Phase 16 | Pending |
 | DIAG-03 | Phase 16 | Pending |

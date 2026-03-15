@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Intelligent Iteration
-status: ready_to_plan
-stopped_at: Roadmap created — Phase 15 ready to plan
-last_updated: "2026-03-15"
-last_activity: 2026-03-15 — v3.0 roadmap created (4 phases, 14 requirements mapped)
+status: planning
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-03-15T18:35:27.148Z"
+last_activity: 2026-03-15 — v3.0 roadmap created, 14/14 requirements mapped
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 6
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -55,6 +55,8 @@ v3.0 architectural decisions:
 - Protocol rules in CLAUDE.md over code enforcement (proven pattern from v2.0)
 - DIAG-01 (diagnose function) must land in Phase 15 before DIAG-02 calls it in Phase 16
 - EXPL-01 (best-commit tracking) must land before EXPL-02/03 use it in Phase 17
+- [Phase 15]: experiments.md is NOT added to .gitignore — it should be committed so knowledge persists across iterations
+- [Phase 15]: Both scaffold paths (standard v1.0 and forecasting) generate experiments.md using the same render_experiments_md function
 
 ### Pending Todos
 
@@ -66,6 +68,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15
-Stopped at: Roadmap created — ready to plan Phase 15
+Last session: 2026-03-15T18:35:27.146Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None
