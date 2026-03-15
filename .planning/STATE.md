@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Results-Driven Forecasting
 status: planning
-stopped_at: Completed 13-01-PLAN.md (scaffold and CLI updates)
-last_updated: "2026-03-14T23:43:47.975Z"
+stopped_at: Completed 14-01-PLAN.md (E2E forecasting validation)
+last_updated: "2026-03-15T01:03:07.786Z"
 last_activity: 2026-03-14 — v2.0 roadmap created
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 4
+  total_plans: 6
+  completed_plans: 6
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 12 P02 | 480 | 1 tasks | 2 files |
 | Phase 12 P01 | 720 | 1 tasks | 3 files |
 | Phase 13 P01 | 204 | 2 tasks | 5 files |
+| Phase 14-e2e-validation P01 | 20 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase 12]: MAPE direction explicit in CLAUDE.md: keep if new_mape < best_mape, not should_keep() which assumes higher=better
 - [Phase 13]: scaffold_experiment import moved to cli.py module level for testability (patch support)
 - [Phase 13]: _render_forecast_program_md() built separately from render_program_md() to avoid 'higher is always better' text in forecasting program.md
+- [Phase 14-e2e-validation]: Best kept MAPE sourced from results.tsv not last json_output — last json_output may reflect a reverted experiment
+- [Phase 14-e2e-validation]: stop_reason=tool_use is a known limitation (same as Phase 7) — all deliverables written before max-turns wall hit, no impact on validation
 
 ### Pending Todos
 
@@ -90,6 +93,6 @@ None at roadmap stage. Key risks documented in research:
 
 ## Session Continuity
 
-Last session: 2026-03-14T23:41:14.300Z
-Stopped at: Completed 13-01-PLAN.md (scaffold and CLI updates)
+Last session: 2026-03-15T01:03:07.782Z
+Stopped at: Completed 14-01-PLAN.md (E2E forecasting validation)
 Resume file: None

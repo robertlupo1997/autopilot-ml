@@ -45,8 +45,8 @@
 
 ### Validation
 
-- [ ] **EVAL-01**: End-to-end test on synthetic quarterly revenue data (40 quarters) produces forecast that beats seasonal naive
-- [ ] **EVAL-02**: Agent completes at least 5 keep/revert cycles within 50 turns (efficiency improvement over v1.0's 11 experiments)
+- [x] **EVAL-01**: End-to-end test on synthetic quarterly revenue data (40 quarters) produces forecast that beats seasonal naive
+- [x] **EVAL-02**: Agent completes at least 5 keep/revert cycles within 50 turns (efficiency improvement over v1.0's 11 experiments)
 
 ## v3.0 Requirements
 
@@ -97,8 +97,8 @@
 | SCAF-01 | Phase 13 | Complete |
 | SCAF-02 | Phase 13 | Complete |
 | SCAF-03 | Phase 13 | Complete |
-| EVAL-01 | Phase 14 | Pending |
-| EVAL-02 | Phase 14 | Pending |
+| EVAL-01 | Phase 14 | Complete |
+| EVAL-02 | Phase 14 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 22 total (BASE-03 split into BASE-03a infrastructure + BASE-03b enforcement)
