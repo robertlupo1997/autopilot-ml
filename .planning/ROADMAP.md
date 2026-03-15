@@ -76,8 +76,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — diagnose() call in train_template_forecast.py + DIAG-03 template rule
-- [ ] 16-02-PLAN.md — CLAUDE.md template updates (KNOW-02, PROT-01, PROT-02, PROT-03)
+- [x] 16-01-PLAN.md — diagnose() call in train_template_forecast.py + DIAG-03 template rule
+- [x] 16-02-PLAN.md — CLAUDE.md template updates (KNOW-02, PROT-01, PROT-02, PROT-03)
 
 ### Phase 17: Branch-on-Stagnation
 **Goal**: The agent tracks the best result it has ever achieved and, when stuck in a losing streak, branches back to that best commit and tries a different model family instead of continuing to iterate from a degraded state
@@ -87,10 +87,10 @@ Plans:
   1. `experiments.md` contains a best-ever commit hash and score that is updated on each "keep" decision
   2. Both CLAUDE.md templates define stagnation as 3+ consecutive reverts and instruct the agent to branch from best-ever commit when stagnation is detected
   3. Agent can execute `git checkout -b explore-{family} {best_commit}` to create an exploration branch, with its results recorded in the same `results.tsv`
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 17-01: Best-commit tracking in experiments.md + stagnation + exploration branch protocol in templates
+- [ ] 17-01-PLAN.md — Best-commit tracking in experiments.md + exploration branch protocol in both templates
 
 ### Phase 18: E2E Validation
 **Goal**: Live runs on synthetic data demonstrate both v3.0 capabilities — the agent visibly using the journal between iterations, and the agent triggering branch-on-stagnation after a losing streak
@@ -124,6 +124,6 @@ Plans:
 | 13. Scaffold and CLI Updates | v2.0 | 1/1 | Complete | 2026-03-14 |
 | 14. E2E Validation | v2.0 | 1/1 | Complete | 2026-03-15 |
 | 15. Diagnosis and Journal Infrastructure | v3.0 | 2/2 | Complete | 2026-03-15 |
-| 16. Template and Protocol Updates | 2/2 | Complete    | 2026-03-15 | - |
+| 16. Template and Protocol Updates | v3.0 | 2/2 | Complete | 2026-03-15 |
 | 17. Branch-on-Stagnation | v3.0 | 0/1 | Not started | - |
 | 18. E2E Validation | v3.0 | 0/1 | Not started | - |
