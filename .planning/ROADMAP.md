@@ -42,7 +42,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 **Milestone Goal:** Make the agent smarter per iteration — learning from past experiments, diagnosing model weaknesses, and strategically exploring solution space instead of improvising.
 
-- [ ] **Phase 15: Diagnosis and Journal Infrastructure** - diagnose() function in forecast.py, experiments.md journal, scaffold pre-population
+- [x] **Phase 15: Diagnosis and Journal Infrastructure** - diagnose() function in forecast.py, experiments.md journal, scaffold pre-population (completed 2026-03-15)
 - [ ] **Phase 16: Template and Protocol Updates** - All CLAUDE.md protocol rules: journal read/write, diagnostic recording, diff-aware iteration, hypothesis commits
 - [ ] **Phase 17: Branch-on-Stagnation** - Best-commit tracking, stagnation detection, exploration branch mechanics
 - [ ] **Phase 18: E2E Validation** - Observed journal usage and branch-on-stagnation triggering in live runs
@@ -123,7 +123,7 @@ Plans:
 | 12. Forecast Template + Zone 2 | v2.0 | 2/2 | Complete | 2026-03-14 |
 | 13. Scaffold and CLI Updates | v2.0 | 1/1 | Complete | 2026-03-14 |
 | 14. E2E Validation | v2.0 | 1/1 | Complete | 2026-03-15 |
-| 15. Diagnosis and Journal Infrastructure | 1/2 | In Progress|  | - |
+| 15. Diagnosis and Journal Infrastructure | 2/2 | Complete   | 2026-03-15 | - |
 | 16. Template and Protocol Updates | v3.0 | 0/2 | Not started | - |
 | 17. Branch-on-Stagnation | v3.0 | 0/1 | Not started | - |
 | 18. E2E Validation | v3.0 | 0/1 | Not started | - |

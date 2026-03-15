@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Intelligent Iteration
 status: planning
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-03-15T18:35:27.148Z"
+stopped_at: Completed 15-01-PLAN.md (diagnose() function in forecast.py)
+last_updated: "2026-03-15T18:36:27.271Z"
 last_activity: 2026-03-15 — v3.0 roadmap created, 14/14 requirements mapped
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -57,6 +57,9 @@ v3.0 architectural decisions:
 - EXPL-01 (best-commit tracking) must land before EXPL-02/03 use it in Phase 17
 - [Phase 15]: experiments.md is NOT added to .gitignore — it should be committed so knowledge persists across iterations
 - [Phase 15]: Both scaffold paths (standard v1.0 and forecasting) generate experiments.md using the same render_experiments_md function
+- [Phase 15]: diagnose() returns NaN (not 0.0) for zero-variance Pearson r to preserve distinguishability from true zero correlation
+- [Phase 15]: np.corrcoef with explicit std guard avoids scipy dependency for Pearson correlation
+- [Phase 15]: Normalise dates to pd.DatetimeIndex inside diagnose() so callers can pass numpy datetime64 or DatetimeIndex without conversion
 
 ### Pending Todos
 
@@ -68,6 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:35:27.146Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-03-15T18:36:27.268Z
+Stopped at: Completed 15-01-PLAN.md (diagnose() function in forecast.py)
 Resume file: None
