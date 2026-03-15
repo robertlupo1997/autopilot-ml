@@ -31,8 +31,8 @@
 
 ### Validation
 
-- [ ] **EVAL-03**: E2E test on synthetic data demonstrates the agent using the experiment journal (reads before iteration, updates after)
-- [ ] **EVAL-04**: E2E test demonstrates branch-on-stagnation triggering (agent branches after 3+ reverts and tries a different approach)
+- [x] **EVAL-03**: E2E test on synthetic data demonstrates the agent using the experiment journal (reads before iteration, updates after)
+- [x] **EVAL-04**: E2E test demonstrates branch-on-stagnation triggering (agent branches after 3+ reverts and tries a different approach)
 
 ## v4.0 Requirements
 
@@ -75,8 +75,8 @@
 | PROT-01 | Phase 16 | Complete |
 | PROT-02 | Phase 16 | Complete |
 | PROT-03 | Phase 16 | Complete |
-| EVAL-03 | Phase 18 | Pending |
-| EVAL-04 | Phase 18 | Pending |
+| EVAL-03 | Phase 18 | Complete |
+| EVAL-04 | Phase 18 | Complete |
 
 **Coverage:**
 - v3.0 requirements: 14 total

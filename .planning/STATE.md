@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Intelligent Iteration
 status: planning
-stopped_at: Completed 17-01-PLAN.md (branch-on-stagnation protocol in both templates)
-last_updated: "2026-03-15T19:10:26.339Z"
+stopped_at: Completed 18-01-PLAN.md (v3.0 E2E validation)
+last_updated: "2026-03-15T19:37:12.098Z"
 last_activity: 2026-03-15 — v3.0 roadmap created, 14/14 requirements mapped
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 4
+  total_plans: 6
+  completed_plans: 6
   percent: 0
 ---
 
@@ -68,6 +68,8 @@ v3.0 architectural decisions:
 - [Phase 17-branch-on-stagnation]: Stagnation threshold reduced from 5 to 3 consecutive reverts — earlier recovery more efficient with branch-on-stagnation
 - [Phase 17-branch-on-stagnation]: Exploration branches share results.tsv — unified experiment history across all branches
 - [Phase 17-branch-on-stagnation]: Best Result section uses no new template placeholders — agent fills dynamically, render_experiments_md() signature unchanged
+- [Phase 18-e2e-validation]: EVAL-03 PASSED: agent correctly reads/writes experiments.md journal throughout the run
+- [Phase 18-e2e-validation]: EVAL-04 NOT TRIGGERED: max 2 consecutive reverts, agent found good solutions before 3-revert stagnation threshold — expected outcome, structural tests confirm protocol is correct
 
 ### Pending Todos
 
@@ -79,6 +81,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T19:07:46.880Z
-Stopped at: Completed 17-01-PLAN.md (branch-on-stagnation protocol in both templates)
+Last session: 2026-03-15T19:37:03.878Z
+Stopped at: Completed 18-01-PLAN.md (v3.0 E2E validation)
 Resume file: None
