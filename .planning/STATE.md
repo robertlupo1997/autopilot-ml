@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Intelligent Iteration
 status: planning
-stopped_at: Completed 16-01-PLAN.md (diagnose() integration and DIAG-03 protocol rule)
-last_updated: "2026-03-15T18:51:58.954Z"
+stopped_at: Completed 16-02-PLAN.md (v3.0 protocol rules in both templates)
+last_updated: "2026-03-15T18:56:01.016Z"
 last_activity: 2026-03-15 — v3.0 roadmap created, 14/14 requirements mapped
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -63,6 +63,8 @@ v3.0 architectural decisions:
 - [Phase 16]: Collect diagnose() predictions via second walk_forward_evaluate pass with _collecting_model_fn wrapper to keep Optuna objective clean
 - [Phase 16]: Use synthetic pd.date_range dates for diagnose() in template since actual DatetimeIndex not available at template level
 - [Phase 16]: Print diagnostic_output: after json_output: to maintain grep-able structured output consistency
+- [Phase 16]: Both templates carry identical v3.0 protocol steps (journal read, diff review, hypothesis commits, journal update) for consistent agent behavior across task types
+- [Phase 16]: Journal update step placed after keep/revert decision so agent records confirmed outcome, not tentative result
 
 ### Pending Todos
 
@@ -74,6 +76,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:51:56.286Z
-Stopped at: Completed 16-01-PLAN.md (diagnose() integration and DIAG-03 protocol rule)
+Last session: 2026-03-15T18:56:01.011Z
+Stopped at: Completed 16-02-PLAN.md (v3.0 protocol rules in both templates)
 Resume file: None

@@ -8,7 +8,7 @@
 ### Knowledge Accumulation
 
 - [x] **KNOW-01**: Agent maintains an `experiments.md` journal in the experiment directory with sections: What Works, What Doesn't, Hypotheses Queue, Error Patterns
-- [ ] **KNOW-02**: CLAUDE.md template instructs the agent to read `experiments.md` before each iteration and update it after results
+- [x] **KNOW-02**: CLAUDE.md template instructs the agent to read `experiments.md` before each iteration and update it after results
 - [x] **KNOW-03**: Scaffold creates a starter `experiments.md` with dataset summary and baseline scores pre-populated
 
 ### Error Diagnosis
@@ -25,9 +25,9 @@
 
 ### Iteration Protocol
 
-- [ ] **PROT-01**: CLAUDE.md template instructs agent to run `git diff HEAD~1 -- train.py` and `git log --oneline -5` before each iteration to review recent changes
-- [ ] **PROT-02**: Agent writes a `## Hypothesis` section in each commit message explaining what it expects to improve and why
-- [ ] **PROT-03**: Both `claude.md.tmpl` (v1 classification) and `claude_forecast.md.tmpl` (v2 forecasting) templates updated with all v3.0 protocol rules
+- [x] **PROT-01**: CLAUDE.md template instructs agent to run `git diff HEAD~1 -- train.py` and `git log --oneline -5` before each iteration to review recent changes
+- [x] **PROT-02**: Agent writes a `## Hypothesis` section in each commit message explaining what it expects to improve and why
+- [x] **PROT-03**: Both `claude.md.tmpl` (v1 classification) and `claude_forecast.md.tmpl` (v2 forecasting) templates updated with all v3.0 protocol rules
 
 ### Validation
 
@@ -64,7 +64,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | KNOW-01 | Phase 15 | Complete |
-| KNOW-02 | Phase 16 | Pending |
+| KNOW-02 | Phase 16 | Complete |
 | KNOW-03 | Phase 15 | Complete |
 | DIAG-01 | Phase 15 | Complete |
 | DIAG-02 | Phase 16 | Complete |
@@ -72,9 +72,9 @@
 | EXPL-01 | Phase 17 | Pending |
 | EXPL-02 | Phase 17 | Pending |
 | EXPL-03 | Phase 17 | Pending |
-| PROT-01 | Phase 16 | Pending |
-| PROT-02 | Phase 16 | Pending |
-| PROT-03 | Phase 16 | Pending |
+| PROT-01 | Phase 16 | Complete |
+| PROT-02 | Phase 16 | Complete |
+| PROT-03 | Phase 16 | Complete |
 | EVAL-03 | Phase 18 | Pending |
 | EVAL-04 | Phase 18 | Pending |
 
