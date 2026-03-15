@@ -8,16 +8,18 @@ An autonomous ML research framework for traditional (tabular) machine learning, 
 
 Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline — running experiments, keeping improvements, reverting failures, and logging everything — without human intervention.
 
-## Current State (v1.0 shipped 2026-03-14)
+## Current State (v2.0 shipped 2026-03-15)
 
-**Source:** 1,977 LOC Python across 14 modules | **Tests:** 3,496 LOC, 250 tests | **Commits:** 124
+**Source:** 2,562 LOC Python across 16 modules | **Tests:** 4,417 LOC, 330 tests | **Commits:** 169
 **CLI:** `uv run automl data.csv target metric` → scaffolded project → `claude -p` autonomous loop
+**Forecasting:** `--date-column date` enables walk-forward CV, Optuna search, shift-first features, dual-baseline gate
 **Swarm:** `--agents N` spawns parallel agents in git worktrees with scoreboard coordination
 **Resume:** `--resume` + checkpoint.json for session recovery
+**E2E validated:** Ridge MAPE 0.029 beats seasonal naive 0.061 (52% improvement) on synthetic quarterly data
 
 ## Requirements
 
-### Validated (v1.0)
+### Validated
 
 - ✓ Generic framework accepting any CSV + goal description + evaluation metric — v1.0
 - ✓ Frozen data pipeline (data loading, train/test split, evaluation function) — v1.0
@@ -32,30 +34,27 @@ Give Claude Code a dataset and a metric, and it autonomously discovers the best-
 - ✓ PreToolUse hooks for frozen file enforcement — v1.0
 - ✓ Checkpoint persistence and session resume — v1.0
 - ✓ Multi-agent swarm with scoreboard coordination — v1.0
+- ✓ Walk-forward temporal validation (no future data leakage) — v2.0
+- ✓ Forecasting metrics (MAPE, MAE, RMSE on dollar values) — v2.0
+- ✓ Agent engineers time-series features (lags, rolling stats, growth rates) — v2.0
+- ✓ Optuna hyperparameter search in train.py — v2.0
+- ✓ Mutable zone 2 (feature engineering + modeling) — v2.0
+- ✓ CLI `--date-column` flag for forecasting scaffold — v2.0
+- ✓ Dual-baseline gate (beat naive + seasonal naive) — v2.0
+- ✓ E2E validation: agent beats seasonal naive on synthetic data — v2.0
 
 ### Active
 
-- ✓ Walk-forward temporal validation replaces random CV splits — no future data leakage — Phase 11
-- ✓ Forecasting-appropriate metrics (MAPE, MAE, RMSE on dollar values) replace classification accuracy — Phase 11
-- ✓ Agent engineers time-series features (lags, rolling stats, growth rates, seasonality) from raw historicals — Phase 12
-- ✓ Optuna replaces manual hyperparameter guessing inside train.py — agent writes search space, optimizer runs trials — Phase 12
-- ✓ Agent can modify both feature engineering and modeling (mutable zone 2) — Phase 12
-- ✓ CLI scaffolds complete forecasting project with `--date-column` flag — Phase 13
 - [ ] System produces better forecasts than a basic regression script on real financial data
-
-## Current Milestone: v2.0 Results-Driven Forecasting
-
-**Goal:** Refactor the autonomous loop so the agent engineers features, uses efficient hyperparameter search (optuna), respects time ordering, and produces forecasts that beat traditional approaches on real corporate financial data.
-
-**Target use case:** Single-company quarterly revenue forecasting from historical financials.
+- [ ] Full pipeline modification (mutable zone 3) — agent owns preprocessing too
+- [ ] Branch-on-best search strategy (AIDE-inspired tree backtracking)
 
 ### Out of Scope
 
-- Full pipeline modification (mutable zone 3) — v3
 - MLE-bench integration — future milestone (requires Docker harness)
 - Deep learning / neural network support — traditional ML only
 - Multi-GPU or distributed training — single machine only
-- Multi-company / cross-company models — v2 focuses on single-company forecasting
+- Multi-company / cross-company models — single-company forecasting focus
 - Real-time data ingestion — batch CSV input only
 
 ## Context
@@ -77,9 +76,9 @@ This project synthesizes patterns from 6 major autonomous ML frameworks:
 
 The framework uses a "staged zones" approach to incrementally expand the agent's scope:
 
-- **v1 (this milestone):** Agent modifies modeling only (algorithm, hyperparameters, ensembles)
-- **v2:** Agent can also modify feature engineering and preprocessing
-- **v3:** Agent owns the full pipeline
+- **v1 (shipped):** Agent modifies modeling only (algorithm, hyperparameters, ensembles)
+- **v2 (shipped):** Agent can also modify feature engineering + Optuna hyperparameter search
+- **v3:** Agent owns the full pipeline (preprocessing, feature engineering, modeling)
 
 This mirrors autoresearch's key insight: constrain the agent to a small, comprehensible scope where changes are attributable and reversible.
 
@@ -134,5 +133,8 @@ Full landscape analysis available at: `Autonomous_ML_Agents_Research_Report.docx
 | Dual-baseline gate | Agent must beat both naive and seasonal-naive to keep a result | ✓ Good — protocol rule in CLAUDE.md, not hardcoded in loop_helpers |
 | Local imports in experiment templates | `from forecast import ...` not `from automl.forecast import ...` | ✓ Good — matches standalone experiment directory layout |
 
+| Separate forecast program.md renderer | Avoids "higher is always better" text from v1.0 template | ✓ Good — `_render_forecast_program_md()` generates minimize-aware content |
+| Optuna for hyperparameter search | Agent writes search space, optimizer explores efficiently | ✓ Good — trial budget capped at min(50, 2*n_rows) |
+
 ---
-*Last updated: 2026-03-14 after Phase 13*
+*Last updated: 2026-03-15 after v2.0 milestone*
