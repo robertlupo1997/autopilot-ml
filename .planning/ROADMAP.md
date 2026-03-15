@@ -57,11 +57,11 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
   1. `forecast.py diagnose(y_true, y_pred, dates)` returns worst periods, bias direction/magnitude, error-vs-growth correlation, and seasonal error pattern
   2. `experiments.md` exists in every newly scaffolded experiment directory with dataset summary and baseline scores pre-populated
   3. `experiments.md` contains the four required sections: What Works, What Doesn't, Hypotheses Queue, Error Patterns
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 15-01: diagnose() function in forecast.py
-- [ ] 15-02: experiments.md journal structure and scaffold integration
+- [ ] 15-01-PLAN.md — diagnose() error analysis function in forecast.py (TDD)
+- [ ] 15-02-PLAN.md — experiments.md journal template and scaffold integration
 
 ### Phase 16: Template and Protocol Updates
 **Goal**: Both CLAUDE.md templates (classification and forecasting) carry the full v3.0 protocol — agents read the journal before each iteration, update it after, record diagnostic output, review their own diffs, and write hypothesis commit messages
