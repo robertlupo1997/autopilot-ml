@@ -2,9 +2,9 @@
 
 THIS FILE IS FROZEN. Do not modify during experiments.
 
-Provides leakage-free temporal evaluation, forecasting metrics, and naive baselines
-for time-series ML. All test-fold indices are strictly after all train-fold indices
-— guaranteed by sklearn.model_selection.TimeSeriesSplit.
+Provides leakage-free temporal evaluation, forecasting metrics, naive baselines,
+and error diagnostics for time-series ML. All test-fold indices are strictly after
+all train-fold indices — guaranteed by sklearn.model_selection.TimeSeriesSplit.
 
 Dollar-scale contract (TVAL-02)
 --------------------------------
@@ -25,15 +25,17 @@ Exports
 - compute_metric(metric_name, y_true, y_pred) -> float
 - walk_forward_evaluate(model_fn, X, y, metric, n_splits, gap) -> list[float]
 - get_forecasting_baselines(y, n_splits, gap, period) -> dict[str, float]
+- diagnose(y_true, y_pred, dates, top_n, period) -> dict
 """
 
 from __future__ import annotations
 
 import math
 import warnings
-from typing import Callable
+from typing import Callable, Union
 
 import numpy as np
+import pandas as pd
 from sklearn.metrics import (
     mean_absolute_error,
     mean_absolute_percentage_error,
@@ -278,4 +280,135 @@ def get_forecasting_baselines(
     return {
         "naive": float(np.mean(naive_mapes)),
         "seasonal_naive": float(np.mean(seasonal_mapes)),
+    }
+
+
+# ---------------------------------------------------------------------------
+# diagnose
+# ---------------------------------------------------------------------------
+
+
+def diagnose(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    dates: Union[np.ndarray, "pd.DatetimeIndex"],
+    top_n: int = 5,
+    period: int = 4,
+) -> dict:
+    """Diagnose prediction errors for actionable feedback.
+
+    Analyses the residuals between ``y_true`` and ``y_pred`` and returns a
+    structured dictionary the agent can use to guide its next experiment.
+
+    Parameters
+    ----------
+    y_true : array-like
+        Ground-truth values, shape (n_samples,).
+    y_pred : array-like
+        Predicted values, shape (n_samples,).
+    dates : array-like of datetime
+        Timestamps corresponding to each sample. Accepts ``pd.DatetimeIndex``
+        or numpy ``datetime64`` arrays.
+    top_n : int
+        Number of worst periods to return. If fewer than ``top_n`` samples
+        exist, all samples are returned.
+    period : int
+        Seasonal period used in ``get_forecasting_baselines`` (reserved for
+        future use; not used in this function directly).
+
+    Returns
+    -------
+    dict with keys:
+
+    worst_periods : list[dict]
+        Top ``top_n`` time windows with highest absolute error, sorted by
+        ``abs_error`` descending. Each dict has keys:
+        ``{date, y_true, y_pred, error, abs_error}``.
+
+    bias : dict
+        ``{direction: "over"|"under"|"neutral", magnitude: float}``
+        where ``direction`` is ``"over"`` when ``mean(y_pred - y_true) > 0``,
+        ``"under"`` when ``< 0``, and ``"neutral"`` when exactly ``0``.
+        ``magnitude`` is ``mean(y_pred - y_true)``.
+
+    error_growth_correlation : float
+        Pearson correlation between ``abs(y_true)`` and ``abs(error)``.
+        Positive values indicate errors grow with target magnitude.
+        Returns ``NaN`` when insufficient data or zero variance.
+
+    seasonal_pattern : dict[str, float]
+        Mean absolute error grouped by calendar quarter (``"Q1"``–``"Q4"``).
+        Only quarters present in ``dates`` are included.
+    """
+    y_true = np.asarray(y_true, dtype=float)
+    y_pred = np.asarray(y_pred, dtype=float)
+
+    # Normalise dates to pd.DatetimeIndex for consistent .quarter access
+    if not isinstance(dates, pd.DatetimeIndex):
+        dates = pd.DatetimeIndex(dates)
+
+    error = y_pred - y_true
+    abs_error = np.abs(error)
+
+    # ------------------------------------------------------------------
+    # worst_periods
+    # ------------------------------------------------------------------
+    n = len(y_true)
+    actual_top_n = min(top_n, n)
+    # Indices sorted by abs_error descending
+    sorted_idx = np.argsort(abs_error)[::-1][:actual_top_n]
+    worst_periods = [
+        {
+            "date": dates[i],
+            "y_true": float(y_true[i]),
+            "y_pred": float(y_pred[i]),
+            "error": float(error[i]),
+            "abs_error": float(abs_error[i]),
+        }
+        for i in sorted_idx
+    ]
+
+    # ------------------------------------------------------------------
+    # bias
+    # ------------------------------------------------------------------
+    mean_diff = float(np.mean(error))
+    if mean_diff > 0:
+        direction = "over"
+    elif mean_diff < 0:
+        direction = "under"
+    else:
+        direction = "neutral"
+    bias = {"direction": direction, "magnitude": mean_diff}
+
+    # ------------------------------------------------------------------
+    # error_growth_correlation
+    # ------------------------------------------------------------------
+    abs_y_true = np.abs(y_true)
+    if len(abs_y_true) < 2:
+        egc = float("nan")
+    else:
+        std_x = np.std(abs_y_true)
+        std_y = np.std(abs_error)
+        if std_x == 0.0 or std_y == 0.0:
+            egc = float("nan")
+        else:
+            corr_matrix = np.corrcoef(abs_y_true, abs_error)
+            egc = float(corr_matrix[0, 1])
+
+    # ------------------------------------------------------------------
+    # seasonal_pattern
+    # ------------------------------------------------------------------
+    quarter_labels = {1: "Q1", 2: "Q2", 3: "Q3", 4: "Q4"}
+    seasonal_pattern: dict[str, float] = {}
+    quarters = dates.quarter  # integer array: 1, 2, 3, or 4
+    for q_int, q_label in quarter_labels.items():
+        mask = quarters == q_int
+        if mask.any():
+            seasonal_pattern[q_label] = float(np.mean(abs_error[mask]))
+
+    return {
+        "worst_periods": worst_periods,
+        "bias": bias,
+        "error_growth_correlation": egc,
+        "seasonal_pattern": seasonal_pattern,
     }
