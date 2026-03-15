@@ -90,7 +90,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 17-01-PLAN.md — Best-commit tracking in experiments.md + exploration branch protocol in both templates
+- [x] 17-01-PLAN.md — Best-commit tracking in experiments.md + exploration branch protocol in both templates
 
 ### Phase 18: E2E Validation
 **Goal**: Live runs on synthetic data demonstrate both v3.0 capabilities — the agent visibly using the journal between iterations, and the agent triggering branch-on-stagnation after a losing streak
@@ -100,10 +100,10 @@ Plans:
   1. An observed run shows the agent reading `experiments.md` before at least one iteration and updating it with findings after results
   2. An observed run shows the agent invoking `git checkout -b explore-{family} {best_commit}` after 3+ consecutive reverts
   3. Results from the exploration branch appear in `results.tsv` alongside results from the main branch
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 18-01: E2E validation run and VALIDATION.md documentation
+- [ ] 18-01-PLAN.md — v3.0 validation harness, live run, and FINDINGS.md documentation
 
 ## Progress
 
@@ -125,5 +125,5 @@ Plans:
 | 14. E2E Validation | v2.0 | 1/1 | Complete | 2026-03-15 |
 | 15. Diagnosis and Journal Infrastructure | v3.0 | 2/2 | Complete | 2026-03-15 |
 | 16. Template and Protocol Updates | v3.0 | 2/2 | Complete | 2026-03-15 |
-| 17. Branch-on-Stagnation | 1/1 | Complete    | 2026-03-15 | - |
+| 17. Branch-on-Stagnation | v3.0 | 1/1 | Complete | 2026-03-15 |
 | 18. E2E Validation | v3.0 | 0/1 | Not started | - |
