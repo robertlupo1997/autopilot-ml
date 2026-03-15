@@ -63,26 +63,26 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| KNOW-01 | — | Pending |
-| KNOW-02 | — | Pending |
-| KNOW-03 | — | Pending |
-| DIAG-01 | — | Pending |
-| DIAG-02 | — | Pending |
-| DIAG-03 | — | Pending |
-| EXPL-01 | — | Pending |
-| EXPL-02 | — | Pending |
-| EXPL-03 | — | Pending |
-| PROT-01 | — | Pending |
-| PROT-02 | — | Pending |
-| PROT-03 | — | Pending |
-| EVAL-03 | — | Pending |
-| EVAL-04 | — | Pending |
+| KNOW-01 | Phase 15 | Pending |
+| KNOW-02 | Phase 16 | Pending |
+| KNOW-03 | Phase 15 | Pending |
+| DIAG-01 | Phase 15 | Pending |
+| DIAG-02 | Phase 16 | Pending |
+| DIAG-03 | Phase 16 | Pending |
+| EXPL-01 | Phase 17 | Pending |
+| EXPL-02 | Phase 17 | Pending |
+| EXPL-03 | Phase 17 | Pending |
+| PROT-01 | Phase 16 | Pending |
+| PROT-02 | Phase 16 | Pending |
+| PROT-03 | Phase 16 | Pending |
+| EVAL-03 | Phase 18 | Pending |
+| EVAL-04 | Phase 18 | Pending |
 
 **Coverage:**
 - v3.0 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14
+- Mapped to phases: 14
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 after initial definition*
+*Last updated: 2026-03-15 after roadmap creation*
