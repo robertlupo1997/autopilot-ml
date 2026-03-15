@@ -180,6 +180,34 @@ class TestClaudeMdTemplate:
             "experiments.md must be listed in the ## Files section"
         )
 
+    def test_best_result_tracking_on_keep(self):
+        """EXPL-01: KEEP step must instruct agent to update Best Result with git rev-parse HEAD."""
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        assert "Best Result" in content, "Best Result section reference missing from KEEP step"
+        assert "Best commit" in content, "Best commit field missing from KEEP tracking instructions"
+        assert "git rev-parse HEAD" in content, "git rev-parse HEAD missing — agent needs this to record the commit hash"
+
+    def test_stagnation_triggers_exploration_branch(self):
+        """EXPL-02 + EXPL-03: Stagnation must trigger at 3 reverts and create explore- branch."""
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        assert "3 consecutive reverts" in content, "Stagnation threshold must be 3 consecutive reverts"
+        assert "explore-" in content, "explore- branch prefix missing from stagnation step"
+        assert "git checkout -b explore-" in content, "git checkout -b explore- command missing from stagnation step"
+
+    def test_exploration_branch_uses_best_commit(self):
+        """EXPL-03: Exploration branch must branch from best-ever commit (Best Result section)."""
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        # The stagnation step must reference Best Result to get the best commit hash
+        stagnation_pos = content.find("3 consecutive reverts")
+        assert stagnation_pos != -1, "Stagnation trigger not found"
+        surrounding = content[stagnation_pos: stagnation_pos + 600]
+        assert "Best Result" in surrounding or "best_commit" in surrounding, (
+            "Stagnation step must reference Best Result or best_commit for exploration branching"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Render function tests

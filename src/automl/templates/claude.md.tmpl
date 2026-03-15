@@ -123,6 +123,11 @@ LOOP FOREVER:
 10. **Log result** to `results.tsv` (metric value, elapsed time, status, description).
 11. **If metric improved** (new > best) -> **KEEP.** The branch advances.
     Update your best score tracker.
+    Update the `## Best Result` section in `experiments.md` with:
+    - **Best commit:** the commit hash you just kept (run `git rev-parse HEAD`)
+    - **Best score:** the new metric value
+    - **Model family:** the algorithm family (e.g., RandomForest, XGBoost)
+    - **Iteration:** current iteration number
 12. **If metric is equal or worse** -> **REVERT.** Run `git reset --hard HEAD~1`
     to undo the commit and restore the previous best `train.py`.
 13. **Update `experiments.md`** with findings:
@@ -130,14 +135,20 @@ LOOP FOREVER:
     - If REVERT: add the approach to "What Doesn't" with why it failed.
     - Update "Hypotheses Queue": remove the tested hypothesis, add any new
       ideas suggested by the results.
-14. **After 5 consecutive reverts -> STAGNATION.** Your current approach is not
-    working. Switch to a radically different strategy:
-    - Switch algorithm family entirely (e.g., tree-based -> linear -> ensemble).
-    - Try radically different hyperparameters (10x larger/smaller).
-    - Add or remove preprocessing steps (StandardScaler, feature selection).
-    - Try ensemble methods (VotingClassifier, StackingClassifier).
-    - Simplify: remove features, reduce model complexity.
-    Reset the consecutive revert counter after switching strategy.
+14. **After 3 consecutive reverts -> STAGNATION.** Branch from your best-ever result
+    instead of continuing from the current degraded state:
+    a. Read `## Best Result` from `experiments.md` to get the best commit hash.
+    b. Create an exploration branch:
+       ```bash
+       git checkout -b explore-{family} {best_commit}
+       ```
+       where `{family}` is the NEW model family you want to try (e.g., `explore-xgboost`,
+       `explore-ridge`) and `{best_commit}` is from Best Result.
+    c. Edit `train.py` with a completely different model family than what produced
+       the best result. If best was tree-based, try linear. If linear, try ensemble.
+    d. Continue the iteration loop from step 1 on the exploration branch.
+       Results are still logged to the same `results.tsv`.
+    e. Reset the consecutive revert counter after branching.
 15. **Go to step 1.**
 
 ## Graceful Shutdown

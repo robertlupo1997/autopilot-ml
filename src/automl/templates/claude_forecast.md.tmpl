@@ -125,19 +125,30 @@ LOOP FOREVER:
       Even if your MAPE improved over your best, you must beat BOTH baselines to keep.
     - If both baselines are beaten AND `new_mape < best_mape` -> **KEEP.**
       Update your best MAPE tracker. The branch advances.
+      Update the `## Best Result` section in `experiments.md` with:
+      - **Best commit:** `git rev-parse HEAD`
+      - **Best score:** the new MAPE value
+      - **Model family:** the algorithm family (e.g., Ridge, GradientBoosting)
+      - **Iteration:** current iteration number
     - If both baselines are beaten but `new_mape >= best_mape` -> **REVERT.**
 12. **Update `experiments.md`** with findings:
     - If KEEP: add the approach to "What Works" with the MAPE delta.
     - If REVERT: add the approach to "What Doesn't" with why it failed.
     - Update "Hypotheses Queue": remove the tested hypothesis, add any new
       ideas suggested by the results.
-13. **After 5 consecutive reverts -> STAGNATION.** Switch strategy:
-    - Switch algorithm family entirely (e.g., Ridge -> GradientBoosting).
-    - Try radically different hyperparameter ranges (10x larger/smaller alpha).
-    - Add new lag features (lag_8, lag_12) or remove noisy ones.
-    - Try seasonal decomposition-inspired features (quarter dummies).
-    - Simplify: remove features, reduce model complexity.
-    Reset the consecutive revert counter after switching strategy.
+13. **After 3 consecutive reverts -> STAGNATION.** Branch from your best-ever result:
+    a. Read `## Best Result` from `experiments.md` to get the best commit hash.
+    b. Create an exploration branch:
+       ```bash
+       git checkout -b explore-{family} {best_commit}
+       ```
+       where `{family}` is the NEW algorithm (e.g., `explore-gradientboosting`,
+       `explore-elasticnet`) and `{best_commit}` is from Best Result.
+    c. Edit `train.py` with a completely different model family. If best was Ridge,
+       try GradientBoosting. If tree-based, try linear with different features.
+    d. Continue the iteration loop from step 1 on the exploration branch.
+       Results are still logged to the same `results.tsv`.
+    e. Reset the consecutive revert counter after branching.
 14. **Go to step 1.**
 
 ## Graceful Shutdown
