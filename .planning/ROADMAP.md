@@ -60,8 +60,8 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 **Plans**: 2 plans
 
 Plans:
-- [ ] 15-01-PLAN.md — diagnose() error analysis function in forecast.py (TDD)
-- [ ] 15-02-PLAN.md — experiments.md journal template and scaffold integration
+- [x] 15-01-PLAN.md — diagnose() error analysis function in forecast.py (TDD)
+- [x] 15-02-PLAN.md — experiments.md journal template and scaffold integration
 
 ### Phase 16: Template and Protocol Updates
 **Goal**: Both CLAUDE.md templates (classification and forecasting) carry the full v3.0 protocol — agents read the journal before each iteration, update it after, record diagnostic output, review their own diffs, and write hypothesis commit messages
@@ -73,11 +73,11 @@ Plans:
   3. Both templates instruct the agent to run `git diff HEAD~1 -- train.py` and `git log --oneline -5` before each iteration
   4. Both templates instruct the agent to record diagnostic error patterns in `experiments.md`
   5. Both templates instruct the agent to write a `## Hypothesis` section in each commit message
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 16-01: diagnose() call in train_template_forecast.py + DIAG-03 template rule
-- [ ] 16-02: CLAUDE.md template updates (KNOW-02, PROT-01, PROT-02, PROT-03)
+- [ ] 16-01-PLAN.md — diagnose() call in train_template_forecast.py + DIAG-03 template rule
+- [ ] 16-02-PLAN.md — CLAUDE.md template updates (KNOW-02, PROT-01, PROT-02, PROT-03)
 
 ### Phase 17: Branch-on-Stagnation
 **Goal**: The agent tracks the best result it has ever achieved and, when stuck in a losing streak, branches back to that best commit and tries a different model family instead of continuing to iterate from a degraded state
@@ -123,7 +123,7 @@ Plans:
 | 12. Forecast Template + Zone 2 | v2.0 | 2/2 | Complete | 2026-03-14 |
 | 13. Scaffold and CLI Updates | v2.0 | 1/1 | Complete | 2026-03-14 |
 | 14. E2E Validation | v2.0 | 1/1 | Complete | 2026-03-15 |
-| 15. Diagnosis and Journal Infrastructure | 2/2 | Complete    | 2026-03-15 | - |
+| 15. Diagnosis and Journal Infrastructure | v3.0 | 2/2 | Complete | 2026-03-15 |
 | 16. Template and Protocol Updates | v3.0 | 0/2 | Not started | - |
 | 17. Branch-on-Stagnation | v3.0 | 0/1 | Not started | - |
 | 18. E2E Validation | v3.0 | 0/1 | Not started | - |
