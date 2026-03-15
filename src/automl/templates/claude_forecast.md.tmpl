@@ -84,37 +84,61 @@ Before iterating, generate diverse starting points to avoid local optima.
 LOOP FOREVER:
 
 1. **Read `program.md`** for domain-specific guidance and strategy hints.
-2. **Review `results.tsv`** history. Think about what to try next based on
+2. **Read `experiments.md`** for accumulated knowledge from prior iterations. Check
+   What Works (don't undo winning changes), What Doesn't (don't repeat failed ideas),
+   and Hypotheses Queue (pick your next idea from here if available).
+3. **Review recent changes.** Run:
+   ```bash
+   git diff HEAD~1 -- train.py
+   git log --oneline -5
+   ```
+   Understand what you changed last iteration and what the trajectory looks like.
+   This prevents accidentally undoing a winning change or repeating an approach.
+4. **Review `results.tsv`** history. Think about what to try next based on
    past successes and failures. Avoid repeating failed approaches.
-3. **Edit `train.py`** with your experimental idea. Keep changes focused —
+5. **Edit `train.py`** with your experimental idea. Keep changes focused —
    one idea per iteration.
-4. **Commit:** `git add train.py && git commit -m "description of change"`
-5. **Run:** `uv run python train.py > run.log 2>&1`
+6. **Commit:** `git add train.py && git commit -m "description of change"` where the
+   commit message includes a `## Hypothesis` section:
+   ```
+   try: add quarter dummy features for seasonal patterns
+
+   ## Hypothesis
+   Q4 errors dominate (diagnostic shows seasonal error 2x avg). Adding quarter
+   dummies should capture this seasonality. Expected MAPE improvement ~10%
+   based on error pattern analysis.
+   ```
+7. **Run:** `uv run python train.py > run.log 2>&1`
    - ALWAYS redirect stdout and stderr to `run.log`.
    - NEVER let training output flood your context window.
-6. **Extract results:** `grep "^metric_value:\|^elapsed_sec:\|^diagnostic_output:" run.log`
-7. **If grep returns empty -> CRASH:**
+8. **Extract results:** `grep "^metric_value:\|^elapsed_sec:\|^diagnostic_output:" run.log`
+9. **If grep returns empty -> CRASH:**
    - Read the error: `tail -n 50 run.log`
    - If the error is fixable: fix `train.py` and retry.
    - Track consecutive crash attempts. After 3 consecutive crashes on the
      same error, give up on this approach: revert and try something different.
    - `git reset --hard HEAD~1` to undo the crashed commit.
-8. **Log result** to `results.tsv` (MAPE value, elapsed time, status, description).
-9. **Dual-baseline gate + improvement check (MAPE: lower is better):**
-   - Extract `beats_naive` and `beats_seasonal_naive` from `json_output` in `run.log`.
-   - If `beats_naive` is False OR `beats_seasonal_naive` is False -> **AUTO-REVERT.**
-     Even if your MAPE improved over your best, you must beat BOTH baselines to keep.
-   - If both baselines are beaten AND `new_mape < best_mape` -> **KEEP.**
-     Update your best MAPE tracker. The branch advances.
-   - If both baselines are beaten but `new_mape >= best_mape` -> **REVERT.**
-10. **After 5 consecutive reverts -> STAGNATION.** Switch strategy:
+10. **Log result** to `results.tsv` (MAPE value, elapsed time, status, description).
+11. **Dual-baseline gate + improvement check (MAPE: lower is better):**
+    - Extract `beats_naive` and `beats_seasonal_naive` from `json_output` in `run.log`.
+    - If `beats_naive` is False OR `beats_seasonal_naive` is False -> **AUTO-REVERT.**
+      Even if your MAPE improved over your best, you must beat BOTH baselines to keep.
+    - If both baselines are beaten AND `new_mape < best_mape` -> **KEEP.**
+      Update your best MAPE tracker. The branch advances.
+    - If both baselines are beaten but `new_mape >= best_mape` -> **REVERT.**
+12. **Update `experiments.md`** with findings:
+    - If KEEP: add the approach to "What Works" with the MAPE delta.
+    - If REVERT: add the approach to "What Doesn't" with why it failed.
+    - Update "Hypotheses Queue": remove the tested hypothesis, add any new
+      ideas suggested by the results.
+13. **After 5 consecutive reverts -> STAGNATION.** Switch strategy:
     - Switch algorithm family entirely (e.g., Ridge -> GradientBoosting).
     - Try radically different hyperparameter ranges (10x larger/smaller alpha).
     - Add new lag features (lag_8, lag_12) or remove noisy ones.
     - Try seasonal decomposition-inspired features (quarter dummies).
     - Simplify: remove features, reduce model complexity.
     Reset the consecutive revert counter after switching strategy.
-11. **Go to step 1.**
+14. **Go to step 1.**
 
 ## Graceful Shutdown
 

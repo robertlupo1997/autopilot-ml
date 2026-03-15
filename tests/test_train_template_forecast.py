@@ -247,3 +247,49 @@ class TestClaudeForecastTemplate:
             "'Error Patterns' section name missing — template must reference the "
             "Error Patterns section of experiments.md"
         )
+
+    def test_journal_read_write_rule(self):
+        """KNOW-02: experiments.md must be listed in Files with read and update instructions."""
+        text = _claude_forecast_text()
+        assert "experiments.md" in text, "experiments.md must appear in the template"
+        # Check that read/update instructions exist near experiments.md
+        idx = text.find("experiments.md")
+        surrounding = text[max(0, idx - 200) : idx + 500]
+        assert "read" in surrounding.lower() or "Read" in surrounding, (
+            "'read' must appear near experiments.md mention"
+        )
+        assert "update" in surrounding.lower() or "Update" in surrounding, (
+            "'update' must appear near experiments.md mention"
+        )
+
+    def test_diff_aware_rule(self):
+        """PROT-01: Template must instruct git diff HEAD~1 and git log --oneline."""
+        text = _claude_forecast_text()
+        assert "git diff HEAD~1" in text, (
+            "'git diff HEAD~1' missing — template must instruct diff-aware iteration"
+        )
+        assert "git log --oneline" in text, (
+            "'git log --oneline' missing — template must instruct trajectory review"
+        )
+
+    def test_hypothesis_commit_rule(self):
+        """PROT-02: Template must require a Hypothesis section in commit messages."""
+        text = _claude_forecast_text()
+        assert "Hypothesis" in text, (
+            "'Hypothesis' missing — template must require hypothesis sections in commits"
+        )
+        idx = text.find("Hypothesis")
+        surrounding = text[max(0, idx - 300) : idx + 300]
+        assert "commit" in surrounding.lower(), (
+            "'commit' must appear near 'Hypothesis' instruction"
+        )
+
+    def test_experiments_md_in_files_section(self):
+        """PROT-03: experiments.md must appear in the Files section."""
+        text = _claude_forecast_text()
+        files_section_start = text.find("## Files")
+        files_section_end = text.find("##", files_section_start + 1)
+        files_section = text[files_section_start:files_section_end]
+        assert "experiments.md" in files_section, (
+            "experiments.md must be listed in the ## Files section"
+        )
