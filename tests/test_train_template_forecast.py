@@ -123,6 +123,38 @@ class TestTrainTemplateForecastStructure:
             "optuna.logging.set_verbosity not found — Optuna log spam will flood run.log"
         )
 
+    def test_imports_diagnose(self):
+        """Template must import diagnose from forecast (local import)."""
+        text = _template_text()
+        # The 'from forecast import' line must contain 'diagnose'
+        import re
+        matches = re.findall(r"from forecast import[^\n]*", text)
+        assert any("diagnose" in m for m in matches), (
+            "diagnose not found in 'from forecast import' line — "
+            "train_template_forecast.py must import diagnose from forecast"
+        )
+
+    def test_diagnose_called_after_evaluation(self):
+        """diagnose() must be called after the final walk_forward_evaluate (not inside objective)."""
+        text = _template_text()
+        # Find the position of 'def objective' and the final walk_forward_evaluate outside it
+        obj_end_pos = text.find("study.optimize")
+        assert obj_end_pos != -1, "study.optimize not found — unexpected template structure"
+        # diagnose( must appear after study.optimize (i.e., outside objective)
+        diag_pos = text.find("diagnose(", obj_end_pos)
+        assert diag_pos != -1, (
+            "diagnose() not found after study.optimize — must be called outside objective, "
+            "after final model evaluation"
+        )
+
+    def test_diagnostic_output_printed(self):
+        """Template must print 'diagnostic_output:' as a structured output line."""
+        text = _template_text()
+        assert "diagnostic_output:" in text, (
+            "'diagnostic_output:' prefix missing — template must print diagnose() result "
+            "with this prefix for structured parsing"
+        )
+
 
 # ---------------------------------------------------------------------------
 # TestClaudeForecastTemplate
