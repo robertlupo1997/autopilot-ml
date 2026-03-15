@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Intelligent Iteration
 status: planning
-stopped_at: Completed 16-02-PLAN.md (v3.0 protocol rules in both templates)
-last_updated: "2026-03-15T18:58:27.491Z"
+stopped_at: Completed 17-01-PLAN.md (branch-on-stagnation protocol in both templates)
+last_updated: "2026-03-15T19:07:46.885Z"
 last_activity: 2026-03-15 — v3.0 roadmap created, 14/14 requirements mapped
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 5
   percent: 0
 ---
 
@@ -65,6 +65,9 @@ v3.0 architectural decisions:
 - [Phase 16]: Print diagnostic_output: after json_output: to maintain grep-able structured output consistency
 - [Phase 16]: Both templates carry identical v3.0 protocol steps (journal read, diff review, hypothesis commits, journal update) for consistent agent behavior across task types
 - [Phase 16]: Journal update step placed after keep/revert decision so agent records confirmed outcome, not tentative result
+- [Phase 17-branch-on-stagnation]: Stagnation threshold reduced from 5 to 3 consecutive reverts — earlier recovery more efficient with branch-on-stagnation
+- [Phase 17-branch-on-stagnation]: Exploration branches share results.tsv — unified experiment history across all branches
+- [Phase 17-branch-on-stagnation]: Best Result section uses no new template placeholders — agent fills dynamically, render_experiments_md() signature unchanged
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T18:56:01.011Z
-Stopped at: Completed 16-02-PLAN.md (v3.0 protocol rules in both templates)
+Last session: 2026-03-15T19:07:46.880Z
+Stopped at: Completed 17-01-PLAN.md (branch-on-stagnation protocol in both templates)
 Resume file: None

@@ -19,9 +19,9 @@
 
 ### Strategic Exploration
 
-- [ ] **EXPL-01**: Agent tracks best-ever commit hash and MAPE in `experiments.md` (updated on each "keep")
-- [ ] **EXPL-02**: CLAUDE.md template defines stagnation as 3+ consecutive reverts and instructs the agent to branch from best-ever commit and try a different model family
-- [ ] **EXPL-03**: Agent uses `git checkout -b explore-{family} {best_commit}` to create exploration branches, with results tracked in the same `results.tsv`
+- [x] **EXPL-01**: Agent tracks best-ever commit hash and MAPE in `experiments.md` (updated on each "keep")
+- [x] **EXPL-02**: CLAUDE.md template defines stagnation as 3+ consecutive reverts and instructs the agent to branch from best-ever commit and try a different model family
+- [x] **EXPL-03**: Agent uses `git checkout -b explore-{family} {best_commit}` to create exploration branches, with results tracked in the same `results.tsv`
 
 ### Iteration Protocol
 
@@ -69,9 +69,9 @@
 | DIAG-01 | Phase 15 | Complete |
 | DIAG-02 | Phase 16 | Complete |
 | DIAG-03 | Phase 16 | Complete |
-| EXPL-01 | Phase 17 | Pending |
-| EXPL-02 | Phase 17 | Pending |
-| EXPL-03 | Phase 17 | Pending |
+| EXPL-01 | Phase 17 | Complete |
+| EXPL-02 | Phase 17 | Complete |
+| EXPL-03 | Phase 17 | Complete |
 | PROT-01 | Phase 16 | Complete |
 | PROT-02 | Phase 16 | Complete |
 | PROT-03 | Phase 16 | Complete |

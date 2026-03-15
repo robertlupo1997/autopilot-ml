@@ -44,7 +44,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 - [x] **Phase 15: Diagnosis and Journal Infrastructure** - diagnose() function in forecast.py, experiments.md journal, scaffold pre-population (completed 2026-03-15)
 - [x] **Phase 16: Template and Protocol Updates** - All CLAUDE.md protocol rules: journal read/write, diagnostic recording, diff-aware iteration, hypothesis commits (completed 2026-03-15)
-- [ ] **Phase 17: Branch-on-Stagnation** - Best-commit tracking, stagnation detection, exploration branch mechanics
+- [x] **Phase 17: Branch-on-Stagnation** - Best-commit tracking, stagnation detection, exploration branch mechanics (completed 2026-03-15)
 - [ ] **Phase 18: E2E Validation** - Observed journal usage and branch-on-stagnation triggering in live runs
 
 ## Phase Details
@@ -125,5 +125,5 @@ Plans:
 | 14. E2E Validation | v2.0 | 1/1 | Complete | 2026-03-15 |
 | 15. Diagnosis and Journal Infrastructure | v3.0 | 2/2 | Complete | 2026-03-15 |
 | 16. Template and Protocol Updates | v3.0 | 2/2 | Complete | 2026-03-15 |
-| 17. Branch-on-Stagnation | v3.0 | 0/1 | Not started | - |
+| 17. Branch-on-Stagnation | 1/1 | Complete   | 2026-03-15 | - |
 | 18. E2E Validation | v3.0 | 0/1 | Not started | - |
