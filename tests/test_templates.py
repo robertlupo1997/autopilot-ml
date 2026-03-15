@@ -129,6 +129,57 @@ class TestClaudeMdTemplate:
         content = open(path).read()
         assert "results.tsv" in content, "Shutdown section must reference results.tsv"
 
+    def test_journal_read_write_rule(self):
+        """KNOW-02: experiments.md must be listed in Files with read and update instructions."""
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        assert "experiments.md" in content, "experiments.md must appear in the template"
+        # Find the position of experiments.md and check that read/update appear nearby
+        idx = content.find("experiments.md")
+        surrounding = content[max(0, idx - 200) : idx + 500]
+        assert "read" in surrounding.lower() or "Read" in surrounding, (
+            "'read' must appear near experiments.md mention"
+        )
+        assert "update" in surrounding.lower() or "Update" in surrounding, (
+            "'update' must appear near experiments.md mention"
+        )
+
+    def test_diff_aware_rule(self):
+        """PROT-01: Template must instruct git diff HEAD~1 and git log --oneline."""
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        assert "git diff HEAD~1" in content, (
+            "'git diff HEAD~1' missing — template must instruct diff-aware iteration"
+        )
+        assert "git log --oneline" in content, (
+            "'git log --oneline' missing — template must instruct trajectory review"
+        )
+
+    def test_hypothesis_commit_rule(self):
+        """PROT-02: Template must require a Hypothesis section in commit messages."""
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        assert "Hypothesis" in content, (
+            "'Hypothesis' missing — template must require hypothesis sections in commits"
+        )
+        # "commit message" must appear near "Hypothesis"
+        idx = content.find("Hypothesis")
+        surrounding = content[max(0, idx - 300) : idx + 300]
+        assert "commit" in surrounding.lower(), (
+            "'commit' must appear near 'Hypothesis' instruction"
+        )
+
+    def test_experiments_md_in_files_section(self):
+        """PROT-03: experiments.md must appear in the Files section."""
+        path = os.path.join(TEMPLATE_DIR, "claude.md.tmpl")
+        content = open(path).read()
+        files_section_start = content.find("## Files")
+        files_section_end = content.find("##", files_section_start + 1)
+        files_section = content[files_section_start:files_section_end]
+        assert "experiments.md" in files_section, (
+            "experiments.md must be listed in the ## Files section"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Render function tests
