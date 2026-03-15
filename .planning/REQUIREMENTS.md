@@ -14,8 +14,8 @@
 ### Error Diagnosis
 
 - [x] **DIAG-01**: `forecast.py` exports a `diagnose(y_true, y_pred, dates)` function returning worst periods, bias direction/magnitude, error-vs-growth correlation, and seasonal error pattern
-- [ ] **DIAG-02**: `train_template_forecast.py` calls `diagnose()` after each experiment and prints results to `run.log` as structured output
-- [ ] **DIAG-03**: CLAUDE.md template instructs the agent to read diagnostic output and record error patterns in `experiments.md`
+- [x] **DIAG-02**: `train_template_forecast.py` calls `diagnose()` after each experiment and prints results to `run.log` as structured output
+- [x] **DIAG-03**: CLAUDE.md template instructs the agent to read diagnostic output and record error patterns in `experiments.md`
 
 ### Strategic Exploration
 
@@ -67,8 +67,8 @@
 | KNOW-02 | Phase 16 | Pending |
 | KNOW-03 | Phase 15 | Complete |
 | DIAG-01 | Phase 15 | Complete |
-| DIAG-02 | Phase 16 | Pending |
-| DIAG-03 | Phase 16 | Pending |
+| DIAG-02 | Phase 16 | Complete |
+| DIAG-03 | Phase 16 | Complete |
 | EXPL-01 | Phase 17 | Pending |
 | EXPL-02 | Phase 17 | Pending |
 | EXPL-03 | Phase 17 | Pending |

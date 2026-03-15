@@ -124,6 +124,6 @@ Plans:
 | 13. Scaffold and CLI Updates | v2.0 | 1/1 | Complete | 2026-03-14 |
 | 14. E2E Validation | v2.0 | 1/1 | Complete | 2026-03-15 |
 | 15. Diagnosis and Journal Infrastructure | v3.0 | 2/2 | Complete | 2026-03-15 |
-| 16. Template and Protocol Updates | v3.0 | 0/2 | Not started | - |
+| 16. Template and Protocol Updates | 1/2 | In Progress|  | - |
 | 17. Branch-on-Stagnation | v3.0 | 0/1 | Not started | - |
 | 18. E2E Validation | v3.0 | 0/1 | Not started | - |
