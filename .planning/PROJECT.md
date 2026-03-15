@@ -45,17 +45,29 @@ Give Claude Code a dataset and a metric, and it autonomously discovers the best-
 
 ### Active
 
-- [ ] System produces better forecasts than a basic regression script on real financial data
-- [ ] Full pipeline modification (mutable zone 3) — agent owns preprocessing too
-- [ ] Branch-on-best search strategy (AIDE-inspired tree backtracking)
+- [ ] Experiment journal for structured knowledge accumulation across iterations
+- [ ] Error diagnosis telling the agent WHERE the model fails, not just how much
+- [ ] Branch-on-stagnation search strategy (AIDE-inspired backtracking)
+- [ ] Diff-aware iteration protocol (agent reviews own recent changes)
+- [ ] Hypothesis-first iteration protocol in CLAUDE.md
 
 ### Out of Scope
 
+- Full pipeline modification (mutable zone 3) — deferred to v4.0, prove smart iteration first
 - MLE-bench integration — future milestone (requires Docker harness)
 - Deep learning / neural network support — traditional ML only
 - Multi-GPU or distributed training — single machine only
 - Multi-company / cross-company models — single-company forecasting focus
 - Real-time data ingestion — batch CSV input only
+- Full MCTS tree search (SELA/AIDE) — branch-on-stagnation captures 80% of value
+- LLM-as-judge for solution novelty — real metrics are authoritative
+- Multi-agent research/dev split (R&D-Agent) — single agent + protocol is simpler
+
+## Current Milestone: v3.0 Intelligent Iteration
+
+**Goal:** Make the agent smarter per iteration — learning from past experiments, diagnosing model weaknesses, and strategically exploring solution space instead of improvising.
+
+**Inspired by:** AIDE (systematic exploration), R&D-Agent (knowledge accumulation), plus novel error diagnosis that neither does well.
 
 ## Context
 
@@ -137,4 +149,4 @@ Full landscape analysis available at: `Autonomous_ML_Agents_Research_Report.docx
 | Optuna for hyperparameter search | Agent writes search space, optimizer explores efficiently | ✓ Good — trial budget capped at min(50, 2*n_rows) |
 
 ---
-*Last updated: 2026-03-15 after v2.0 milestone*
+*Last updated: 2026-03-15 after v3.0 milestone start*
