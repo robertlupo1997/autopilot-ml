@@ -26,7 +26,7 @@ from automl.prepare import (
     load_data,
     validate_metric,
 )
-from automl.templates import render_claude_md, render_claude_md_forecast, render_program_md
+from automl.templates import render_claude_md, render_claude_md_forecast, render_experiments_md, render_program_md
 
 
 def scaffold_experiment(
@@ -144,6 +144,14 @@ def scaffold_experiment(
         claude_md = render_claude_md_forecast()
         (out / "CLAUDE.md").write_text(claude_md)
 
+        # 6b. Render experiments.md journal
+        experiments_md = render_experiments_md(
+            dataset_name=csv_path.stem,
+            data_summary=summary_str,
+            baselines=baselines_str,
+        )
+        (out / "experiments.md").write_text(experiments_md)
+
     else:
         # --- Standard v1.0 path (no regression) ---
         _sklearn_metric, direction = validate_metric(metric, task)
@@ -190,6 +198,14 @@ def scaffold_experiment(
         # 6. Render CLAUDE.md
         claude_md = render_claude_md()
         (out / "CLAUDE.md").write_text(claude_md)
+
+        # 6b. Render experiments.md journal
+        experiments_md = render_experiments_md(
+            dataset_name=csv_path.stem,
+            data_summary=summary_str,
+            baselines=baselines_str,
+        )
+        (out / "experiments.md").write_text(experiments_md)
 
     # 7. Write .gitignore
     (out / ".gitignore").write_text(_gitignore_content())

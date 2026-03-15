@@ -30,6 +30,7 @@ class TestScaffoldCreatesAllFiles:
             "train.py",
             "program.md",
             "CLAUDE.md",
+            "experiments.md",
             ".gitignore",
             "pyproject.toml",
             sample_classification_csv.name,  # "data.csv"
@@ -37,8 +38,8 @@ class TestScaffoldCreatesAllFiles:
         actual_files = [f.name for f in out.iterdir() if f.is_file()]
         for fname in expected_files:
             assert fname in actual_files, f"Missing file: {fname}"
-        # 8 files + .claude/ dir = 9 top-level items
-        assert len(list(out.iterdir())) == 9
+        # 9 files + .claude/ dir = 10 top-level items
+        assert len(list(out.iterdir())) == 10
         assert (out / ".claude").is_dir()
 
 
@@ -639,6 +640,73 @@ class TestRenderExperimentsMd:
             baselines="- **Naive MAPE:** 0.3333",
         )
         assert "- **Naive MAPE:** 0.3333" in result
+
+
+class TestScaffoldExperimentsMd:
+    """experiments.md is created by scaffold_experiment in both paths."""
+
+    def test_scaffold_creates_experiments_md(self, sample_classification_csv, tmp_path):
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+        )
+        assert (out / "experiments.md").exists(), "experiments.md not found in scaffold output"
+
+    def test_experiments_md_has_four_sections(self, sample_classification_csv, tmp_path):
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+        )
+        content = (out / "experiments.md").read_text()
+        assert "## What Works" in content
+        assert "## What Doesn't" in content
+        assert "## Hypotheses Queue" in content
+        assert "## Error Patterns" in content
+
+    def test_experiments_md_has_dataset_context(self, sample_classification_csv, tmp_path):
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_classification_csv,
+            target_column="target",
+            metric="accuracy",
+            goal="Predict target class",
+            output_dir=out,
+        )
+        content = (out / "experiments.md").read_text()
+        # Dataset context section should exist and have real data
+        assert "## Dataset Context" in content
+        # Should contain data summary (200 rows in fixture)
+        assert "200" in content
+        # Should contain baselines
+        assert "baseline" in content.lower() or "most_frequent" in content or "Baselines" in content
+
+    def test_forecast_scaffold_creates_experiments_md(self, sample_forecast_csv, tmp_path):
+        out = tmp_path / "experiment"
+        scaffold_experiment(
+            data_path=sample_forecast_csv,
+            target_column="revenue",
+            metric="mape",
+            goal="Forecast quarterly revenue",
+            output_dir=out,
+            date_col="date",
+        )
+        assert (out / "experiments.md").exists(), "experiments.md not found in forecast scaffold output"
+        content = (out / "experiments.md").read_text()
+        assert "## What Works" in content
+        assert "## What Doesn't" in content
+        assert "## Hypotheses Queue" in content
+        assert "## Error Patterns" in content
+        assert "## Dataset Context" in content
+        # Should contain forecast baselines (MAPE values)
+        assert "Naive MAPE" in content or "MAPE" in content
 
 
 class TestScaffoldForecast:
