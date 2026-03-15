@@ -641,6 +641,19 @@ class TestRenderExperimentsMd:
         )
         assert "- **Naive MAPE:** 0.3333" in result
 
+    def test_best_result_section_exists(self):
+        """EXPL-01: experiments.md must have a Best Result section with commit and score fields."""
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="summary text",
+            baselines="baseline text",
+        )
+        assert "## Best Result" in result, "Best Result section missing from experiments.md"
+        assert "Best commit:" in result, "Best commit field missing from Best Result section"
+        assert "Best score:" in result, "Best score field missing from Best Result section"
+
 
 class TestScaffoldExperimentsMd:
     """experiments.md is created by scaffold_experiment in both paths."""
