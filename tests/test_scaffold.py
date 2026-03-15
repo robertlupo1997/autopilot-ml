@@ -547,6 +547,100 @@ class TestScaffoldStandardPathUnchanged:
         assert "seasonal" not in claude_content.lower() or "Forecasting" not in claude_content
 
 
+class TestRenderExperimentsMd:
+    """Tests for render_experiments_md template function."""
+
+    def test_render_experiments_md_returns_string(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="- **Shape:** 150 rows x 4 columns",
+            baselines="- **Naive:** 0.3333",
+        )
+        assert isinstance(result, str)
+
+    def test_render_experiments_md_has_dataset_name_header(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="- **Shape:** 150 rows x 4 columns",
+            baselines="- **Naive:** 0.3333",
+        )
+        assert "# Experiment Journal: iris" in result
+
+    def test_render_experiments_md_has_what_works_section(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="- **Shape:** 150 rows x 4 columns",
+            baselines="- **Naive:** 0.3333",
+        )
+        assert "## What Works" in result
+
+    def test_render_experiments_md_has_what_doesnt_section(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="summary text",
+            baselines="baseline text",
+        )
+        assert "## What Doesn't" in result
+
+    def test_render_experiments_md_has_hypotheses_queue_section(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="summary text",
+            baselines="baseline text",
+        )
+        assert "## Hypotheses Queue" in result
+
+    def test_render_experiments_md_has_error_patterns_section(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="summary text",
+            baselines="baseline text",
+        )
+        assert "## Error Patterns" in result
+
+    def test_render_experiments_md_has_dataset_context_section(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="- **Shape:** 150 rows x 4 columns",
+            baselines="- **Naive MAPE:** 0.3333",
+        )
+        assert "## Dataset Context" in result
+
+    def test_render_experiments_md_contains_data_summary(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="- **Shape:** 150 rows x 4 columns",
+            baselines="baseline text",
+        )
+        assert "- **Shape:** 150 rows x 4 columns" in result
+
+    def test_render_experiments_md_contains_baselines(self):
+        from automl.templates import render_experiments_md
+
+        result = render_experiments_md(
+            dataset_name="iris",
+            data_summary="summary text",
+            baselines="- **Naive MAPE:** 0.3333",
+        )
+        assert "- **Naive MAPE:** 0.3333" in result
+
+
 class TestScaffoldForecast:
     """Tests for forecast.py copy and optuna dependency."""
 

@@ -40,6 +40,21 @@ def render_claude_md_forecast() -> str:
         return f.read()
 
 
+def render_experiments_md(
+    dataset_name: str,
+    data_summary: str,
+    baselines: str,
+) -> str:
+    """Render experiments.md journal template with pre-populated context."""
+    with open(os.path.join(_TEMPLATE_DIR, "experiments.md.tmpl")) as f:
+        template = f.read()
+    return template.format(
+        dataset_name=dataset_name,
+        data_summary=data_summary,
+        baselines=baselines,
+    )
+
+
 def render_swarm_claude_md(
     agent_id: int,
     n_agents: int,
