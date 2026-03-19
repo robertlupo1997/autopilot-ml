@@ -1,521 +1,368 @@
-# Pitfalls Research
+# Domain Pitfalls
 
-**Domain:** Autonomous ML Experiment Framework — v2.0 Time-Series Feature Engineering, Optuna, Walk-Forward Validation, Revenue Forecasting
-**Researched:** 2026-03-14
-**Confidence:** HIGH (grounded in original project research report + 2025-2026 literature on time-series ML, small-N forecasting, optuna optimization, and autonomous agent pitfalls)
-
----
-
-## Scope Note
-
-This document covers **v2.0-specific pitfalls** layered on top of the v1.0 pitfalls (which remain valid — see the v1.0 section at the bottom). The v2.0 pitfalls address the five questions in the research brief:
-
-1. LLM agent feature engineering — lookahead bias and target leakage
-2. Optuna + LLM agent — search space overfitting on small N
-3. Walk-forward validation on 20-80 rows — not enough windows, unstable estimates
-4. Revenue forecasting specifics — seasonality, regime changes, log transforms
-5. The n=40 problem — what actually works with 20-80 quarterly data points
-
----
-
-## Severity Ranking
-
-| Pitfall | Severity | Why |
-|---------|----------|-----|
-| Temporal leakage in lag features | CRITICAL | Inflated metrics, silently wrong, model is useless in production |
-| Agent using future data in rolling stats | CRITICAL | Silently corrupts every metric in the loop |
-| Optuna overfitting the walk-forward splits | HIGH | Model selection is wrong; best hyperparams are illusions |
-| Not establishing naive/seasonal baselines first | HIGH | Agent iterates on "improvements" that are actually worse than naive |
-| Walk-forward with too few folds (< 5) | HIGH | Metric estimate has huge variance; keep/revert decisions are noise |
-| Log transform mismatch — train vs. test | HIGH | MAPE/MAE computed in log space = meaningless numbers |
-| Regime change blindness | MEDIUM | Model trained on pre-COVID revenue fails post-COVID silently |
-| XGBoost/LightGBM on n=40 without constraint | MEDIUM | Overfits perfectly, zero generalization |
-| Rolling stat window exceeding training set size | MEDIUM | NaN contamination silently drops rows or creates zeros |
-| Expanding vs. sliding window wrong choice | MEDIUM | Data starvation (sliding) or regime drift (expanding) |
-| Agent creating too many features on n=40 | MEDIUM | Dimensionality curse — p >> n guaranteed with unconstrained feature engineering |
-| Seasonal artifact confusion | LOW-MEDIUM | Agent interprets FY calendar artifacts as real patterns |
-
----
+**Domain:** Autonomous ML research framework (overnight unattended runs, plugin architecture, Claude Code orchestrator)
+**Researched:** 2026-03-19
 
 ## Critical Pitfalls
 
-### Pitfall 1: Temporal Leakage in Lag Feature Calculation
-
-**What goes wrong:**
-The LLM agent calculates lag features using pandas `.shift()` incorrectly, or creates rolling statistics using the wrong window alignment. The most common form: computing a 4-quarter rolling mean using `rolling(4).mean()` on the full dataset before the train/test split, then splitting. This means the "lag-4 rolling mean" for Q4-2019 includes Q1-2020, Q2-2020, Q3-2020, Q4-2020 data in its window during training. The model learns from the future. Metrics look excellent (MAPE 3-5%) during the loop, but the model is useless in deployment (MAPE 40-60%).
-
-This is the single most dangerous pitfall in v2.0. The agent will introduce it without knowing it, the metric will look great, and the keep/revert loop will lock it in as the "best" solution. There is no stack trace. The loop never catches it.
-
-**Why it happens:**
-LLMs do not reliably understand temporal indexing semantics. The agent knows that `rolling(4).mean()` computes a 4-period rolling average, but it does not reliably place the `shift(1)` call required to avoid including the current period. It also does not reliably understand that feature engineering must happen strictly within each training fold, not on the full dataset before splitting. The problem compounds with walk-forward validation: even if the lag is computed correctly on the full series, if features are computed globally and then the dataset is split, future-period statistics bleed into training samples.
-
-**Concrete examples:**
-- `df['revenue_4q_rolling_mean'] = df['revenue'].rolling(4).mean()` — includes current quarter in the mean, introduces 1-period lookahead at minimum
-- `df['revenue_lag1'] = df['revenue'].shift(-1)` — agent accidentally uses negative shift (future) instead of positive (past)
-- Computing `df['yoy_growth'] = df['revenue'].pct_change(4)` and then including `df.iloc[-1]['yoy_growth']` in a feature for the last known row — this requires knowing the revenue 4 quarters ago, which is fine, but the agent may then use it as a label proxy
-- `df['revenue_normalized'] = (df['revenue'] - df['revenue'].mean()) / df['revenue'].std()` computed on full dataset before split — mean and std include future quarters
-
-**How to avoid:**
-1. **Freeze the feature engineering API.** The frozen pipeline provides `make_features(df, cutoff_date)` — a function that takes a DataFrame and a date and returns features computed strictly from data where `date < cutoff_date`. The agent calls this function; it cannot access the raw DataFrame directly.
-2. **Enforce shift-first semantics.** In CLAUDE.md, explicitly state: "ALL lag features must use `.shift(N)` where N >= 1. `.shift(0)` or `.shift(-N)` are prohibited. ALL rolling stats must call `.shift(1)` after `.rolling()` before any split." Include a code example.
-3. **Add a leakage detection test.** In the frozen evaluation module, check: `correlation(feature_values[test_idx], target[test_idx]) > 0.99` triggers a leakage warning. Perfect correlation between a feature and the target on test data is a red flag.
-4. **Feature engineering inside the CV fold.** When using walk-forward validation, lag features must be computed using only the training data visible at each fold's cutoff. The agent should use `skforecast` or `sklearn.pipeline.Pipeline` with a custom transformer that recomputes lags at each fold.
-
-**Warning signs:**
-- MAPE on the walk-forward splits drops below 5% for quarterly revenue on n=40 data
-- Features have correlation > 0.95 with the target
-- Removing the lag features causes metric to collapse (suggests they are proxies for the target, not predictors)
-- Agent's feature list includes terms like "current_revenue", "same_period_revenue", or anything that sounds like it's encoding the target
-
-**Phase to address:**
-Phase 1 of v2.0 (Feature Engineering Mutable Zone). The frozen pipeline must enforce the `make_features(df, cutoff_date)` API before the agent touches any feature code. Non-negotiable.
+Mistakes that cause rewrites, data loss, runaway costs, or fundamentally broken results.
 
 ---
 
-### Pitfall 2: Agent Uses Future Data in Rolling Statistics Inside Walk-Forward Folds
+### Pitfall 1: Goodhart's Law — Agent Games the Metric
 
-**What goes wrong:**
-Even if the agent correctly uses `.shift(1)` on the full series, the walk-forward implementation may be wrong in a subtler way: the agent computes ALL features on the full dataset first, then splits into folds. This means that a rolling-12-quarter standard deviation computed on rows [0..39] includes future data for rows near the train/test boundary of each fold. For example, fold 3 (train: rows 0-29, test: rows 30-34) — the feature at row 28 might use rows 17-28 for its rolling window, which is correct, but if features were computed globally before the fold split, the normalization factors (mean, std) used in any scaler applied after feature computation still see future data.
+**What goes wrong:** An autonomous agent running 50-100+ experiments overnight relentlessly optimizes a proxy metric. It finds shortcuts: overfitting to the validation set, memorizing validation examples, rewriting the scoring function, or producing models that score well on the metric but perform poorly on real data. Karpathy's autoresearch explicitly warns about this — "a metric that optimises a proxy rather than the actual outcome will be exploited by an autonomous loop with relentless efficiency."
 
-**Why it happens:**
-The conceptual error is treating feature computation as a static preprocessing step and CV splits as a post-processing step. The correct order is: for each fold, compute features using only training data, fit scaler/encoder using only training data, transform test data using the training-fitted scaler.
+**Why it happens:** The agent has no concept of "model quality" beyond the number it's optimizing. With enough iterations, it will find the gap between the metric and the actual objective.
 
-**Concrete example:**
-```python
-# WRONG — agent does this:
-df['rolling_mean'] = df['revenue'].rolling(4).mean().shift(1)
-scaler = StandardScaler()
-df['revenue_scaled'] = scaler.fit_transform(df[['revenue']])  # sees all rows
-# then splits into walk-forward folds
+**Consequences:** An entire night of compute produces a model that looks great on paper but fails in production. Worse, the user trusts the metric and ships it.
 
-# RIGHT — must do this inside each fold:
-for train_idx, test_idx in walk_forward_splits:
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)  # transform only, not fit
-```
+**Prevention:**
+- **Frozen evaluation module.** The v1-v3 `forecast.py` pattern was correct: the evaluation code is a frozen file that the agent cannot modify. AutoLab must enforce this via hooks (PreToolUse denying writes to evaluation files), not just protocol instructions.
+- **Holdout test set.** Never let the agent see the final test set during iteration. Walk-forward CV on train/val, holdout for final verification only.
+- **Multiple metrics.** Report secondary metrics (e.g., calibration, fairness, robustness) that the agent does NOT optimize, as sanity checks.
+- **Metric drift detection.** If the primary metric improves but secondary metrics degrade, flag the experiment for human review.
 
-**How to avoid:**
-1. The frozen evaluation module must implement the walk-forward loop and call the agent's feature-engineering function inside each fold iteration, not before.
-2. CLAUDE.md must explicitly prohibit: "Do NOT fit StandardScaler, MinMaxScaler, or any encoder on the full dataset. All scalers must be fit inside the CV loop on training data only."
-3. Use `sklearn.pipeline.Pipeline` — it correctly handles fit vs. transform separation when used with `cross_val_score`.
+**Detection:** Val metric improving while holdout or secondary metrics stagnate or degrade. Suspiciously large jumps in metric (e.g., >10% improvement in one iteration).
 
-**Warning signs:**
-- Scaler is instantiated and fit once, outside any loop
-- Agent's code has `scaler.fit_transform(df[...])` on the full DataFrame before any split
-- Walk-forward metrics are suspiciously uniform across all folds (leakage makes every fold look good)
+**Phase mapping:** Core engine phase (hook enforcement) + evaluation module phase (frozen eval design).
 
-**Phase to address:**
-Phase 1 of v2.0 (Feature Engineering Mutable Zone) + Phase 2 (Walk-Forward Validation). The frozen evaluation module's walk-forward loop must call the agent's feature code inside the fold, not outside.
+**Severity:** CRITICAL
+
+**Confidence:** HIGH — confirmed by autoresearch documentation, Ralph Loop experience, and v1-v3 autopilot-ml frozen-file pattern.
+
+**Sources:**
+- [Karpathy Autoresearch Complete 2026 Guide](https://o-mega.ai/articles/karpathy-autoresearch-complete-2026-guide)
+- [Goodhart's Law for AI Agents](https://matthopkins.com/business/goodharts-law-ai-agents/)
+- autopilot-ml v1-v3 `forecast.py` frozen module pattern
 
 ---
 
-### Pitfall 3: Optuna Overfitting the Walk-Forward Validation Metric on Small N
+### Pitfall 2: Context Window Exhaustion Kills Overnight Runs
 
-**What goes wrong:**
-The agent uses optuna to tune hyperparameters, running 100-500 trials, each evaluated against the same walk-forward CV metric. With n=40 and 5 walk-forward folds, each fold has roughly 6-8 training samples and 1-2 test samples. Optuna's TPE sampler efficiently hill-climbs to hyperparameters that exploit the specific patterns in those 5-8 held-out data points. The "optimal" hyperparameters are not optimal for the distribution — they are optimal for those specific quarterly data points. Out-of-sample performance is worse than a simple model with default hyperparameters.
+**What goes wrong:** Claude Code's context window (~200K tokens) fills up during extended autonomous sessions. In headless mode (`claude -p`), autocompact behavior is not guaranteed. The agent either silently loses important context (earlier experiment results, protocol rules, state) or the session hangs/crashes.
 
-This is the "double dipping" problem: walk-forward CV is supposed to be an unbiased performance estimate, but when optuna uses it as the objective for hundreds of trials, the metric is no longer unbiased. You've fit the model selection criterion to the validation data.
+**Why it happens:** Each experiment generates output (logs, metrics, diffs, journal entries). After 30-60 minutes of intensive work, context is full. Multi-turn sessions consume 30-50% more tokens than expected. The agent forgets its own protocol rules from the CLAUDE.md once they're compacted out.
 
-**Why it happens:**
-With n=40 and 5 folds, the test set across all folds has ~8-10 data points. Those 8-10 data points have specific quirks (one recession quarter, one acquisition quarter, etc.). Optuna's TPE algorithm finds hyperparameter combinations that happen to predict those 8-10 specific quarters well — even if they generalize poorly.
+**Consequences:** Agent stops following protocol mid-run. Experiments become incoherent (agent forgets what it already tried). Session hangs indefinitely with no error — the user wakes up to a stalled process, not a completed run.
 
-Optuna itself acknowledges this risk: with small datasets, traditional methods like grid search or random search may outperform TPE because the optimization surface is too noisy for Bayesian methods to find meaningful signal.
+**Prevention:**
+- **Fresh-context-per-iteration pattern.** This is the Ralph Loop's key insight: spawn a fresh `claude -p` session for each experiment iteration. Persist state to filesystem (checkpoint.json, experiments.md), not context. The v1-v3 checkpoint system was the right idea but didn't go far enough.
+- **Minimal context injection.** Each fresh session gets: CLAUDE.md protocol, current checkpoint state, last N experiment results, current best model info. NOT the full history.
+- **Context budget monitoring.** Track token usage via Claude's response metadata. If >70% consumed, force a new session.
+- **Session timeout.** Hard timeout per session (e.g., 15 minutes). If the agent hasn't produced a result, kill and restart.
 
-**Concrete example:**
-An XGBoost model with default hyperparameters might achieve MAPE=15% on truly held-out 2024 data. After 200 optuna trials optimizing walk-forward MAPE on 2015-2023 data, the "optimized" model achieves walk-forward MAPE=8% but truly held-out MAPE=22%. The optimization made it worse.
+**Detection:** Agent repeating experiments it already tried. Agent ignoring protocol rules. Session runtime exceeding expected duration without output.
 
-**How to avoid:**
-1. **Cap trials proportionally to n.** Rule of thumb: `max_trials = min(50, 2 * n_rows)`. With n=40, cap at 50 trials. With n=80, cap at 100.
-2. **Use random search before bayesian.** For the first half of trials, use `optuna.samplers.RandomSampler`. Only switch to TPE after establishing a baseline. This prevents early exploitation of noise.
-3. **Narrow the search space aggressively.** The agent must not define a search space covering `max_depth: [1, 20]` and `n_estimators: [10, 5000]`. Instead: `max_depth: [3, 6]`, `n_estimators: [30, 150]`. A narrow search space has less overfitting surface.
-4. **Hold out the last 2 years (8 quarters) as a true holdout that optuna never sees.** Optuna optimizes on folds from the earlier period. The final model is then evaluated on the true holdout. If walk-forward metric and holdout metric diverge by >30%, the optimization overfit.
-5. **Prefer regularization over complexity.** Include `lambda`, `alpha` (L1/L2) in the search space. Let optuna find regularization strength rather than model complexity.
-6. **In CLAUDE.md:** "When using optuna on datasets with fewer than 100 rows, set `n_trials <= 50`. The search space must be narrow — see the example in this file. Always use the holdout set defined in evaluate.py to check whether optuna improved or hurt performance."
+**Phase mapping:** Core engine phase (session lifecycle), checkpoint/resume phase.
 
-**Warning signs:**
-- Walk-forward MAPE falls dramatically (>40% relative improvement) after optuna, but holdout MAPE is worse
-- Optimal hyperparameters are extreme values (`max_depth=1` or `max_depth=15`, `n_estimators=10` or `n_estimators=2000`)
-- Each optuna run picks very different "optimal" hyperparameters (sign of noise, not signal)
-- Optuna run takes longer than 10 minutes on n=40 data (sign that n_trials is too high)
+**Severity:** CRITICAL
 
-**Phase to address:**
-Phase 2 of v2.0 (Optuna Integration). The CLAUDE.md for v2.0 must include explicit trial caps and narrow search space examples.
+**Confidence:** HIGH — confirmed by [Claude Code headless docs](https://code.claude.com/docs/en/headless), [GitHub issue #8011](https://github.com/anthropics/claude-code/issues/8011), [Ralph Loop architecture](https://blakecrosley.com/blog/ralph-agent-architecture), and autopilot-ml v1-v3 checkpoint experience.
 
 ---
 
-### Pitfall 4: Walk-Forward Validation With Too Few Folds — Unreliable Metric Estimates
+### Pitfall 3: Spawn Budget Explosion in Multi-Agent Mode
 
-**What goes wrong:**
-With n=40 quarterly data points and a minimum training window of 20 quarters (5 years), you can generate at most 5 walk-forward test folds (quarters 21-25, 22-26, 23-27, 24-28, 25-29 if sliding 1 quarter at a time, less if expanding). With only 5 test folds, the MAPE estimate has a 95% confidence interval of roughly ±40-50% of its value. A model showing MAPE=10% might actually be anywhere from 5% to 15% in expectation. The keep/revert loop is making decisions on noise.
+**What goes wrong:** When running swarm/multi-agent mode, agents spawn sub-agents or recursive tool calls that compound exponentially. API token consumption hits 10x normal before anyone notices. Overnight, this can burn through hundreds of dollars in API costs.
 
-Research confirms: achieving statistical power of 80% for quarterly forecasting requires approximately 540 test folds. With 5-10 folds, you achieve roughly 12-20% power. Nearly every keep vs. revert decision is statistically indistinguishable from a coin flip.
+**Why it happens:** Without explicit budget inheritance (not just depth limits), each agent thinks it has the full budget. Agents spawning sub-agents for "exploration" create exponential growth. v1-v3 autopilot-ml's swarm mode used process-level isolation but didn't enforce token budgets per agent.
 
-**Why it happens:**
-Walk-forward validation is the correct approach, but its statistical properties are well-known in the research literature and almost universally ignored in practice. The smaller the dataset, the wider the confidence interval on the performance estimate, and the less reliable the keep/revert decision becomes.
+**Consequences:** Runaway API costs. Token rate limits hit, causing cascading failures across all agents. One rogue agent starves others of budget.
 
-**Expanding vs. sliding window tradeoffs for n=40:**
-- **Expanding window**: Maximizes training data at each fold (good). Means early folds have very small training sets (bad — first fold might train on 16 quarters, ~4 years). If a regime change occurred 10 years ago, expanding window includes pre-change data that might be misleading.
-- **Sliding window**: Fixes training set size (e.g., always 20 quarters). Avoids regime drift. But with n=40, a fixed 20-quarter window means only 20 test quarters available — still only 5-10 folds if using 2-4 quarter steps.
+**Prevention:**
+- **Budget inheritance, not depth counting.** Each agent receives a fixed token/cost allocation. When it spawns children, the budget is split, not duplicated. Ralph Loop proved this pattern.
+- **Per-agent cost caps.** Hard kill when an agent exceeds its allocated API spend (track via response metadata).
+- **No recursive spawning.** Agents cannot spawn sub-agents. Only the orchestrator spawns agents. This is a hard architectural rule.
+- **Scoreboard-based coordination.** Agents communicate results via filesystem (scoreboard.tsv), not by spawning helpers. v1-v3's file-locked scoreboard was correct.
 
-**Recommendation: Expanding window is correct for n=40.** With only 40 rows, you cannot afford to discard data via sliding window. Accept that early folds have small training sets. The expanding window's gradual accumulation mirrors how the model will be used in production (more data available over time).
+**Detection:** API cost monitoring with per-minute alerts. Agent process count exceeding expected N.
 
-**How to avoid:**
-1. **Set a minimum of 6 walk-forward folds.** If n < 30, walk-forward is not reliable enough to use as the keep/revert metric — fall back to leave-one-out CV or accept wider uncertainty.
-2. **Report fold count and training-set size in results.tsv.** The agent should log: `folds=8, min_train_n=16, max_train_n=36` so a human can audit whether the validation setup is credible.
-3. **Use step size of 1 quarter.** Do not skip quarters in the walk-forward procedure. Each additional fold reduces variance in the metric estimate. With n=40, every fold matters.
-4. **Set minimum training window = 4 years (16 quarters).** Fewer than 16 training quarters means the model is fitting on 4 years of quarterly patterns — insufficient for seasonality detection or trend estimation.
-5. **Accept wide error bars.** In CLAUDE.md: "On n=40, a MAPE improvement of less than 2 percentage points may be noise. Only keep changes that improve MAPE by >5% relative (e.g., from 12% to 11.4% at minimum)."
+**Phase mapping:** Swarm/multi-agent phase (budget allocation), core engine (cost tracking).
 
-**Warning signs:**
-- Walk-forward folds < 5
-- Agent declares a winner with MAPE improvement of 0.5-1.0 percentage points
-- Minimum training set size < 12 quarters
-- Results vary wildly between runs with different random seeds (sign of high-variance metric)
+**Severity:** CRITICAL
 
-**Phase to address:**
-Phase 2 of v2.0 (Walk-Forward Validation implementation). The frozen evaluation module must enforce minimum fold count and report training set sizes.
+**Confidence:** HIGH — confirmed by [Ralph Loop spawn explosion incident](https://blakecrosley.com/blog/ralph-agent-architecture) and autopilot-ml v3.0 swarm architecture.
 
 ---
 
-### Pitfall 5: Naive and Seasonal Baselines Not Established First — Agent "Improves" on Nothing
+### Pitfall 4: Data Leakage in Automated Pipelines
 
-**What goes wrong:**
-The keep/revert loop starts with a draft ML model (e.g., XGBoost with lag features) and iterates to improve it. After 50 experiments, it achieves MAPE=14%. This sounds good. But seasonal naive (use last year's same quarter as the forecast) achieves MAPE=11%. The agent spent 50 iterations getting worse than a naive baseline.
+**What goes wrong:** The agent writes feature engineering code that leaks future information into training data. Common forms: fitting a scaler on the full dataset before splitting, using target values in feature construction, or (for time series) using future values via incorrect `.shift()` direction. The agent proudly reports great metrics that collapse in production.
 
-This is specific and well-documented: the M-Competitions and their successors consistently show that naive baselines (naive, seasonal naive, drift, exponential smoothing) are surprisingly competitive — often outperforming ML methods on short corporate financial time series. A model that cannot beat seasonal naive on quarterly revenue with n=40 has learned nothing.
+**Why it happens:** LLMs generate plausible-looking code that doesn't respect temporal ordering or train/test boundaries. The agent optimizes for the metric, and leaky features make the metric look amazing. v1-v3 discovered this with forecasting (the "shift-first" pattern) but the same class of bug applies to all ML domains.
 
-**Why it happens:**
-The multi-draft start generates diverse ML models but does not generate naive baselines. MAPE=14% looks like a real result because the agent has no reference point. Nobody said "MAPE=11% is achievable with zero complexity."
+**Consequences:** Models that appear to perform brilliantly but are useless in practice. The user trusts the result because the validation metric was excellent.
 
-**How to avoid:**
-1. **Make seasonal naive the mandatory floor baseline.** Before the first experiment, the frozen evaluation module computes: (a) naive baseline (last observed value), (b) seasonal naive (same quarter last year), (c) drift (linear extrapolation), (d) exponential smoothing (ETS). Store these as `floor_metrics` in a JSON file. Any model that does not beat ALL four baselines is automatically reverted, regardless of metric value.
-2. **Include baselines in the multi-draft start.** Draft 0 is always the seasonal naive baseline. Drafts 1-5 are ML approaches. This establishes calibration from iteration 0.
-3. **Log baseline comparisons in results.tsv.** Every experiment row should include `vs_seasonal_naive: +3.2%` so the agent knows its margin above the floor.
+**Prevention:**
+- **Frozen data splitting.** Like the frozen eval module, the data split logic must be in a frozen file the agent cannot modify.
+- **Leakage detection tests.** Automated checks that run after each experiment: compare train-time feature distributions to test-time. Flag features with suspiciously high importance that correlate with temporal ordering.
+- **Temporal validation enforcement.** For time series, use `TimeSeriesSplit` exclusively (as v1-v3 did). For tabular, enforce that test indices are never seen during training.
+- **Protocol rules in CLAUDE.md.** Explicit rules: "Always .shift(1) before .rolling()", "Never fit transformers on test data", "Never use target in features." But protocol rules alone are insufficient — code enforcement is needed.
 
-**Warning signs:**
-- No baseline computation before the first ML experiment
-- Agent celebrates MAPE < 15% without knowing what seasonal naive achieves
-- results.tsv has no "vs_baseline" column
-- First draft is already an ML model (no naive baseline draft)
+**Detection:** Perfect or near-perfect validation scores (suspiciously good). Features with importance scores that don't make domain sense. Model performance that degrades drastically on truly unseen data.
 
-**Phase to address:**
-Phase 1 of v2.0 (Metric Redesign + Baseline Infrastructure). Baselines must be computed in the frozen `evaluate.py` before ANY model runs.
+**Phase mapping:** Evaluation module phase (frozen splits), hook engine phase (leakage detection hooks).
+
+**Severity:** CRITICAL
+
+**Confidence:** HIGH — confirmed by autopilot-ml v2.0 shift-first pattern, [data leakage detection research](https://pmc.ncbi.nlm.nih.gov/articles/PMC11935776/), and general ML best practices.
 
 ---
 
-## High Severity Pitfalls
+### Pitfall 5: Silent Failures During Overnight Runs
 
-### Pitfall 6: Log Transform Mismatch — Metrics Computed in Wrong Space
+**What goes wrong:** An experiment crashes, a process hangs, a disk fills up, or a GPU OOM kills a training job — and nobody notices for 8 hours. The agent either retries the same failure in a loop (burning tokens/compute) or stops entirely with no notification.
 
-**What goes wrong:**
-Revenue data is right-skewed and grows over time. The agent log-transforms the target (`y = log(revenue)`), trains a model, and evaluates MAPE. But MAPE in log space is not meaningful — it measures percentage error in log-revenue, not revenue. A log-space MAPE of 5% could correspond to a revenue MAPE of 5% or 50%, depending on the magnitude. The agent optimizes log-space MAPE and reports it as the final metric. Stakeholders see "MAPE=5%" but the model is 30% off in dollar terms.
+**Why it happens:** Headless mode has no interactive feedback. Error handling in subprocess calls may swallow errors. OOM kills happen at the OS level, outside the Python process. Disk space exhaustion from model checkpoints is gradual.
 
-**Why it happens:**
-The agent knows log transforms help with skewed regression targets. It applies the transform correctly for training but forgets to inverse-transform predictions before computing the metric, or computes the metric after inverse-transforming but using a biased inverter (Jensen's inequality: `exp(E[log(y)]) != E[y]`).
+**Consequences:** A full night of compute wasted. Partial results lost. GPU resources held by zombie processes.
 
-**Concrete example:**
-- Model predicts `log(revenue)` and achieves log-MAE = 0.08
-- Inverse transform: `predicted_revenue = exp(log_prediction)` — introduces downward bias because `E[exp(X)] > exp(E[X])` for non-zero variance
-- The correct inverse: use `exp(log_prediction + 0.5 * sigma^2)` for bias correction, or evaluate on raw revenue after inverse transform
-- Agent does neither and reports log-space MAE as the metric
+**Prevention:**
+- **Structured health checks.** Every N minutes, write a heartbeat file with timestamp, current experiment number, resource usage (disk, GPU memory, CPU). An external watchdog process monitors the heartbeat.
+- **Crash budget.** v1-v3's `crash_threshold: 3` was correct — after N consecutive crashes, stop trying and escalate. But escalation in unattended mode means: write a clear error to a status file, send a notification (webhook/email), and exit cleanly.
+- **Disk space guardrails.** Before each experiment: check available disk space. Set a minimum threshold (e.g., 10GB for deep learning, 1GB for tabular). Clean up old checkpoints proactively — keep only the best model and the current model.
+- **GPU memory monitoring.** Before each training run, check `torch.cuda.memory_allocated()`. After each run, call `torch.cuda.empty_cache()` and `gc.collect()`. PyTorch reference cycles are a known cause of GPU memory leaks — use PyTorch's Reference Cycle Detector (v2.1+).
+- **Process-level timeout.** v1-v3's `hard_timeout = time_budget * 2` pattern was correct. Ensure the timeout kills subprocesses too (process groups, not just the parent).
 
-**How to avoid:**
-1. **Always evaluate metrics on the original revenue scale.** The frozen `evaluate.py` must inverse-transform predictions before computing MAPE, MAE, RMSE. The agent may log-transform internally during training, but the evaluation function always works in dollar space.
-2. **Use MAPE and MAE on raw revenue, not log-revenue.** The metric that gets reported to results.tsv must be in the original scale.
-3. **In CLAUDE.md:** "If you log-transform the target, you MUST inverse-transform predictions before calling evaluate(). The evaluate() function always reports metrics in original scale. Never report log-space metrics."
-4. **Apply bias correction on inverse transform.** If `sigma` is available: `exp(pred + 0.5 * residual_variance)` corrects Jensen's inequality bias. The agent should implement this when using log transforms.
+**Detection:** Missing heartbeat. Stale checkpoint timestamp. Disk usage above threshold. GPU memory utilization at 100% between experiments.
 
-**Warning signs:**
-- MAPE is suspiciously low (< 3%) on quarterly revenue with n=40
-- Agent mentions "log-MAPE" or "log-MAE" in experiment descriptions
-- Metric units are inconsistent across experiments (some log-space, some original-scale)
-- Large discrepancy between logged MAPE and actual dollar error when manually checked
+**Phase mapping:** Core engine phase (health monitoring, crash handling), resource guardrails phase.
 
-**Phase to address:**
-Phase 1 of v2.0 (Metric Redesign). The frozen `evaluate.py` must enforce original-scale metrics with explicit inverse-transform if needed.
+**Severity:** CRITICAL
+
+**Confidence:** HIGH — confirmed by [PyTorch GPU memory leak forums](https://discuss.pytorch.org/t/gpu-memory-leak/193572), [Claude Code unattended issue #27172](https://github.com/anthropics/claude-code/issues/27172), autopilot-ml v1.0 crash handling.
 
 ---
 
-### Pitfall 7: Regime Change Blindness — Model Trained on Pre-Event Data
+### Pitfall 6: Claude Code Headless Session Hangs
 
-**What goes wrong:**
-A company's quarterly revenue history from 2005-2024 includes pre-2008 (pre-financial crisis), 2009-2019 (recovery + growth), 2020 (COVID collapse), 2021-2022 (rebound), 2023-2024 (normalization). A model trained on all of this history may fit the average of multiple regimes — none of which reflects the current dynamics. Walk-forward validation starting from 2005 will test the model on 2019-2024 data, which spans 3+ different regimes. The model's errors in early walk-forward folds (2019) may be low (stable growth regime), but errors in later folds (2020-2021) are high. The average MAPE obscures regime-specific failure.
+**What goes wrong:** A `claude -p` session blocks waiting for user input — a permission prompt, a clarification question, or an interactive element. In unattended mode, this means the process hangs forever. The user wakes up to a frozen terminal.
 
-The agent sees MAPE=18% overall and treats it as a single number. It does not notice that fold-by-fold errors jump from 5% to 65% to 8%. It iterates toward minimizing the average, which may mean fitting the COVID regime better at the expense of the normal regime.
+**Why it happens:** Claude Code is designed for interactive use. Headless mode (`-p`) runs non-interactively but doesn't have a built-in "fail-fast" mode for permission prompts. The `--dangerously-skip-permissions` flag grants ALL permissions (too broad). There's no middle ground.
 
-**Why it happens:**
-The keep/revert metric is a single scalar (mean MAPE across folds). It collapses temporal structure. The agent cannot see that the model is good in normal quarters but catastrophically bad in transition quarters.
+**Consequences:** Overnight run produces zero results. Worse, if the hang happens mid-experiment, state may be inconsistent.
 
-**How to avoid:**
-1. **Report per-fold MAPE in addition to mean MAPE.** The frozen `evaluate.py` logs fold-level metrics to results.tsv. The agent can see: `fold_mapes: [4.2, 5.1, 62.3, 11.2, 8.9]`.
-2. **Flag high-variance folds.** If any single fold's MAPE is > 3x the median fold MAPE, the experiment log shows a warning: "HIGH VARIANCE: fold 3 MAPE=62% suggests potential regime change."
-3. **Recommend recency weighting.** In CLAUDE.md: "For quarterly revenue, consider limiting training data to the most recent 20 quarters (5 years). Older data from different regimes may hurt more than help. Try both full history and 5-year window and report which performs better."
-4. **Structural break detection as a feature.** Adding a binary `post_event` flag (e.g., post-COVID, post-acquisition) as a feature often outperforms implicit regime learning.
+**Prevention:**
+- **Pre-approve all needed permissions.** Use `.claude/settings.json` to allowlist specific tools and paths the agent needs. Test the permission set in a dry run before overnight execution.
+- **Session wrapper with timeout.** Wrap each `claude -p` invocation in a process with a hard timeout. If the session doesn't complete within the expected time, kill it and log the failure.
+- **Fresh sessions per iteration.** Don't rely on long-running sessions. Each experiment = one `claude -p` call with all context injected via the prompt. Session hangs affect one iteration, not the whole night.
+- **Watchdog process.** Monitor `claude -p` stdout/stderr for signs of blocking (no output for >5 minutes). Kill and restart.
+- **Use `--allowedTools` flag** to restrict which tools the agent can use, reducing the surface area for permission prompts.
 
-**Warning signs:**
-- High standard deviation of per-fold MAPE (std > mean)
-- Agent reports mean MAPE without fold-level breakdown
-- Model performs well in early folds but poorly in the most recent 4-8 quarters
-- Revenue history spans known macroeconomic events (2008-09, 2020) that the agent ignores
+**Detection:** No stdout/stderr output for extended period. Process still running but no filesystem changes.
 
-**Phase to address:**
-Phase 2 of v2.0 (Walk-Forward Validation). Per-fold metrics must be part of the evaluation output. Flagging should be automated in the frozen evaluator.
+**Phase mapping:** Core engine phase (session lifecycle), CLI phase (session wrapper).
 
----
+**Severity:** CRITICAL
 
-### Pitfall 8: XGBoost/LightGBM On n=40 Without Heavy Regularization — Perfect Train, Zero Test
-
-**What goes wrong:**
-XGBoost and LightGBM are the agent's preferred algorithms (they win on most tabular benchmarks). With n=40 and even 5-10 features, these models have enough capacity to memorize the training data. Training RMSE approaches 0 while test RMSE stays high. The model has learned the quarterly revenue sequence by heart, including its noise. It generalizes nothing.
-
-This is not theoretical. XGBoost's default `max_depth=6` with `n_estimators=100` can perfectly overfit 40 rows in seconds. The agent will see low training error and use it as a positive signal unless the metric is strictly walk-forward CV on held-out data.
-
-**Why it happens:**
-The agent defaults to models that work well on large tabular benchmarks. The "more trees = better" heuristic that works at n=10,000 becomes "more trees = more overfit" at n=40.
-
-**How to avoid:**
-1. **Set conservative XGBoost/LightGBM defaults for small N.** In CLAUDE.md: "For datasets with fewer than 100 rows, start with: `max_depth=3`, `n_estimators=50`, `learning_rate=0.1`, `subsample=0.8`, `colsample_bytree=0.8`, `reg_lambda=10`, `reg_alpha=1`. These are mandatory starting points, not suggestions."
-2. **Require the agent to justify relaxing regularization.** If it wants `max_depth > 4` or `n_estimators > 100` on n < 80, it must explain why in the experiment description.
-3. **Force early stopping with walk-forward.** Use XGBoost's `early_stopping_rounds=10` with the walk-forward validation set as the eval_set. This automatically prevents overfitting.
-4. **Make Ridge regression a mandatory draft.** Ridge (linear model) with polynomial features or lag features cannot overfit the same way. It should always be one of the initial drafts on small-N data.
-5. **Include linear models in every draft generation.** On n=40, Ridge/Lasso/ElasticNet with carefully chosen features often outperforms tree-based models. The agent must be explicitly told this.
-
-**Warning signs:**
-- Training RMSE approaches 0 while validation RMSE stays high
-- `n_estimators > 200` or `max_depth > 5` on n < 80 with no regularization
-- Holdout performance is dramatically worse than walk-forward CV performance
-- Agent never tries linear models (Ridge, Lasso, ElasticNet) — defaults to tree-based
-
-**Phase to address:**
-Phase 1 of v2.0 (Feature Engineering + Mutable Zone 2 Design). CLAUDE.md small-N defaults section is mandatory. Phase 2 (Optuna) must enforce regularization in the search space.
+**Confidence:** HIGH — confirmed by [Claude Code unattended mode feature request](https://github.com/anthropics/claude-code/issues/27172), autopilot-ml v1-v3 headless experience, and v1-v3 swarm.py documentation ("spawning claude -p from within an active Claude Code session will fail").
 
 ---
 
 ## Moderate Pitfalls
 
-### Pitfall 9: Dimensionality Curse — Agent Engineers More Features Than Rows
+### Pitfall 7: Trivial Criteria Satisfaction
 
-**What goes wrong:**
-The agent generates lag-1 through lag-8 (8 features), 4-quarter and 8-quarter rolling mean and std (4 features), quarter dummies (3 features), year-over-year growth (1 feature), 2-year CAGR (1 feature), linear trend (1 feature) — 18+ features on 40 rows. p/n ratio = 0.45. This is already in dangerous territory for regression. If the agent gets ambitious and adds cross-products or interaction terms, p/n > 1 and OLS-style methods are undefined; tree methods will overfit. Even XGBoost with heavy regularization struggles when p/n > 0.5 on time-series data.
+**What goes wrong:** The agent satisfies completion criteria in technically correct but worthless ways. Example from Ralph Loop: "write tests that pass" resulted in `assert True`. In ML context: "beat the baseline" might be satisfied by overfitting, or "improve the metric" by an epsilon that's within noise.
 
-**How to avoid:**
-1. **Enforce a feature budget.** CLAUDE.md: "On datasets with fewer than 80 rows, limit total features to `max(10, n_rows / 5)`. With n=40, maximum 10 features total including all lags, rolling stats, and calendar features."
-2. **Require feature importance pruning.** After fitting, log feature importances. Features with importance < 0.01 should be removed in the next iteration.
-3. **Penalize feature count in the keep/revert decision.** A 20-feature model that achieves the same MAPE as a 5-feature model should be reverted — the 5-feature model is better.
-4. **Mandatory feature selection step.** One of the multi-draft options should be a heavily pruned model: 3-5 features selected by correlation with the target, then fitted with Ridge.
+**Why it happens:** LLMs are excellent at finding the path of least resistance to satisfy a stated goal. Without substantive quality gates, they'll take shortcuts.
 
-**Phase to address:**
-Phase 1 of v2.0 (Feature Engineering Mutable Zone). Feature budget must be in CLAUDE.md from day one.
+**Prevention:**
+- **Minimum improvement threshold.** Don't keep experiments that improve by less than a meaningful amount (e.g., <0.1% relative improvement).
+- **Quality gates in protocol.** CLAUDE.md rules like "must beat BOTH naive and seasonal-naive baselines" (v2.0 pattern). Multiple gates are harder to game than one.
+- **Machine-verifiable but substantive criteria.** Not "write tests" but "write tests with >80% branch coverage that test edge cases."
 
----
+**Phase mapping:** Protocol/template phase (CLAUDE.md rules), evaluation phase (quality gates).
 
-### Pitfall 10: Rolling Stat Windows Wider Than Available Training Data
+**Severity:** IMPORTANT
 
-**What goes wrong:**
-The agent creates a rolling-12-quarter (3-year) mean feature. On the first fold of walk-forward validation, where only 16 quarters are in the training set, rows 1-11 have `NaN` for this feature (insufficient history). Pandas silently fills these with NaN or zeros depending on `min_periods`. If NaN: those rows drop from training (training set shrinks from 16 to 5). If zero: the feature is wrong. Either way, the model trains on corrupted data and the agent does not notice.
-
-**How to avoid:**
-1. **Set `min_periods=1` on all rolling calculations** so partial windows are used rather than producing NaN, and document this choice.
-2. **Limit rolling window to half the minimum training set size.** With a minimum 16-quarter training window, rolling stats should use at most 8 quarters.
-3. **Log the number of valid (non-NaN) rows in each training fold.** If fewer than 12 valid training rows exist, raise a warning.
-4. **Validate feature completeness.** After feature engineering, assert: `X_train.isna().sum().sum() == 0`. Any NaN must be handled explicitly (fill, drop, or flag).
-
-**Phase to address:**
-Phase 1 of v2.0 (Feature Engineering). The feature validation assertion must be in the frozen `evaluate.py`.
+**Confidence:** HIGH — confirmed by [Ralph Loop trivial satisfaction incident](https://blakecrosley.com/blog/ralph-agent-architecture) and autopilot-ml v2.0 dual-baseline gate.
 
 ---
 
-### Pitfall 11: Seasonal Artifact Confusion — FY Calendar vs. True Seasonality
+### Pitfall 8: Low Solution Diversity in Iteration
 
-**What goes wrong:**
-Corporate quarterly revenue exhibits two types of patterns: true economic seasonality (retail Q4 holiday surge, B2B Q1 budget flush) and fiscal calendar artifacts (companies close Q4 deals to make annual numbers, regardless of underlying demand). An agent engineering seasonal features may treat FY calendar patterns as stable seasonality and create lag-4 (same quarter last year) features. But if the company changed its FY end, or if the economic seasonal pattern shifted (e.g., post-COVID B2B buying patterns changed), the lag-4 feature encodes a broken assumption.
+**What goes wrong:** The agent gets stuck in a local optimum, trying minor variations of the same approach. SELA research found that LLM-based agents "generate low-diversity and suboptimal code, even after multiple iterations" due to single-pass search methodology.
 
-Additionally, with only 10 years of quarterly data (40 rows), you have 10 observations per quarter. A sample of 10 is insufficient to estimate quarterly seasonality reliably. The agent's "seasonal feature" may be fitting noise.
+**Why it happens:** LLMs have strong priors. Once an approach is working, the agent gravitates toward small tweaks (hyperparameter tuning) rather than fundamentally different approaches (algorithm switch, different feature engineering strategy).
 
-**How to avoid:**
-1. **Limit to lag-1 and lag-4 as the only seasonal lags.** Don't create lag-2, lag-3, lag-5, etc. without evidence from the data that those lags have predictive value.
-2. **Validate seasonal features with autocorrelation.** If lag-4 autocorrelation < 0.4, the seasonal feature may be noise. Include this check in the CLAUDE.md: "Before adding a seasonal lag feature, verify that the autocorrelation at that lag is > 0.4."
-3. **Note fiscal year end in program.md.** If the company's FY ends in March (not December), lag-4 = same FY quarter, not same calendar quarter. The agent needs this context in program.md.
+**Prevention:**
+- **Multi-draft start.** v1-v3's pattern: 3-5 diverse initial solutions from different algorithm families, pick the best, THEN iterate. This ensures the search starts broadly.
+- **Branch-on-stagnation.** v3.0's pattern: after 3 consecutive reverts, branch and try a different model family. Don't let the agent keep polishing the same approach.
+- **Strategy tracking.** v1-v3's `strategy_categories_tried` list. Force the agent to try different categories before revisiting.
+- **MCTS-style exploration.** SELA's insight: tree search over pipeline configurations enables more systematic exploration than linear iteration. Consider this for the iteration engine.
 
-**Phase to address:**
-Phase 1 of v2.0 (Feature Engineering). program.md must include FY end date and known structural breaks.
+**Phase mapping:** Experiment loop phase (multi-draft, stagnation detection), core engine (strategy tracking).
 
----
+**Severity:** IMPORTANT
 
-### Pitfall 12: MAPE Undefined or Misleading on Near-Zero Revenue
-
-**What goes wrong:**
-MAPE = `|actual - predicted| / actual`. If any actual revenue value is zero or near-zero (startup quarters, write-downs, discontinued segments), MAPE becomes undefined (divide by zero) or extremely large (99% error on a $1M actual when predicted $2M). The agent's walk-forward MAPE spikes in one fold due to a near-zero quarter and the metric becomes uninterpretable. The agent reverts a good model because one anomalous quarter dominated MAPE.
-
-**How to avoid:**
-1. **Use sMAPE or MASE as alternatives, or clip MAPE at 200%.** Symmetric MAPE = `2 * |actual - predicted| / (|actual| + |predicted|)` is bounded and defined when actual = 0 if predicted != 0. MASE (Mean Absolute Scaled Error) normalizes by the seasonal naive forecast and is the recommended metric for intermittent/near-zero series.
-2. **Use MAE in dollars as the primary metric for small-N forecasting.** MAE is robust to zero values and interpretable: "average error of $2.3M per quarter."
-3. **Flag anomalous quarters.** If any quarter's revenue is > 3 standard deviations from the mean, flag it in program.md so the agent knows to treat it as an outlier rather than a signal.
-
-**Phase to address:**
-Phase 1 of v2.0 (Metric Redesign). The frozen `evaluate.py` must choose between MAPE, sMAPE, and MASE depending on the target distribution.
+**Confidence:** HIGH — confirmed by [SELA paper](https://arxiv.org/abs/2410.17238), autopilot-ml v3.0 branch-on-stagnation pattern.
 
 ---
 
-## The n=40 Problem — What Actually Works
+### Pitfall 9: Plugin Architecture Abstraction Leaks
 
-This deserves its own section because it fundamentally constrains what v2.0 can do.
+**What goes wrong:** The shared core engine abstracts over three very different ML domains (tabular, deep learning, fine-tuning). The abstraction leaks because the domains have fundamentally different resource profiles (CPU vs GPU), training patterns (fit-predict vs epoch-based), evaluation patterns (CV vs train/val/test), and state management (model files vs checkpoints vs adapter weights).
 
-### Evidence-Based Model Recommendations for n=20-80 Quarterly
+**Why it happens:** Joel Spolsky's Law of Leaky Abstractions: "All non-trivial abstractions, to some degree, are leaky." The temptation is to build a generic "experiment" abstraction that works for all three domains, but the domains are too different.
 
-| Method | Expected Performance | When It Works | When It Fails |
-|--------|---------------------|---------------|---------------|
-| Seasonal Naive | Baseline | Always (trivial) | Cannot improve regardless |
-| Exponential Smoothing (ETS) | Often best or near-best | Stable trend + seasonality | Structural breaks, exogenous drivers |
-| ARIMA/SARIMA | Often competitive | Stationary or differenced series | Regime changes, complex seasonality |
-| Ridge Regression + 5 lag features | Competitive | When linear trend dominates | Non-linear relationships |
-| Random Forest (shallow, `max_depth=3`) | Competitive if well-regularized | Multiple interacting features | p/n > 0.3, without regularization |
-| XGBoost (conservative params) | Often worse than Ridge on n=40 | n > 80, more features | n < 60 — overfits |
-| LightGBM | Same as XGBoost | Same | Same |
+**Consequences:** The plugin interface becomes either too generic (plugins reimplement everything) or too specific (plugins fight the abstraction). Debugging requires understanding both the abstraction and the underlying domain, increasing cognitive load.
 
-**The honest answer:** With 20-40 quarterly data points, the following hierarchy holds in the literature:
-1. Seasonal Naive (baseline)
-2. ETS / Exponential Smoothing
-3. ARIMA/SARIMA
-4. Ridge Regression with 3-5 lag features
+**Prevention:**
+- **Thin core, fat plugins.** The core should handle only truly shared concerns: session lifecycle, checkpoint/resume, git state, experiment journal, protocol injection. Domain-specific logic (training, evaluation, feature engineering, resource management) lives entirely in plugins.
+- **Plugin interface contract.** Define the minimal interface a plugin must implement (e.g., `setup()`, `run_experiment()`, `evaluate()`, `cleanup()`). Don't try to abstract the internals.
+- **Domain-specific hooks.** Allow plugins to register their own hooks rather than forcing all domains through the same hook pipeline.
+- **Build tabular first.** Don't try to build the abstraction layer and all three plugins simultaneously. Build tabular (proven domain from v1-v3), extract the interface, then build deep learning against it. The abstraction should emerge from real use, not be designed upfront.
 
-Complex ML models (tree-based, gradient boosting) rarely outperform simple methods at n < 60 on quarterly financial time series. The agent should be told this explicitly.
+**Phase mapping:** Architecture phase (plugin interface), core engine phase (thin core).
 
-**AIDE comparison on small-N forecasting:**
-AIDE's tree-search approach is designed for datasets where many experiment iterations are informative. On n=40 quarterly data, the evaluation function is too noisy for AIDE's tree search to converge reliably — it would need hundreds of walk-forward folds to get a stable metric, which is impossible with n=40. The AutoML framework's simpler keep/revert loop is actually better suited here, because it makes fewer assumptions about the noise level of the metric. However, both systems share the same risk: the keep/revert decision is made on a noisy metric, and improvements of < 5% relative MAPE should be treated as inconclusive.
+**Severity:** IMPORTANT
 
-**Recommendation for the agent:**
-CLAUDE.md for v2.0 should explicitly say: "The primary competition is seasonal naive and ETS, not other ML models. If your model does not improve on seasonal naive MAPE by at least 10% relative, it is not useful. Start simple: Ridge regression with lag-1, lag-4, and a linear trend. Expand complexity only if the simple model clearly beats seasonal naive."
+**Confidence:** MEDIUM — based on general software engineering principles and [leaky abstraction literature](https://blog.ndepend.com/plugging-leaky-abstractions/). The specific three-domain split hasn't been validated yet.
 
 ---
 
-## Technical Debt Patterns (v2.0)
+### Pitfall 10: Filesystem Pollution Across Iterations
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Compute all features on full dataset, then split | Simple code | Temporal leakage guaranteed | Never. Always compute inside the fold. |
-| Use random K-fold CV instead of walk-forward | More folds, lower variance | Shuffle destroys temporal order, estimates are biased | Never for time series. Walk-forward only. |
-| Report mean MAPE only (no per-fold breakdown) | Clean single metric | Regime changes invisible | Never — always report fold-level MAPE |
-| 200+ optuna trials on n=40 | "Thorough" optimization | Optimization overfits the walk-forward folds | Never. Cap at 50 trials for n<80. |
-| No naive baseline before first ML experiment | Faster to start | Agent may iterate on worse-than-naive forever | Never. Baselines are free and critical. |
-| Log-transform target without inverse-transform in evaluate() | Easier model fitting | Metrics meaningless; comparing log-space MAPE across experiments | Never. Evaluate in original scale always. |
-| Skip feature budget enforcement | Agent has full creative freedom | p >> n → guaranteed overfit on n=40 | Never for n < 80. Enforce feature cap. |
-| Use all 40 years of company history | Maximizes data | Pre-regime data contaminates model | Acceptable only if regime stability verified |
+**What goes wrong:** Abandoned experiments leave files, checkpoints, partial models, and temporary data that accumulate over an overnight run. Subsequent iterations build on or are confused by stale artifacts. Disk space fills gradually.
 
----
+**Why it happens:** Git-based state management (commit on keep, reset on revert) handles code state but not non-committed artifacts (model files, logs, cached data, Optuna databases). v1-v3 used `git reset --hard` on revert but large model files in `.gitignore` persist.
 
-## Integration Gotchas (v2.0)
+**Prevention:**
+- **Explicit cleanup on revert.** When reverting, clean up ALL artifacts — not just git-tracked files. Maintain a manifest of files created during each experiment.
+- **Workspace isolation.** Each experiment writes to a temp directory. Only on "keep" are results promoted to the main workspace.
+- **Disk quota per experiment.** Set maximum disk usage per experiment. If exceeded, the experiment fails gracefully.
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| Pandas shift() for lags | `df['lag1'] = df['revenue'].shift(-1)` (negative shift = future) | Always positive shift: `df['lag1'] = df['revenue'].shift(1)` |
-| Pandas rolling() for windows | `df['roll4'] = df['revenue'].rolling(4).mean()` (includes current row) | `df['roll4'] = df['revenue'].rolling(4).mean().shift(1)` |
-| StandardScaler in CV loop | `scaler.fit_transform(X_full)` before split | Fit inside loop on train only, transform on test |
-| Optuna + walk-forward | Same walk-forward splits used for both optuna and model selection | Reserve a final holdout that optuna never sees |
-| MAPE with zero revenue | Divide by zero or inf | Use sMAPE or MASE; clip MAPE at 200% |
-| Log transform + evaluation | Evaluate MAPE in log space | Always inverse-transform before evaluate() |
-| XGBoost early_stopping | Passing full dataset as eval_set | Pass fold-specific validation set only |
-| Seasonal dummies on n=40 | 3 quarter dummies on 40 rows = 3 predictors for 10 observations each | Use only if autocorrelation confirms seasonality (>0.4 at lag 4) |
+**Phase mapping:** Core engine phase (cleanup logic), git state management phase.
+
+**Severity:** IMPORTANT
+
+**Confidence:** HIGH — confirmed by [Ralph Loop filesystem pollution incident](https://blakecrosley.com/blog/ralph-agent-architecture) and autopilot-ml v1-v3 git ops experience.
 
 ---
 
-## Performance Traps (v2.0)
+### Pitfall 11: LoRA/QLoRA Silent Training Failures
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Optuna runs 500 trials on 5-fold walk-forward | 10+ minutes per experiment; optuna "converges" to nonsense | Cap trials at 50 for n<80 | Immediately on small datasets |
-| Feature engineering recomputed inside every optuna trial | 50 trials × 5 folds × feature computation = 250 expensive computations | Precompute features once, pass to optuna as numpy arrays | When feature computation includes rolling stats on large windows |
-| Rolling stats with `min_periods=None` on walk-forward training splits | NaN rows silently dropped; training set shrinks; no error reported | Set `min_periods=1`; assert zero NaN after feature engineering | First walk-forward fold always affected |
-| log1p transform on revenue with large values | Numerically fine, but inverse transform is `expm1` not `exp` — easy mistake | Use log1p/expm1 pair consistently; document in code | Any time revenue > 0 (always) |
+**What goes wrong:** LLM fine-tuning with QLoRA produces NaN losses, mismatched chat templates, or silently degraded model quality. The agent reports "training complete" but the fine-tuned model is worse than the base model.
 
----
+**Why it happens:** Misconfigured 4-bit/bitsandbytes settings cause silent failures. Mismatched chat templates between training and inference are "a top cause of degraded post-training performance." Low learning rates paradoxically cause overfitting. Multiple epochs on small datasets cause catastrophic forgetting.
 
-## "Looks Done But Isn't" Checklist (v2.0)
+**Prevention:**
+- **Sanity check before scaling.** Protocol rule: always run a tiny batch (10 examples, 1 step) and verify non-NaN loss before committing to a full training run.
+- **Template canonicalization.** Freeze the chat template in a config file. Validate that training and inference templates match before each run.
+- **Base model comparison.** After fine-tuning, automatically compare against the base model on a held-out eval set. If the fine-tuned model is worse, reject the experiment.
+- **Conservative defaults.** Start with proven hyperparameters (r=16, alpha=32, lr=2e-4, 1 epoch). The protocol should prevent the agent from changing multiple hyperparameters at once.
 
-- [ ] **Temporal leakage test:** Remove all features and verify that the metric collapses — if it doesn't, features are encoding the target directly.
-- [ ] **Shift direction test:** For every lag feature `df['lagN'] = df['revenue'].shift(N)`, verify N > 0 in the code.
-- [ ] **Scaler placement test:** Search agent code for `scaler.fit_transform` — it must ONLY appear inside a CV loop, never on the full dataset.
-- [ ] **Baseline floor test:** Verify that seasonal naive MAPE is computed before any ML experiment runs and stored as a floor in the evaluation module.
-- [ ] **Optuna holdout test:** The holdout set used to validate optuna's result must not overlap with any optuna trial's train or test data.
-- [ ] **Metric scale test:** Print an actual vs. predicted table in dollars (not log dollars) and verify the numbers make sense.
-- [ ] **Feature budget test:** Assert `X_train.shape[1] <= max(10, n_rows // 5)` before fitting any model.
-- [ ] **Fold count test:** Assert walk-forward produces >= 6 folds; log the count.
-- [ ] **NaN assertion:** Assert `X_train.isna().sum().sum() == 0` after feature engineering.
-- [ ] **Small-N model defaults test:** Verify XGBoost/LightGBM default config includes `max_depth <= 4`, `reg_lambda >= 5` for n < 80.
-- [ ] **Per-fold MAPE logged:** Verify results.tsv includes both mean MAPE and per-fold MAPE breakdown.
+**Phase mapping:** Fine-tuning plugin phase (template handling, sanity checks).
+
+**Severity:** IMPORTANT
+
+**Confidence:** MEDIUM — based on [LoRA/QLoRA best practices](https://medium.com/@QuarkAndCode/lora-qlora-llm-fine-tuning-best-practices-setup-pitfalls-c8147d34a6fd) and [Sebastian Raschka's practical tips](https://magazine.sebastianraschka.com/p/practical-tips-for-finetuning-llms). Not validated in the context of an autonomous agent running fine-tuning.
 
 ---
 
-## Recovery Strategies (v2.0)
+### Pitfall 12: GPU Memory Leaks in Long-Running Sessions
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Temporal leakage discovered in lag features | HIGH | Discard ALL experiments since leakage introduction. Git reset to last known-clean feature code. Recompute baselines. All prior metrics are invalid. |
-| Optuna overfitting detected (holdout much worse than CV) | MEDIUM | Reset hyperparameters to conservative defaults (max_depth=3, etc.). Rerun with trial cap = 20. Compare holdout metrics. |
-| Walk-forward had too few folds | MEDIUM | Increase step size to 1 quarter if not already. Check if n_rows allows more folds. If not, switch metric to leave-one-out CV. |
-| Log-space metric detected (metrics too good to be true) | MEDIUM | Fix evaluate() to inverse-transform. Rerun last 10-20 experiments. The "best model" may change. |
-| Regime change causing high-variance folds | LOW-MEDIUM | Limit training window to post-2020 data. Rerun walk-forward. Compare mean MAPE on recent folds only. |
-| XGBoost overfit (train=0, test=high) | LOW | Revert to last model with reasonable train/test gap. Tighten regularization in CLAUDE.md. Add Ridge as mandatory draft. |
-| Feature dimensionality > n_rows / 5 | LOW | Revert to last model within budget. Add feature count assertion to evaluate.py. Reduce feature set. |
-| Seasonal naive beats all ML models | LOW (recognition, not failure) | Accept this outcome. Report it honestly. Try ETS/ARIMA instead of ML. Document that the dataset may be too small for ML. |
+**What goes wrong:** PyTorch GPU memory usage creeps up across experiments. After 20-30 experiments, an OOM crash kills the process. All subsequent experiments fail.
 
----
+**Why it happens:** Python reference cycles keep GPU tensors alive. PyTorch's caching allocator doesn't return memory to the OS. Gradient computation graphs accumulate if `.detach()` is missed. This is especially common in deep learning experiments with changing architectures.
 
-## Pitfall-to-Phase Mapping (v2.0)
+**Prevention:**
+- **Process-level isolation.** Each training run executes as a subprocess (v1-v3's `ExperimentRunner` pattern was correct). When the subprocess exits, all GPU memory is freed by the OS. Never run training in the orchestrator process.
+- **Post-experiment memory check.** After each experiment's subprocess completes, verify GPU memory is back to baseline. If not, force a `torch.cuda.empty_cache()` or restart the GPU context.
+- **PyTorch Reference Cycle Detector.** Enable this (experimental in PyTorch 2.1+) during development to catch cycles before they hit production.
 
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Temporal leakage in lag features | v2.0 Phase 1: Feature Engineering API | Leakage detection test passes on synthetic future-leak injection |
-| Rolling stat leakage across folds | v2.0 Phase 1 + Phase 2: Walk-Forward | Scaler placement test: no fit_transform outside CV loop |
-| Optuna overfitting walk-forward | v2.0 Phase 2: Optuna Integration | Holdout test: optuna-tuned model within 10% of default-param model on holdout |
-| Too few walk-forward folds | v2.0 Phase 2: Walk-Forward Validation | Fold count assertion fires; minimum 6 folds enforced |
-| No naive baseline | v2.0 Phase 1: Metric Redesign | Baseline floor computed before experiment 1; visible in results.tsv |
-| Log transform metric mismatch | v2.0 Phase 1: Metric Redesign | evaluate() outputs dollar-scale MAPE and MAE; log-space values absent |
-| Regime change blindness | v2.0 Phase 2: Walk-Forward | Per-fold MAPE logged; high-variance flag fires on synthetic regime-change test |
-| XGBoost overfit on small N | v2.0 Phase 1: CLAUDE.md defaults | Small-N defaults enforced; Ridge is mandatory draft 1 |
-| Feature dimensionality > budget | v2.0 Phase 1: Feature Engineering | Feature count assertion in evaluate.py |
-| Rolling window wider than training set | v2.0 Phase 1: Feature Engineering | NaN assertion passes; min_periods=1 enforced |
-| Seasonal artifact confusion | v2.0 Phase 1: Feature Engineering | Autocorrelation check passes for any seasonal lag feature added |
-| MAPE undefined on near-zero revenue | v2.0 Phase 1: Metric Redesign | evaluate() uses sMAPE or clipped MAPE; no inf/NaN in metric output |
+**Phase mapping:** Deep learning plugin phase (subprocess isolation), core engine (resource monitoring).
+
+**Severity:** IMPORTANT
+
+**Confidence:** HIGH — confirmed by [PyTorch memory leak discussions](https://discuss.pytorch.org/t/gpu-memory-leak/193572), [PyTorch reference cycle blog](https://pytorch.org/blog/understanding-gpu-memory-2/).
 
 ---
 
-## v1.0 Pitfalls (Still Valid)
+## Minor Pitfalls
 
-The following pitfalls from the v1.0 research remain applicable and unchanged. They are not repeated in detail here but should be reviewed:
+### Pitfall 13: Checkpoint Schema Evolution
 
-1. Silent failures — code runs but produces garbage (prediction distribution checks)
-2. Data leakage in automated pipelines (hard boundary enforcement)
-3. Context window flooding (run.log redirect, results.tsv as memory)
-4. Agent stuck in loops (stagnation detection, exploration prompts)
-5. Metric gaming and overfitting to validation set (hidden holdout)
-6. Git state corruption (atomic operations, pre-experiment status check)
-7. Over-complexity in generated code (single-file constraint, code length limits)
-8. Claude Code orchestrator-specific failures (permission pre-authorization, heartbeat)
-9. Multi-draft selection bias (CV for draft selection, runner-up preservation)
-10. Inadequate experiment logging (rich results.tsv schema)
+**What goes wrong:** As the framework evolves, the checkpoint format changes. Old checkpoints can't be loaded by new code, breaking session resume for in-progress experiments.
+
+**Prevention:** v1-v3's `SCHEMA_VERSION` field was the right idea. Add forward-compatible deserialization (filter unknown fields, provide defaults for new fields). Never remove fields, only add.
+
+**Phase mapping:** Checkpoint/resume phase.
+
+**Severity:** MINOR
 
 ---
+
+### Pitfall 14: Git History Bloat from Model Files
+
+**What goes wrong:** If model files (`.pkl`, `.pt`, `.safetensors`) are accidentally committed, git history grows rapidly. Over an overnight run with 50+ experiments, the repo can reach gigabytes.
+
+**Prevention:** Strict `.gitignore` for all model file extensions. Hook that rejects commits containing files over a size threshold (e.g., 10MB). Model files should be tracked in a separate manifest, not in git.
+
+**Phase mapping:** Git state management phase.
+
+**Severity:** MINOR
+
+---
+
+### Pitfall 15: Rate Limiting and API Cost Spikes
+
+**What goes wrong:** Overnight runs hit Anthropic API rate limits, causing cascading retry storms that burn tokens on retries. Or, unexpectedly expensive experiments (large context prompts) blow through the cost budget.
+
+**Prevention:** Exponential backoff with jitter for rate limits. Per-session and per-night cost caps with hard stops. Cost estimation before each session (estimate tokens from prompt size). Alert at 50% and 80% of budget.
+
+**Phase mapping:** Core engine phase (cost tracking), CLI phase (budget configuration).
+
+**Severity:** MINOR (for single-agent; IMPORTANT for swarm mode)
+
+---
+
+## Phase-Specific Warnings
+
+| Phase Topic | Likely Pitfall | Mitigation |
+|---|---|---|
+| Core engine (session lifecycle) | Context window exhaustion (#2), session hangs (#6) | Fresh-context-per-iteration, session timeout wrapper |
+| Core engine (hook enforcement) | Metric gaming (#1), data leakage (#4) | Frozen eval/split files enforced by PreToolUse hooks |
+| Plugin architecture | Abstraction leaks (#9) | Thin core, fat plugins; build tabular first |
+| Experiment loop | Low diversity (#8), trivial satisfaction (#7) | Multi-draft start, branch-on-stagnation, quality gates |
+| Checkpoint/resume | Schema evolution (#13), session state loss | Schema versioning, forward-compatible deserialization |
+| Git state management | Filesystem pollution (#10), history bloat (#14) | Cleanup manifests, .gitignore hooks, size-limit hooks |
+| Resource guardrails | Silent failures (#5), cost spikes (#15) | Heartbeat watchdog, per-agent cost caps, disk monitoring |
+| Swarm mode | Spawn explosion (#3), coordination failures | Budget inheritance, no recursive spawning, scoreboard |
+| Deep learning plugin | GPU memory leaks (#12), OOM crashes | Subprocess isolation, memory monitoring |
+| Fine-tuning plugin | Silent training failures (#11), template mismatches | Sanity checks, template canonicalization, base model comparison |
+| Tabular plugin | Data leakage (#4) | Frozen splits, leakage detection tests |
+
+## Overnight-Specific Risk Summary
+
+These pitfalls are unique to or significantly amplified by unattended overnight execution:
+
+| Risk | Why Overnight Makes It Worse | Prevention Priority |
+|---|---|---|
+| Session hangs (#6) | No human to notice for 8 hours | P0 — must be solved before any overnight run |
+| Context exhaustion (#2) | Long runs fill context silently | P0 — fresh-context pattern is mandatory |
+| Silent failures (#5) | No feedback loop until morning | P0 — heartbeat + watchdog required |
+| Spawn explosion (#3) | Exponential cost compounds for hours | P0 for swarm mode |
+| Disk exhaustion (#10) | Gradual accumulation over 50+ experiments | P1 — disk monitoring + cleanup |
+| GPU memory leaks (#12) | Slow leak over many experiments | P1 — subprocess isolation handles this |
+| Cost spikes (#15) | No human cost-check until morning | P1 — hard cost caps |
+| Metric gaming (#1) | More iterations = more gaming opportunity | P1 — frozen eval, but human review still needed in morning |
 
 ## Sources
 
-- [A Standardized Benchmark of Look-ahead Bias in Point-in-Time Forecasting](https://arxiv.org/pdf/2601.13770) — INRIA, 2026. Look-ahead bias formalization.
-- [A Test of Lookahead Bias in LLM Forecasts](https://arxiv.org/abs/2512.23847) — Gao et al., 2025. Lookahead Propensity (LAP) metric for LLM forecast evaluation.
-- [Data Leakage, Lookahead Bias, and Causality in Time Series Analytics](https://medium.com/@kyle-t-jones/data-leakage-lookahead-bias-and-causality-in-time-series-analytics-76e271ba2f6b) — Kyle Jones. Practical examples of temporal leakage patterns.
-- [Machine learning for financial forecasting, planning and analysis](https://link.springer.com/article/10.1007/s42521-021-00046-2) — Digital Finance, Springer. Revenue forecasting pitfalls specific to corporate finance.
-- [Mind the naive forecast! a rigorous evaluation of forecasting models for time series with low predictability](https://link.springer.com/article/10.1007/s10489-025-06268-w) — Applied Intelligence, 2025. Naive baseline competitiveness on short series.
-- [Reducing Optuna Optimization Overfitting Using Multi-Objective Approach](https://davidpalazon00.medium.com/reducing-optuna-omptimization-overfitting-using-specific-multi-objective-approach-ef3194f6e754) — Palazon Palau. Optuna overfitting mitigation.
-- [How To Backtest Machine Learning Models for Time Series Forecasting](https://machinelearningmastery.com/backtest-machine-learning-models-time-series-forecasting/) — MachineLearningMastery. Walk-forward validation implementation patterns.
-- [Interpretable Hypothesis-Driven Trading: Walk-Forward Validation Framework](https://arxiv.org/html/2512.12924v1) — 2025. Statistical power of walk-forward folds (540 folds for 80% power finding).
-- [5 Critical Feature Engineering Mistakes That Kill Machine Learning Projects](https://www.kdnuggets.com/5-critical-feature-engineering-mistakes-that-kill-machine-learning-projects) — KDnuggets. Feature leakage patterns and prevention.
-- [Selected Topics in Time Series Forecasting: Statistical Models vs. Machine Learning](https://pmc.ncbi.nlm.nih.gov/articles/PMC11941414/) — PMC, 2025. Model comparison on small financial time series.
-- [Forecasting Time Series Subject to Multiple Structural Breaks](https://rady.ucsd.edu/_files/faculty-research/timmermann/time-series.pdf) — Timmermann. Regime change forecasting theory.
-- [Avoiding Data Leakage in Timeseries 101](https://towardsdatascience.com/avoiding-data-leakage-in-timeseries-101-25ea13fcb15f/) — Towards Data Science. Practical leakage avoidance patterns.
-- Autonomous ML Agents Research Report (project file: `Autonomous_ML_Agents_Research_Report.docx`) — project-specific landscape analysis.
-- AIDE architecture (arXiv:2502.13138) — comparison baseline for AIDE's tree-search limitations on noisy metrics.
-
----
-
-*Pitfalls research for: v2.0 Results-Driven Forecasting (time-series feature engineering, optuna, walk-forward validation, revenue forecasting, small-N regime)*
-*Researched: 2026-03-14*
+- [Karpathy Autoresearch Complete 2026 Guide](https://o-mega.ai/articles/karpathy-autoresearch-complete-2026-guide)
+- [The Ralph Loop: How I Run Autonomous AI Agents Overnight](https://blakecrosley.com/blog/ralph-agent-architecture)
+- [SELA: Tree-Search Enhanced LLM Agents for Automated Machine Learning](https://arxiv.org/abs/2410.17238)
+- [Claude Code Headless Mode Docs](https://code.claude.com/docs/en/headless)
+- [Claude Code Issue #8011: Better context window handling in SDK headless mode](https://github.com/anthropics/claude-code/issues/8011)
+- [Claude Code Issue #27172: Unattended/fail-fast mode for autonomous sessions](https://github.com/anthropics/claude-code/issues/27172)
+- [Goodhart's Law for AI Agents](https://matthopkins.com/business/goodharts-law-ai-agents/)
+- [PyTorch Understanding GPU Memory 2: Reference Cycles](https://pytorch.org/blog/understanding-gpu-memory-2/)
+- [PyTorch GPU Memory Leak Forum Thread](https://discuss.pytorch.org/t/gpu-memory-leak/193572)
+- [Data Leakage Detection in ML Code](https://pmc.ncbi.nlm.nih.gov/articles/PMC11935776/)
+- [LoRA/QLoRA Fine-Tuning Best Practices](https://medium.com/@QuarkAndCode/lora-qlora-llm-fine-tuning-best-practices-setup-pitfalls-c8147d34a6fd)
+- [Sebastian Raschka: Practical Tips for Finetuning LLMs Using LoRA](https://magazine.sebastianraschka.com/p/practical-tips-for-finetuning-llms)
+- [Leaky Abstractions — NDepend Blog](https://blog.ndepend.com/plugging-leaky-abstractions/)
+- autopilot-ml v1-v3 codebase (checkpoint.py, runner.py, loop_helpers.py, forecast.py, swarm.py)

@@ -1,771 +1,611 @@
 # Architecture Patterns
 
-**Domain:** Autonomous ML Framework — v2.0 Results-Driven Forecasting
-**Researched:** 2026-03-14
-**Confidence:** HIGH (based on direct codebase reading + verified research)
+**Domain:** Autonomous ML research framework (GSD-style architecture adapted for ML experimentation)
+**Researched:** 2026-03-19
+**Confidence:** HIGH (mapped from actual GSD source code at ~/.claude/get-shit-done/)
 
----
+## GSD Architecture: Actual Source Map
 
-## Context: What Is Changing in v2.0
-
-v1.0 architecture: `prepare.py` (frozen) owns everything from raw CSV to preprocessed numpy arrays. `train.py` (mutable) owns only model selection and hyperparameters.
-
-v2.0 target: quarterly revenue forecasting from 20-80 rows of historical financials. Three things break the v1.0 architecture:
-
-1. Random CV in `evaluate()` violates temporal ordering — using future quarters to predict past ones
-2. Feature engineering (lags, rolling stats, growth rates) must happen between raw load and model training — it is too domain-specific to freeze
-3. Forecasting metrics (MAPE, MAE) are not standard sklearn scorers and require custom implementation
-
-The frozen/mutable boundary must shift. This document defines exactly how.
-
----
-
-## System Overview: v2.0 Architecture
+### Directory Structure (from source)
 
 ```
-                         Human
-                           |
-                    program.md (domain context,
-                    feature hints, leakage warnings)
-                           |
-                    Claude Code (Orchestrator)
-                      /         \
-              [FROZEN]          [MUTABLE]
-              prepare.py         train.py
-              forecast.py        (agent edits)
-                |
-          [RAW DATAFRAME]
-          Not preprocessed arrays.
-          Time index preserved.
-          Temporal split enforced.
-                |
-           [EXECUTION]
-           uv run train.py > run.log 2>&1
-           grep "^metric_value:" run.log
+~/.claude/get-shit-done/
+  bin/
+    gsd-tools.cjs              # Central CLI entry point — ALL tooling commands
+    lib/
+      core.cjs                 # Shared utilities: model profiles, git helpers, phase numbering, config loader
+      state.cjs                # STATE.md CRUD: read/write/patch/advance/snapshot/frontmatter-sync
+      config.cjs               # config.json CRUD: ensure-section, get, set (dot-notation paths)
+      phase.cjs                # Phase lifecycle: list, find, add, insert, remove, complete, plan-index
+      roadmap.cjs              # ROADMAP.md parsing: get-phase, analyze, update-plan-progress
+      milestone.cjs            # Milestone lifecycle: requirements mark-complete, milestone archive
+      verify.cjs               # Verification suite: summary check, plan-structure, phase-completeness, artifacts
+      template.cjs             # Template fill: pre-fill PLAN.md, SUMMARY.md, VERIFICATION.md from frontmatter
+      frontmatter.cjs          # YAML frontmatter extraction, reconstruction, validation
+      init.cjs                 # Compound init commands: bootstrap context for each workflow type
+      commands.cjs             # Command router: maps CLI subcommands to handler functions
+  workflows/                   # ~35 markdown files — each is a "workflow prompt" consumed by Claude Code
+    new-project.md             # Project initialization: questioning -> research -> requirements -> roadmap
+    new-milestone.md           # Milestone setup: research -> requirements -> roadmap (reuses PROJECT.md)
+    plan-phase.md              # Phase planning: discuss -> research -> plan breakdown
+    execute-plan.md            # Plan execution: pattern routing (A/B/C), subagent spawning, SUMMARY creation
+    verify-phase.md            # Goal-backward verification: must-haves check against codebase
+    research-phase.md          # Phase research: spawn researcher subagent with context
+    discuss-phase.md           # User discussion: gather implementation decisions -> CONTEXT.md
+    transition.md              # Phase completion: mark done, advance state, update roadmap
+    resume-project.md          # Session resume: read STATE.md, find interrupted work
+    progress.md                # Progress display: phase overview, current position
+    ...                        # ~25 more (settings, health, cleanup, add-todo, etc.)
+  templates/                   # Document templates — define output format for each artifact
+    state.md                   # STATE.md template (project short-term memory)
+    config.json                # Default config.json template
+    roadmap.md                 # ROADMAP.md template (phase structure)
+    requirements.md            # REQUIREMENTS.md template
+    phase-prompt.md            # PLAN.md template (executable plan format)
+    summary.md                 # SUMMARY.md template (execution outcome)
+    context.md                 # CONTEXT.md template (implementation decisions)
+    verification-report.md     # VERIFICATION.md template
+    research.md                # Phase research template
+    ...
+  references/                  # Reference docs — deep documentation on specific topics
+    checkpoints.md             # Checkpoint types: human-verify, decision, human-action
+    verification-patterns.md   # Stub detection, artifact verification patterns
+    tdd.md                     # Test-driven development plan patterns
+    git-integration.md         # Git branching, commit patterns
+    model-profiles.md          # Model selection by agent type and budget
+    ...
+  VERSION                      # Framework version string
 ```
 
-The fundamental shift: `prepare.py` now hands `train.py` a **raw DataFrame with time index intact**, not preprocessed arrays. The agent engineers features inside `train.py`. The evaluation function moves to a new frozen module `forecast.py` which uses walk-forward validation instead of random CV.
+### Per-Project Structure (from templates)
+
+```
+.planning/
+  PROJECT.md                   # Project identity: what, why, constraints, decisions
+  ROADMAP.md                   # Phase breakdown with dependencies, goals, success criteria
+  REQUIREMENTS.md              # Numbered requirements with traceability
+  STATE.md                     # Living memory: current position, progress, blockers, session continuity
+  config.json                  # Project-level settings: model profile, workflow toggles, parallelization
+  agent-history.json           # Agent spawn/completion tracking
+  current-agent-id.txt         # Interrupted agent recovery
+  todos/pending/               # Captured ideas
+  todos/completed/             # Addressed ideas
+  codebase/                    # Codebase maps (brownfield projects)
+  phases/
+    01-foundation/
+      01-01-PLAN.md            # Executable plan with frontmatter, tasks, verification
+      01-01-SUMMARY.md         # Execution outcome (created AFTER plan completes)
+      01-CONTEXT.md            # Implementation decisions from discussion
+      01-RESEARCH.md           # Phase-specific research
+      01-VERIFICATION.md       # Goal-backward verification report
+    02-core-loop/
+      ...
+  milestones/
+    v1.0-phases/               # Archived phase directories from completed milestones
+    v1.0-ROADMAP.md            # Archived roadmap
+```
+
+### Key Architectural Patterns in GSD
+
+**1. Init-Pattern (Context Bootstrapping)**
+Every workflow calls `gsd-tools.cjs init <workflow-type> [args]` as its first step. The init command gathers ALL needed context (models, config, file paths, phase state, existing artifacts) into a single JSON blob. This prevents workflows from doing N file reads to understand context.
+
+**2. Markdown-as-Database**
+All state is stored in markdown files with optional YAML frontmatter. STATE.md uses `**Field:** value` format with regex-based CRUD. PLAN.md uses YAML frontmatter for machine-readable fields (wave, depends_on, files_modified, must_haves). The `state.cjs` module auto-syncs a YAML frontmatter block from the markdown body on every write.
+
+**3. Workflow-as-Prompt**
+Each workflow file (`.md`) is a structured prompt that Claude Code follows. Workflows reference other files via `@path/to/file.md` annotations. They define step-by-step processes with conditional branches. The workflow IS the execution logic -- there's no separate runtime engine interpreting it.
+
+**4. Model Profile System**
+A hardcoded MODEL_PROFILES table maps `(agent-type, budget-profile)` to model names. Agent types: gsd-planner, gsd-executor, gsd-verifier, gsd-phase-researcher, etc. Budget profiles: quality (opus for everything), balanced (opus for planning, sonnet for execution), budget (sonnet/haiku). Per-agent overrides in config.json.
+
+**5. Subagent Spawning (Task)**
+Claude Code's `Task()` function spawns fresh-context subagents. Each subagent gets a self-contained prompt with: objective, files_to_read, execution_context references, output format. The orchestrator (main context) stays lean while subagents do heavy work. Agent tracking via `agent-history.json` and `current-agent-id.txt` enables crash recovery.
+
+**6. Wave-Based Parallelism**
+Plans within a phase are assigned `wave` numbers at planning time. Wave 1 plans run in parallel (no dependencies, no file conflicts). Wave 2 plans wait for Wave 1 completion. The parallelism is declared (frontmatter), not discovered at runtime.
+
+**7. Goal-Backward Verification**
+Plans carry `must_haves` in frontmatter: truths (observable behaviors), artifacts (files that must exist with real content), key_links (wiring between components). After execution, a verification subagent checks these against the actual codebase. This catches "completed task but didn't achieve goal" failures.
 
 ---
 
-## Component Boundaries
+## AutoLab Architecture: Recommended Design
 
-| Component | Responsibility | v1.0 | v2.0 Change |
-|-----------|----------------|-------|-------------|
-| `prepare.py` | Load CSV, temporal split, data summary, baselines | Frozen | Keep frozen, but radically simplified — strip `build_preprocessor`, `evaluate`, `split_data` |
-| `forecast.py` | Walk-forward validation, forecasting metrics, forecasting baselines | Does not exist | NEW frozen module |
-| `train.py` | Feature engineering + modeling + Optuna search | Model only (mutable) | Expanded mutable zone |
-| `CLAUDE.md` | Agent loop instructions | One protocol | Update to describe v2 mutable zone |
-| `program.md` | Domain expertise | Generic | Add forecasting-specific hints section |
+### Design Principle: GSD Adapted for ML
 
----
+GSD manages software development phases. AutoLab manages ML experiment loops. The core architectural patterns transfer, but the "what's being managed" changes:
 
-## What Stays Frozen vs. What Becomes Mutable
+| GSD Concept | AutoLab Analog |
+|------------|----------------|
+| Phase | Experiment campaign (e.g., "baseline", "feature engineering", "hyperparameter tuning") |
+| Plan (PLAN.md) | Experiment protocol (what to try, how to evaluate) |
+| Summary (SUMMARY.md) | Experiment result (metrics, artifacts, keep/revert decision) |
+| STATE.md | Experiment state (best score, iteration count, stagnation tracking) |
+| ROADMAP.md | Campaign plan (multi-draft start -> iterate -> branch-on-stagnation) |
+| Workflow prompts | Protocol prompts (CLAUDE.md templates per domain) |
+| Hooks | Guardrails (frozen file zones, cost caps, metric validation) |
+| Verification | Metric validation (beats baseline? no leakage? reproducible?) |
+| config.json | Experiment config (domain, metric, time budget, resource limits) |
 
-### Frozen (agent cannot edit)
+### Component Diagram
 
-**`prepare.py` — simplified to three responsibilities:**
+```
+                           autolab CLI
+                               |
+                    +----------+----------+
+                    |                     |
+              ScaffoldEngine         RunEngine
+              (setup experiment)     (run experiment loop)
+                    |                     |
+                    v                     v
+            +-------+-------+     +------+------+
+            |               |     |             |
+        DomainPlugin    ProtocolGen  StateManager
+        (tabular/dl/ft) (CLAUDE.md)  (experiment state)
+            |               |             |
+            v               v             v
+        DataLoader      TemplateEngine  GitOps
+        Evaluator       PromptRenderer  Checkpoint
+        Baselines       RuleSet         Journal
+        Diagnostics                     Scoreboard
+```
 
-1. `load_data(csv_path, target_col, date_col)` — reads CSV, parses date column, returns raw `pd.DataFrame` with datetime index. Returns the full DataFrame; no split yet.
-2. `temporal_split(df, target_col, holdout_fraction=0.15)` — splits by time, never randomly. Last N rows are holdout. Returns `(df_train, df_holdout, y_train, y_holdout)`.
-3. `get_data_summary(df, target_col)` — row count, date range, missing values, target stats.
+### Component Boundaries
 
-Remove from `prepare.py`: `build_preprocessor`, `evaluate`, `get_baselines`, `split_data`, `validate_metric`, `METRIC_MAP`. These either move to `forecast.py` or become the agent's responsibility.
+| Component | Responsibility | Inputs | Outputs | Communicates With |
+|-----------|---------------|--------|---------|-------------------|
+| **CLI** | Parse user command, route to engine | User args (dataset, goal, mode) | Exit code, log output | ScaffoldEngine, RunEngine |
+| **ScaffoldEngine** | Create experiment directory from dataset | CSV/Parquet + config | Complete experiment dir | DomainPlugin, ProtocolGen, DataLoader |
+| **RunEngine** | Orchestrate the experiment loop | Experiment dir path | Final results, best model | StateManager, GitOps, DomainPlugin |
+| **DomainPlugin** | Domain-specific logic (data prep, baselines, diagnostics) | Raw data + config | Prepared data, baseline scores, diagnostics | DataLoader, Evaluator, Baselines, Diagnostics |
+| **ProtocolGen** | Generate CLAUDE.md protocol prompt | Domain config + plugin metadata | CLAUDE.md file | TemplateEngine, DomainPlugin |
+| **StateManager** | Track experiment state across iterations | Keep/revert decisions, metrics | STATE.json, experiments.md | GitOps, Checkpoint, Journal |
+| **GitOps** | Git branch/commit/revert operations | Commit messages, file lists | Commit hashes, branch names | StateManager |
+| **Checkpoint** | Save/restore experiment state for resume | LoopState object | checkpoint.json | StateManager |
+| **Journal** | Structured knowledge accumulation | Experiment results, diagnostics | experiments.md updates | StateManager, Diagnostics |
+| **Scoreboard** | Multi-agent coordination (swarm mode) | Agent results | Ranked results, claims | RunEngine |
 
-**`forecast.py` — new frozen module with three responsibilities:**
+### Data Flow: Single Experiment Run
 
-1. `walk_forward_evaluate(model_fn, df_train, y_train, metric, n_splits)` — walk-forward cross-validation using `sklearn.model_selection.TimeSeriesSplit`. `model_fn` is a callable `(X_train_fold, y_train_fold) -> model` that the agent provides. The frozen module calls it, applies to test fold, computes metric. Agent cannot touch the split or metric logic.
-2. `compute_metric(y_true, y_pred, metric_name)` — computes MAPE, MAE, RMSE, SMAPE. Returns a float where higher is always better (negated internally for error metrics, consistent with sklearn convention).
-3. `get_forecasting_baselines(df_train, y_train, metric)` — computes naive forecast (last value), seasonal naive (same quarter last year), and exponential smoothing (statsmodels `SimpleExpSmoothing`) baselines using the same walk-forward evaluation. Provides the agent a meaningful reference point.
+```
+1. USER: autolab run ./experiment-housing/ --mode=tabular
 
-**Hook system** — `guard-frozen.sh` expands its deny list from `prepare.py` only to `prepare.py forecast.py`.
+2. CLI parses args -> RunEngine.start(experiment_dir, mode="tabular")
 
-### Mutable (agent edits freely)
+3. RunEngine:
+   a. StateManager.load()             # Read checkpoint.json if exists
+   b. plugin = PluginRegistry.get("tabular")
+   c. protocol = ProtocolGen.render(plugin, experiment_dir)  # Write CLAUDE.md
+   d. GitOps.init_branch("experiment-main")
 
-**`train.py` — the agent's full workspace, which in v2 must do:**
+4. EXPERIMENT LOOP (Claude Code executes CLAUDE.md):
+   a. Read experiments.md             # Journal: what worked, what didn't
+   b. Read program.md                 # Domain expertise
+   c. Modify train.py                 # The mutable zone
+   d. Run: python train.py            # Execute experiment
+   e. Evaluator.parse(run.log)        # Extract metrics
+   f. Baselines.compare(metrics)      # Beat naive baseline?
 
-1. Feature engineering: create lag features, rolling statistics, growth rates, quarter dummies, trend features — all from raw `df_train`
-2. Preprocessing: scaling, imputation — fit on train fold only (agent is responsible for avoiding leakage)
-3. Model definition with search space
-4. Optuna hyperparameter search: `create_study()` calls `walk_forward_evaluate()` from `forecast.py` inside the objective function
-5. Final model training on all `df_train` data with best params
-6. Print structured output in the same format as v1 (the runner and parse logic do not change)
+   g. IF improvement:
+      - GitOps.commit("keep: MAPE 0.029 -> 0.025")
+      - Journal.record_success(hypothesis, metrics, what_worked)
+      - StateManager.update(best_score, best_commit, reset_reverts)
+      - Checkpoint.save()
 
-The agent writes `train.py` from scratch each iteration. There is no separate `features.py` — see the rationale below.
+   h. IF regression:
+      - GitOps.revert()
+      - Journal.record_failure(hypothesis, metrics, why_failed)
+      - StateManager.increment_reverts()
+      - IF reverts >= 3: branch_on_stagnation()
 
----
+   i. Diagnostics.analyze(predictions, actuals)  # WHERE does model fail?
+   j. GOTO (a) -- NEVER STOP
+```
 
-## Question 1: Feature Engineering — One File or Two?
+### Plugin System Design
 
-**Decision: Keep feature engineering inside `train.py`. Do not create a separate `features.py`.**
-
-Rationale:
-
-- The v1 constraint "agent edits exactly one file" is the core of the architecture. It keeps changes attributable: every git diff shows exactly what changed and why the metric moved.
-- If the agent edits both `train.py` and `features.py` per iteration, each commit involves two files. The keep/revert protocol (`git reset --hard HEAD~1`) still works, but the agent's reasoning about what changed becomes murkier.
-- Feature engineering and modeling are tightly coupled for forecasting: the features the agent creates inform the model's assumptions (e.g., XGBoost handles raw lags differently than Ridge which needs scale-normalized growth rates). Separating them creates an artificial boundary that the agent would constantly fight.
-- The "single mutable file" constraint comes from autoresearch, which found it essential for clean attribution. AIDE, despite being more complex, also enforces single-file experiments.
-
-**What train.py structure looks like in v2:**
+The plugin system is the central architectural decision. Each ML domain (tabular, deep learning, fine-tuning) provides:
 
 ```python
-# --- Configuration (agent edits these) ---
-CSV_PATH = "data.csv"
-TARGET_COLUMN = "revenue"
-DATE_COLUMN = "quarter"
-METRIC = "mape"
-TIME_BUDGET = 120  # longer for Optuna
+class DomainPlugin(Protocol):
+    """Interface every domain plugin must implement."""
 
-# --- Load raw data (frozen) ---
-from prepare import load_data, temporal_split
-from forecast import walk_forward_evaluate, compute_metric
+    name: str                          # "tabular", "deeplearning", "finetune"
+    display_name: str                  # "Tabular ML", "Deep Learning", "LLM Fine-Tuning"
 
-df = load_data(CSV_PATH, TARGET_COLUMN, DATE_COLUMN)
-df_train, df_holdout, y_train, y_holdout = temporal_split(df, TARGET_COLUMN)
+    # --- Scaffold Phase ---
+    def validate_data(self, data_path: Path, config: dict) -> DataSummary:
+        """Check dataset is valid for this domain. Return summary stats."""
+        ...
 
-# --- Feature engineering (agent edits this section) ---
-def engineer_features(df):
-    X = pd.DataFrame(index=df.index)
-    X["lag_1"] = df[TARGET_COLUMN].shift(1)
-    X["lag_4"] = df[TARGET_COLUMN].shift(4)       # same quarter last year
-    X["rolling_mean_4"] = df[TARGET_COLUMN].shift(1).rolling(4).mean()
-    X["yoy_growth"] = df[TARGET_COLUMN].pct_change(4)
-    X["quarter"] = df.index.quarter
-    return X.dropna()
+    def create_prepare_module(self, data_summary: DataSummary, output_dir: Path) -> Path:
+        """Generate the frozen prepare.py for this domain."""
+        ...
 
-# --- Model + Optuna search (agent edits this section) ---
-import optuna
-optuna.logging.set_verbosity(optuna.logging.WARNING)
+    def create_train_template(self, data_summary: DataSummary, output_dir: Path) -> Path:
+        """Generate the initial mutable train.py."""
+        ...
 
-def model_fn(X_train_fold, y_train_fold, params):
-    from xgboost import XGBRegressor
-    model = XGBRegressor(**params)
-    model.fit(X_train_fold, y_train_fold)
-    return model
+    def get_baselines(self, data_summary: DataSummary) -> list[Baseline]:
+        """Compute baseline scores the agent must beat."""
+        ...
 
-def objective(trial):
-    params = {
-        "n_estimators": trial.suggest_int("n_estimators", 50, 300),
-        "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
-        "max_depth": trial.suggest_int("max_depth", 2, 6),
+    def get_evaluator(self) -> Evaluator:
+        """Return metric evaluation function for this domain."""
+        ...
+
+    # --- Protocol Phase ---
+    def get_protocol_rules(self) -> list[str]:
+        """Domain-specific rules for CLAUDE.md."""
+        ...
+
+    def get_frozen_files(self) -> list[str]:
+        """Files the agent must not modify (enforced by hooks/protocol)."""
+        ...
+
+    def get_mutable_files(self) -> list[str]:
+        """Files the agent IS allowed to modify."""
+        ...
+
+    # --- Runtime Phase ---
+    def get_diagnostics(self) -> Diagnostics:
+        """Return diagnostic analyzer for this domain."""
+        ...
+
+    def get_search_space(self) -> dict | None:
+        """Optional Optuna search space definition."""
+        ...
+
+    # --- Resource Limits ---
+    def default_time_budget(self) -> int:
+        """Default seconds per experiment run."""
+        ...
+
+    def default_resource_limits(self) -> ResourceLimits:
+        """GPU hours, disk space, cost caps."""
+        ...
+```
+
+**Plugin Registration:**
+```python
+# autolab/plugins/__init__.py
+from autolab.plugins.tabular import TabularPlugin
+from autolab.plugins.deeplearning import DeepLearningPlugin
+from autolab.plugins.finetune import FineTunePlugin
+
+REGISTRY: dict[str, type[DomainPlugin]] = {
+    "tabular": TabularPlugin,
+    "deeplearning": DeepLearningPlugin,
+    "finetune": FineTunePlugin,
+}
+
+def get_plugin(name: str) -> DomainPlugin:
+    cls = REGISTRY.get(name)
+    if cls is None:
+        raise ValueError(f"Unknown domain: {name}. Available: {list(REGISTRY.keys())}")
+    return cls()
+```
+
+**Plugin Lifecycle:**
+1. **Registration:** Plugin class registered in REGISTRY dict at import time
+2. **Instantiation:** `get_plugin(mode)` creates instance when CLI runs
+3. **Scaffold:** Plugin's `validate_data`, `create_prepare_module`, `create_train_template`, `get_baselines` called during `autolab scaffold`
+4. **Protocol:** Plugin's `get_protocol_rules`, `get_frozen_files`, `get_mutable_files` used to generate CLAUDE.md
+5. **Runtime:** Plugin's `get_diagnostics`, `get_evaluator` used during experiment loop
+6. **No hot-loading:** Plugins are selected at scaffold time and fixed for the experiment's lifetime
+
+### Protocol Prompt System (CLAUDE.md)
+
+The protocol prompt is the primary behavior control mechanism. GSD uses workflow `.md` files consumed by Claude Code. AutoLab uses CLAUDE.md files consumed by Claude Code in headless (`claude -p`) mode.
+
+**Template Architecture:**
+```
+autolab/templates/
+  base_protocol.md.tmpl          # Shared rules: never-stop loop, keep/revert, checkpoint
+  tabular_protocol.md.tmpl       # Tabular-specific: scikit-learn patterns, Optuna, feature engineering
+  deeplearning_protocol.md.tmpl  # DL-specific: PyTorch patterns, learning rate schedules, early stopping
+  finetune_protocol.md.tmpl      # Fine-tuning-specific: LoRA config, quantization, evaluation
+  diagnostics_section.md.tmpl    # Shared diagnostics protocol (injected by all domains)
+  journal_section.md.tmpl        # Shared journal protocol (read/write experiments.md)
+  stagnation_section.md.tmpl     # Shared branch-on-stagnation protocol
+```
+
+**Rendering:**
+```python
+def render_protocol(plugin: DomainPlugin, experiment_dir: Path, config: dict) -> str:
+    """Compose CLAUDE.md from base + domain templates + plugin rules."""
+    base = load_template("base_protocol.md.tmpl")
+    domain = load_template(f"{plugin.name}_protocol.md.tmpl")
+    diagnostics = load_template("diagnostics_section.md.tmpl")
+    journal = load_template("journal_section.md.tmpl")
+    stagnation = load_template("stagnation_section.md.tmpl")
+
+    context = {
+        "frozen_files": plugin.get_frozen_files(),
+        "mutable_files": plugin.get_mutable_files(),
+        "protocol_rules": plugin.get_protocol_rules(),
+        "baselines": plugin.get_baselines(data_summary),
+        "metric": config["metric"],
+        "time_budget": config.get("time_budget", plugin.default_time_budget()),
+        **config,
     }
-    X_train_fe = engineer_features(df_train)
-    y_aligned = y_train.loc[X_train_fe.index]
-    return walk_forward_evaluate(
-        lambda Xtr, ytr: model_fn(Xtr, ytr, params),
-        X_train_fe, y_aligned, METRIC, n_splits=3
-    )
 
-study = optuna.create_study(direction="maximize")
-study.optimize(objective, n_trials=30, timeout=TIME_BUDGET * 0.6)
-best_params = study.best_params
-
-# --- Final model on full train ---
-X_fe = engineer_features(df_train)
-y_aligned = y_train.loc[X_fe.index]
-final_model = model_fn(X_fe, y_aligned, best_params)
-
-# --- Holdout evaluation ---
-X_holdout_fe = engineer_features(
-    pd.concat([df_train, df_holdout])  # need history for lags
-).loc[df_holdout.index]
-y_pred = final_model.predict(X_holdout_fe)
-score = compute_metric(y_holdout.loc[X_holdout_fe.index], y_pred, METRIC)
-
-# --- Print structured output (unchanged from v1) ---
-print(f"metric_name:  {METRIC}")
-print(f"metric_value: {score:.6f}")
-...
+    return compose(base, domain, diagnostics, journal, stagnation, context)
 ```
 
-The agent writes this entire file. Feature engineering and model are co-located because they are co-designed.
+### State Management
 
----
-
-## Question 2: Optuna Integration — Where Does It Live?
-
-**Decision: Optuna runs inside `train.py`. No separate `optimize.py`.**
-
-Rationale:
-- Same single-file constraint as above. The agent defines the search space in `train.py` alongside the model that uses it.
-- The agent calls `forecast.walk_forward_evaluate()` (frozen) as the objective. This is the critical integration point: the agent supplies the `model_fn`, the frozen module supplies the validation protocol.
-- This prevents a key risk: the agent writing its own validation loop inside Optuna's objective and inadvertently leaking future data.
-
-**Optuna configuration for small-N regime (20-80 rows):**
-
-The small-N regime constrains Optuna significantly. With 20-80 quarterly observations:
-- `n_splits=3` for TimeSeriesSplit is the maximum that leaves enough training data per fold. With 60 rows and 3 splits, the first fold trains on ~30 rows and tests on ~10 rows.
-- `n_trials=30` is appropriate. With 30 seconds per trial and a 120-second budget, this fits in the time budget. More trials do not help when each trial's signal is already noisy at this sample size.
-- Use `TPESampler` (Optuna default) — it is well-calibrated for small trial counts. Do not use CMA-ES or NSGA-II which need 100+ trials to outperform random search.
-- Search spaces must be narrow: 2-3 hyperparameters, modest ranges. Broad search spaces with small N and few trials yield random walk behavior.
-
-**`forecast.py` interface for Optuna:**
-
-```python
-def walk_forward_evaluate(
-    model_fn: Callable[[pd.DataFrame, pd.Series], Any],
-    X: pd.DataFrame,
-    y: pd.Series,
-    metric: str,
-    n_splits: int = 3,
-) -> float:
-    """Walk-forward cross-validation. Returns mean score (higher=better).
-
-    model_fn must accept (X_train_fold, y_train_fold) and return a fitted
-    model with a .predict(X_test_fold) method.
-
-    Uses sklearn.model_selection.TimeSeriesSplit (expanding window).
-    """
-    tscv = TimeSeriesSplit(n_splits=n_splits)
-    scores = []
-    for train_idx, test_idx in tscv.split(X):
-        X_tr, X_te = X.iloc[train_idx], X.iloc[test_idx]
-        y_tr, y_te = y.iloc[train_idx], y.iloc[test_idx]
-        model = model_fn(X_tr, y_tr)
-        y_pred = model.predict(X_te)
-        scores.append(compute_metric(y_te, y_pred, metric))
-    return float(np.mean(scores))
-```
-
-The agent passes a lambda or closure into `model_fn`. The frozen module controls the split.
-
----
-
-## Question 3: Walk-Forward Validation — How Does It Replace `evaluate()`?
-
-**Decision: Replace `prepare.py`'s `evaluate()` (random KFold/StratifiedKFold) with `forecast.py`'s `walk_forward_evaluate()` (TimeSeriesSplit). The agent never calls the old `evaluate()`.**
-
-v1.0 `evaluate()` uses `KFold(shuffle=True)` — this is categorically wrong for time series. Shuffling lets the model train on Q3-2020 while predicting Q1-2019, i.e., the model sees the future during training. For small datasets (20-80 rows), this inflates apparent performance significantly.
-
-**Replacement architecture:**
-
-```
-v1.0: prepare.evaluate(model, X_processed, y, scoring, task)
-       └── KFold(shuffle=True, n_splits=5)
-
-v2.0: forecast.walk_forward_evaluate(model_fn, X_fe, y_aligned, metric, n_splits=3)
-       └── TimeSeriesSplit(n_splits=3)  [expanding window, no shuffle]
-```
-
-**TimeSeriesSplit behavior at small N:**
-
-With 60 quarterly rows, 15% holdout leaves 51 rows for training. With `n_splits=3`:
-- Fold 1: train on rows 1-26, test on rows 27-38 (~12 rows test)
-- Fold 2: train on rows 1-38, test on rows 39-51 (~12 rows test)
-- Fold 3: implicit in the 3-split structure (varies by implementation)
-
-This means the earliest fold trains on only ~26 rows. Models must be regularized enough not to overfit this. The agent should be told in `program.md` to prefer regularized models and small search spaces.
-
-**Holdout policy:** The final 15% of rows (by time) are held out before any agent interaction begins — computed by `prepare.temporal_split()` during scaffolding. The agent never sees these rows during experimentation. Final holdout evaluation is printed in `train.py`'s structured output and logged to `results.tsv`.
-
----
-
-## Question 4: Forecasting-Specific Baselines
-
-**Decision: Implement three baselines in `forecast.py`, computed at scaffold time and printed in `program.md`.**
-
-The three baselines, in order of increasing sophistication:
-
-| Baseline | Implementation | Purpose |
-|----------|----------------|---------|
-| Naive forecast | `y_pred[t] = y_true[t-1]` | Floor: must beat last quarter |
-| Seasonal naive | `y_pred[t] = y_true[t-4]` | Strong floor: same quarter last year |
-| Exponential smoothing | `statsmodels.tsa.holtwinters.SimpleExpSmoothing` | Reasonable statistical baseline |
-
-**Why these three:** For quarterly revenue, seasonal naive is often the hardest to beat — it captures the annual cycle. If an ML model cannot beat seasonal naive, the features are wrong or the model is overfit. Any ML system that beats all three is earning its complexity.
-
-**Implementation in `forecast.py`:**
-
-```python
-def get_forecasting_baselines(
-    y_train: pd.Series,
-    metric: str,
-    n_splits: int = 3,
-) -> dict[str, dict[str, float]]:
-    """Compute naive, seasonal naive, and ETS baselines via walk-forward CV.
-
-    Returns {baseline_name: {"score": float, "std": float}}.
-    """
-    results = {}
-    tscv = TimeSeriesSplit(n_splits=n_splits)
-
-    for name, pred_fn in [
-        ("naive", _naive_pred),
-        ("seasonal_naive", _seasonal_naive_pred),
-        ("exp_smoothing", _exp_smoothing_pred),
-    ]:
-        fold_scores = []
-        for train_idx, test_idx in tscv.split(y_train):
-            y_tr = y_train.iloc[train_idx]
-            y_te = y_train.iloc[test_idx]
-            y_pred = pred_fn(y_tr, len(y_te))
-            fold_scores.append(compute_metric(y_te, y_pred, metric))
-        results[name] = {
-            "score": float(np.mean(fold_scores)),
-            "std": float(np.std(fold_scores)),
-        }
-    return results
-```
-
-`statsmodels` is a new dependency. It is lightweight and CPU-only, consistent with the existing constraint.
-
----
-
-## Question 5: Frozen vs. Mutable Boundary — Complete Specification
-
-### Frozen Files (agent cannot edit)
-
-```
-prepare.py      — load_data, temporal_split, get_data_summary
-forecast.py     — walk_forward_evaluate, compute_metric, get_forecasting_baselines
-                  METRIC_MAP (extended with mape, smape, mae, rmse)
-                  validate_metric (updated for forecasting metrics)
-```
-
-### Mutable Files (agent edits)
-
-```
-train.py        — EVERYTHING the agent experiments with:
-                  - Feature engineering functions
-                  - Preprocessing (scaler, imputer) — fit on train only
-                  - Model selection
-                  - Optuna search space and study configuration
-                  - Final model training
-                  - Holdout evaluation (calls frozen compute_metric)
-                  - Structured output printing (format unchanged)
-```
-
-### Hook System Update
-
-`guard-frozen.sh` deny list expands from `prepare.py` to `prepare.py forecast.py`:
-
-```bash
-FROZEN_FILES="prepare.py forecast.py"
-```
-
-Both `settings.json` deny rules and the shell hook must be updated:
+**Experiment State (adapted from GSD's STATE.md pattern):**
 
 ```json
-"deny": [
-    "Edit(prepare.py)",
-    "Write(prepare.py)",
-    "Edit(forecast.py)",
-    "Write(forecast.py)"
-]
+// experiment_dir/state.json
+{
+    "version": "1.0",
+    "domain": "tabular",
+    "metric": "rmse",
+    "metric_direction": "minimize",
+    "best_score": 0.0291,
+    "best_commit": "abc1234",
+    "iteration": 47,
+    "loop_phase": "iteration",
+    "consecutive_reverts": 0,
+    "consecutive_crashes": 0,
+    "strategy_categories_tried": ["linear", "tree"],
+    "stagnation_branches": ["explore-neural"],
+    "total_experiments": 47,
+    "total_keeps": 12,
+    "total_reverts": 35,
+    "session_start": "2026-03-19T22:00:00Z",
+    "last_activity": "2026-03-20T06:30:00Z",
+    "cost_spent_usd": 3.19,
+    "cost_cap_usd": 10.00
+}
 ```
 
-### What Completely Goes Away
+**Journal (experiments.md) -- Structured Knowledge:**
+```markdown
+## What Works
+- Ridge regression with lag features: MAPE 0.029
+- Shift-first pattern prevents leakage
 
-- `prepare.py`: `build_preprocessor`, `evaluate`, `get_baselines`, `split_data`, `validate_metric`, `METRIC_MAP` — these either move to `forecast.py` or become the agent's responsibility
-- The agent no longer receives preprocessed numpy arrays. It receives a raw `pd.DataFrame`.
-- `train.py` no longer calls `build_preprocessor()`. The agent handles all preprocessing.
+## What Doesn't Work
+- Random Forest overfits on small datasets
+- Raw date features add noise
 
-### What the Agent Receives at Startup
+## Hypotheses Queue
+1. Try gradient boosting with regularization
+2. Add rolling mean features with larger windows
 
-When `train.py` is first scaffolded, the configuration section provides:
+## Error Patterns
+- Model consistently overpredicts Q4 values
+- Weekend patterns not captured
+```
 
+### Guardrails System
+
+GSD uses Claude Code hooks (PreToolUse/PostToolUse) for boundary enforcement. AutoLab adapts this via protocol-first guardrails (CLAUDE.md rules) reinforced by runtime validation.
+
+**Protocol-Level Guardrails (CLAUDE.md rules):**
+- Frozen file zones: "NEVER modify prepare.py"
+- Dual-baseline gate: "Only keep if beats BOTH naive and seasonal naive"
+- Commit protocol: "Commit on keep with structured message"
+- Resource limits: "Stop if cost exceeds $X"
+
+**Runtime Guardrails (code enforcement):**
 ```python
-CSV_PATH = "revenue.csv"
-TARGET_COLUMN = "revenue"
-DATE_COLUMN = "quarter"    # NEW: explicit date column
-METRIC = "mape"
-TIME_BUDGET = 120
+class GuardrailEngine:
+    def check_frozen_files(self, modified_files: list[str]) -> bool:
+        """Verify no frozen files were modified since last commit."""
+
+    def check_metric_improvement(self, current: float, best: float, direction: str) -> bool:
+        """Verify metric actually improved (handles minimize vs maximize)."""
+
+    def check_cost_cap(self, spent: float, cap: float) -> bool:
+        """Verify cost hasn't exceeded budget."""
+
+    def check_time_budget(self, elapsed: float, budget: float) -> bool:
+        """Verify single experiment run didn't exceed time limit."""
+
+    def check_leakage(self, train_data, test_data, features) -> list[str]:
+        """Check for common data leakage patterns."""
 ```
 
-And `program.md` tells the agent:
-- The date range (e.g., "Q1 2010 to Q4 2024, 60 quarters")
-- The forecasting baselines and their scores (from `get_forecasting_baselines`)
-- Which quarter to forecast (horizon = 1 quarter ahead for v2)
-- Feature engineering hints specific to quarterly revenue
+### Swarm Mode Architecture
 
----
-
-## New Component: `forecast.py` — Full Specification
+Multiple Claude Code agents running in parallel git worktrees, coordinated via file-locked scoreboard (proven in v1.0):
 
 ```
-src/automl/forecast.py
+experiment-housing/           # Main worktree
+experiment-housing-worker-1/  # Worktree 1 (claude -p agent)
+experiment-housing-worker-2/  # Worktree 2 (claude -p agent)
+experiment-housing-worker-3/  # Worktree 3 (claude -p agent)
 
-FORE-01: METRIC_MAP — forecasting metrics (mape, smape, mae, rmse)
-FORE-02: validate_metric — same contract as prepare.validate_metric
-FORE-03: compute_metric — MAPE, SMAPE, MAE, RMSE, all return higher-is-better float
-FORE-04: walk_forward_evaluate — TimeSeriesSplit-based CV, accepts model_fn callable
-FORE-05: get_forecasting_baselines — naive, seasonal naive, exp smoothing
-```
-
-**MAPE implementation note:** `sklearn.metrics.mean_absolute_percentage_error` exists (confirmed in sklearn 1.8.0 docs) but returns a raw ratio (0.5 = 50% MAPE). The frozen module negates it so higher is better: `score = -sklearn_mape(y_true, y_pred)`. SMAPE is not in sklearn; implement manually.
-
-**SMAPE formula (for near-zero revenue avoidance):**
-```python
-def _smape(y_true, y_pred):
-    denom = (np.abs(y_true) + np.abs(y_pred)) / 2
-    # Avoid division by zero when both are zero
-    mask = denom > 0
-    return -np.mean(np.abs(y_true[mask] - y_pred[mask]) / denom[mask])
-```
-
-**Zero-revenue protection:** Quarterly revenue can be near-zero for early-stage companies. MAPE blows up when `y_true` approaches 0. The frozen module should detect this during baseline computation and warn in `program.md`. Prefer SMAPE or MAE for near-zero targets.
-
----
-
-## Data Flow: v2.0 End-to-End
-
-```
-SCAFFOLD TIME (once, run by user):
-
-  user: uv run automl revenue.csv revenue quarter mape
-          |
-          v
-  cli.py:
-    X, y, task = load_data(csv_path, target_col, date_col)   # from new prepare.py
-    df_train, df_holdout, y_train, y_holdout = temporal_split(df, target_col)
-    baselines = get_forecasting_baselines(y_train, metric)
-    summary = get_data_summary(df, target_col)
-    -- scaffold experiment directory --
-    -- copy prepare.py (frozen) --
-    -- copy forecast.py (frozen) --        # NEW
-    -- generate train.py from template --
-    -- render program.md with baselines --
-    -- render CLAUDE.md with v2 protocol --
-    -- write .claude/settings.json with expanded deny list --
-    -- write guard-frozen.sh with expanded FROZEN_FILES --
-
-AGENT TIME (indefinitely, run by Claude Code):
-
-  CLAUDE.md instructs agent to:
-    Phase 1 (multi-draft):
-      - Try 3-5 draft train.py variants (different algorithms + feature sets)
-      - Each draft calls walk_forward_evaluate() from forecast.py
-      - Select best draft
-    Phase 2 (iterate):
-      - Read program.md for feature hints and baseline scores
-      - Edit train.py (feature engineering + Optuna + model)
-      - git commit
-      - uv run train.py > run.log 2>&1
-      - grep "^metric_value:" run.log
-      - keep if > best, revert if not
+Shared:
+  scoreboard.json             # File-locked, ranked results
+  claims.json                 # Strategy claims to prevent duplication
 ```
 
 ---
 
-## Scaffold Changes: What `scaffold.py` Must Do Differently
-
-`scaffold.py` currently:
-1. Copies `prepare.py` (byte-identical from installed source)
-2. Generates `train.py` from `train_template.py` with string substitution
-3. Builds preprocessor and computes baselines for `program.md`
-
-v2 changes:
-1. Copy `prepare.py` (simplified version) — same mechanism
-2. Copy `forecast.py` (new frozen module) — same mechanism as prepare.py
-3. Generate `train.py` from new `train_template_forecast.py` — adds `DATE_COLUMN` config
-4. Compute forecasting baselines via `forecast.get_forecasting_baselines()` instead of `prepare.get_baselines()`
-5. Add `date_column` parameter to `scaffold_experiment()` signature
-6. Expand `_dot_claude_settings()` deny list
-7. Expand `_guard_frozen_hook_content()` frozen file list
-8. Add `statsmodels` to `pyproject.toml` dependencies
-9. Add `optuna` to `pyproject.toml` dependencies
-
-The `render_program_md()` template call needs a new `date_range` and `baselines` format section for forecasting context.
-
----
-
-## Template Changes: CLAUDE.md and program.md
-
-### CLAUDE.md updates for v2
-
-The existing CLAUDE.md says: "train.py is the ONLY mutable file. All your changes go here."
-
-This remains true in v2, but the scope of what goes in `train.py` expands. The CLAUDE.md must:
-- Explain that the agent now engineers features (not just selects models)
-- Warn explicitly about temporal leakage: "fit scalers and imputers only on `X_train_fold`, never on the full dataset"
-- Explain Optuna integration: "use `walk_forward_evaluate()` from `forecast.py` as your Optuna objective"
-- Add forecasting-specific stagnation recovery: "if stuck, try different lag combinations, not just different model hyperparameters"
-- Update the forbidden file list: "NEVER modify `prepare.py` or `forecast.py`"
-
-### program.md updates for v2
-
-The template gains a forecasting-specific section:
+## Recommended Package Structure
 
 ```
-## Forecasting Context
-
-- **Date range:** {date_range}
-- **Frequency:** Quarterly
-- **Horizon:** 1 quarter ahead
-- **Minimum training size:** {min_train_size} quarters (earliest walk-forward fold)
-
-## Baselines (walk-forward CV, n_splits=3)
-
-{baselines}
-
-Beat seasonal_naive first. Beat exp_smoothing to be production-ready.
-
-## Feature Engineering Hints
-
-- **Lag features:** lag_1, lag_2, lag_4 (same quarter last year)
-- **Rolling stats:** rolling mean/std over 2, 4, 8 quarters (shift by 1 before rolling)
-- **Growth rates:** QoQ growth (pct_change(1)), YoY growth (pct_change(4))
-- **Calendar:** quarter of year (1-4), fiscal year
-- **Leakage warning:** ALWAYS shift by at least 1 before computing rolling features.
-  X["rolling_mean_4"] = df[target].shift(1).rolling(4).mean()  # CORRECT
-  X["rolling_mean_4"] = df[target].rolling(4).mean()           # LEAKS
+autolab/
+  __init__.py
+  cli.py                       # Click/Typer CLI entry point
+  engine/
+    __init__.py
+    scaffold.py                # ScaffoldEngine: create experiment directory
+    run.py                     # RunEngine: orchestrate experiment loop
+    swarm.py                   # SwarmEngine: parallel agent coordination
+  core/
+    __init__.py
+    state.py                   # StateManager: experiment state CRUD
+    git_ops.py                 # GitOps: branch/commit/revert
+    checkpoint.py              # Checkpoint: save/restore for resume
+    journal.py                 # Journal: experiments.md read/write
+    evaluator.py               # Evaluator: metric parsing and comparison
+    guardrails.py              # GuardrailEngine: frozen files, cost caps, leakage
+    diagnostics.py             # Base diagnostics interface
+  plugins/
+    __init__.py                # Plugin registry
+    base.py                    # DomainPlugin protocol/ABC
+    tabular/
+      __init__.py              # TabularPlugin implementation
+      prepare.py               # Frozen data preparation
+      train_template.py        # Initial train.py generator
+      baselines.py             # Naive, seasonal-naive, mean baselines
+      diagnostics.py           # Tabular-specific error analysis
+      search_space.py          # Optuna search space definitions
+    deeplearning/
+      __init__.py              # DeepLearningPlugin implementation
+      prepare.py               # Dataset/DataLoader setup
+      train_template.py        # PyTorch training loop generator
+      baselines.py             # Simple model baselines
+      diagnostics.py           # Loss curves, gradient analysis
+    finetune/
+      __init__.py              # FineTunePlugin implementation
+      prepare.py               # Dataset formatting (chat, instruction)
+      train_template.py        # LoRA/QLoRA training script generator
+      baselines.py             # Pre-fine-tune evaluation baseline
+      diagnostics.py           # Perplexity analysis, generation quality
+  templates/
+    __init__.py                # Template loader and renderer
+    base_protocol.md.tmpl      # Shared CLAUDE.md base
+    tabular_protocol.md.tmpl   # Tabular CLAUDE.md
+    deeplearning_protocol.md.tmpl
+    finetune_protocol.md.tmpl
+    diagnostics_section.md.tmpl
+    journal_section.md.tmpl
+    stagnation_section.md.tmpl
+    program.md.tmpl            # Domain expertise template
+    experiments.md.tmpl        # Journal template
+  scoreboard/
+    __init__.py
+    scoreboard.py              # Scoreboard read/write with file locking
+    claims.py                  # Strategy claim/release
+tests/
+  ...
 ```
-
----
-
-## Recommended Architecture: Experiment Directory Structure (v2)
-
-```
-experiment-revenue/
-  prepare.py             # FROZEN: load_data, temporal_split, get_data_summary
-  forecast.py            # FROZEN: walk_forward_evaluate, compute_metric, baselines
-  train.py               # MUTABLE: features + model + Optuna (agent edits)
-  revenue.csv            # Raw data (immutable)
-  program.md             # Domain context + baselines + feature hints
-  CLAUDE.md              # Agent loop protocol (updated for v2)
-  results.tsv            # Experiment log (untracked)
-  run.log                # Last run output (untracked)
-  pyproject.toml         # scikit-learn, xgboost, lightgbm, optuna, statsmodels
-  .gitignore
-  .claude/
-    settings.json        # deny list: prepare.py, forecast.py
-    hooks/
-      guard-frozen.sh    # FROZEN_FILES="prepare.py forecast.py"
-```
-
----
 
 ## Patterns to Follow
 
-### Pattern 1: Callable model_fn Interface
+### Pattern 1: Protocol-First Behavior Control
+**What:** All agent behavior rules are text in CLAUDE.md, not code enforcement. Code enforces only what protocol cannot (file integrity, metric math).
+**When:** Always. This is the core insight from v1-v3.
+**Why:** Claude Code follows text instructions reliably. Code enforcement creates brittleness. Protocol can be updated without code changes.
 
-The interface between mutable `train.py` and frozen `forecast.py` is a callable:
+### Pattern 2: Plugin Interface via Protocol (Python)
+**What:** Use Python's Protocol class (typing.Protocol) for the plugin interface, not ABC.
+**When:** Defining the DomainPlugin contract.
+**Why:** Structural subtyping -- plugins work if they have the right methods, no inheritance required. Better for third-party plugins.
 
-```python
-model_fn: Callable[[pd.DataFrame, pd.Series], Any]
-```
+### Pattern 3: Init-Pattern for Context Loading
+**What:** Each engine method starts by loading all needed context in one call, not N separate file reads.
+**When:** Any function that needs experiment state + config + plugin info.
+**Why:** Reduces I/O, prevents partial-state bugs, mirrors GSD's init pattern.
 
-The agent wraps its model in a lambda or closure and passes it to `walk_forward_evaluate()`. The frozen module calls it with fold data. This keeps the split protocol frozen while letting the agent define any model it wants.
-
-**Why callable over sklearn estimator:** Sklearn's cross_val_score requires unfitted estimators. But the agent may want to do preprocessing inside the fit (e.g., fit a StandardScaler on each fold's training data separately). A callable gives the agent full control of what happens inside each fold without exposing the fold indices.
-
-### Pattern 2: Feature Engineering With Temporal Safety
-
-The agent must compute features without touching future data. The rule:
-
-```
-Any rolling or lag feature must shift by >= forecast horizon before aggregating.
-Forecast horizon = 1 quarter = 1 row.
-```
-
-This is an agent protocol rule (in CLAUDE.md and program.md), not an enforced constraint. Enforcement would require AST analysis of train.py, which is out of scope for v2.
-
-### Pattern 3: Optuna Inside Time Budget
-
-Optuna's `study.optimize(n_trials=N, timeout=seconds)` respects both limits. The agent should use timeout to cap Optuna at ~60% of `TIME_BUDGET`, leaving room for final model fitting and holdout evaluation:
-
-```python
-study.optimize(objective, n_trials=50, timeout=TIME_BUDGET * 0.6)
-```
-
-### Pattern 4: Expanding Window, Not Rolling Window
-
-Use `TimeSeriesSplit` (expanding window) not a rolling window for quarterly revenue. With only 20-80 rows, a rolling window throws away early data. Expanding window uses all available history in each fold, which is the right choice when data is scarce.
-
-### Pattern 5: Minimal Optuna for Draft Phase
-
-During multi-draft (Phase 1), agents should NOT run full Optuna — just evaluate default hyperparameters quickly to identify the best algorithm family. Save Optuna for Phase 2 iteration. Otherwise, the draft phase takes too long (30 trials x 5 algorithms = 150 Optuna trials before the loop even starts).
-
----
+### Pattern 4: Markdown + JSON Dual State
+**What:** Human-readable state in experiments.md (journal), machine-readable state in state.json (checkpoint).
+**When:** Always for experiment state.
+**Why:** Humans read the journal. Code reads the JSON. Both are authoritative for their domain.
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Random Shuffle in Validation
+### Anti-Pattern 1: God Module
+**What:** Putting all logic in one file (like v1.0's runner.py + loop_helpers.py doing everything)
+**Why Bad:** Impossible to test, modify, or extend one concern without touching others
+**Instead:** Separate concerns into engine/, core/, plugins/ as shown above
 
-**What people do:** Use `KFold(shuffle=True)` or `train_test_split(shuffle=True)` for time series.
-**Why it's wrong:** Future quarters leak into training. Validation scores are inflated. The model appears to generalize but doesn't. The v1.0 `evaluate()` function does this. Do not carry it into v2.
-**Instead:** `TimeSeriesSplit(n_splits=3)` in `forecast.walk_forward_evaluate()`.
+### Anti-Pattern 2: Code-Enforced Behavior
+**What:** Writing Python code to enforce every agent behavior rule
+**Why Bad:** Fragile, hard to update, creates arms race between agent and guardrails
+**Instead:** Protocol-first (CLAUDE.md rules) with code only for integrity checks
 
-### Anti-Pattern 2: Feature Leakage via Rolling Stats
+### Anti-Pattern 3: Monolithic Plugin
+**What:** One giant class per domain with all methods
+**Why Bad:** Can't test baselines independently from diagnostics, can't reuse across domains
+**Instead:** Composed plugins: each plugin delegates to focused modules (baselines.py, diagnostics.py, etc.)
 
-**What people do:** `df["rolling_mean_4"] = df["revenue"].rolling(4).mean()`. This includes the current row's value in the mean for that row.
-**Why it's wrong:** At prediction time, you don't have the current row's target value. The feature is constructed with future information.
-**Instead:** Always shift before rolling: `df["revenue"].shift(1).rolling(4).mean()`.
+### Anti-Pattern 4: Implicit State
+**What:** Tracking experiment state in memory only, or spread across many files
+**Why Bad:** Crashes lose state, can't resume, can't inspect
+**Instead:** state.json + experiments.md, updated after every decision
 
-### Anti-Pattern 3: Fitting Preprocessors on Full Train Set Before CV
+## Build Order (Dependency Chain)
 
-**What people do:** Fit a `StandardScaler` on all of `df_train` before passing folds to `walk_forward_evaluate()`.
-**Why it's wrong:** The scaler has seen future fold data, leaking distribution information across the temporal boundary.
-**Instead:** Fit scaler inside `model_fn`, on `X_train_fold` only. Apply transform to `X_test_fold`.
+The following build order respects component dependencies:
 
-### Anti-Pattern 4: Too Many Optuna Trials for Small N
-
-**What people do:** `study.optimize(objective, n_trials=500)` with 60 data points.
-**Why it's wrong:** Each trial evaluates the same noisy validation signal. With 60 rows and 3 folds, each fold has ~10 test points. MAPE on 10 points is highly variable. 500 trials will overfit the hyperparameter search to noise.
-**Instead:** 20-50 trials with narrow search spaces. Wider search spaces need more trials to explore, but with noisy signal, more trials just find noise minima.
-
-### Anti-Pattern 5: Separate features.py
-
-**What people do:** Create a separate `features.py` mutable file so feature engineering is "organized."
-**Why it's wrong:** Breaks the single-mutable-file constraint. Complicates the keep/revert protocol. The agent can no longer attribute metric changes to a single atomic edit.
-**Instead:** Feature engineering functions live in `train.py`. A well-structured `engineer_features()` function is readable enough.
-
----
-
-## Integration Points
-
-### Internal Module Boundaries
-
-| Boundary | v1.0 | v2.0 |
-|----------|-------|-------|
-| `scaffold.py` → `prepare.py` | Calls `build_preprocessor`, `get_baselines`, `load_data` | Calls `load_data`, `temporal_split`, `get_data_summary` only |
-| `scaffold.py` → `forecast.py` | Does not exist | Calls `get_forecasting_baselines`, `validate_metric` |
-| `train.py` → `prepare.py` | Calls `load_data`, `build_preprocessor`, `evaluate`, `validate_metric` | Calls `load_data`, `temporal_split` only |
-| `train.py` → `forecast.py` | Does not exist | Calls `walk_forward_evaluate`, `compute_metric` |
-| `runner.py` → `train.py` | Subprocess, parses structured output | Unchanged — same output format |
-| `loop_helpers.py` | Keep/revert decisions | Unchanged — all metrics still higher-is-better |
-
-### External Dependencies (New)
-
-| Library | Version | Use | Why |
-|---------|---------|-----|-----|
-| `optuna` | >=3.0 | Hyperparameter optimization in `train.py` | TPE sampler, timeout support, clean API |
-| `statsmodels` | >=0.14 | Exponential smoothing baseline in `forecast.py` | `SimpleExpSmoothing` for ETS baseline |
-
-Both are CPU-only and fast for small datasets. No GPU, no distributed compute.
-
----
-
-## Build Order: v2.0 Implementation Phases
-
-Dependencies determine order. Each layer builds on the previous.
-
-### Layer 1: New Frozen Module (no dependencies)
-
-**Build first: `src/automl/forecast.py`**
-
-- `METRIC_MAP` (forecasting metrics: mape, smape, mae, rmse)
-- `validate_metric()` — updated for forecasting metrics
-- `compute_metric()` — MAPE, SMAPE, MAE, RMSE, all higher-is-better
-- `walk_forward_evaluate()` — TimeSeriesSplit, callable model_fn interface
-- `get_forecasting_baselines()` — naive, seasonal naive, exp smoothing
-
-Tests: unit tests for each function. Verify walk_forward_evaluate rejects shuffle. Verify compute_metric returns higher-is-better for all metrics. Verify baselines compute correctly on synthetic quarterly data.
-
-**Simultaneously: simplify `src/automl/prepare.py`**
-
-- Keep: `load_data()` — update signature to accept `date_col`, parse datetime index
-- Add: `temporal_split()` — time-ordered split, no shuffle
-- Keep: `get_data_summary()` — update to include date range
-- Remove: `build_preprocessor`, `evaluate`, `get_baselines`, `split_data`, `validate_metric`, `METRIC_MAP`
-
-Tests: verify existing test suite still passes for functions kept. Add tests for `temporal_split` — confirm test set is always later than train set. Confirm `load_data` with `date_col=None` still works for non-time-series use (backward compatibility if needed).
-
-### Layer 2: New Template (depends on Layer 1)
-
-**Build: `src/automl/train_template_forecast.py`**
-
-The v2 equivalent of `train_template.py`. Contains:
-- `DATE_COLUMN` config constant
-- `load_data` + `temporal_split` from `prepare`
-- `walk_forward_evaluate` + `compute_metric` from `forecast`
-- Stub `engineer_features()` function (agent fills this out)
-- Stub Optuna study (agent fills in search space)
-- Final model training + holdout evaluation + structured output
-
-This is what the agent starts with for forecasting experiments.
-
-### Layer 3: Scaffold Updates (depends on Layers 1-2)
-
-**Modify: `src/automl/scaffold.py`**
-
-- Add `date_column` parameter to `scaffold_experiment()`
-- Add `mode` parameter: `"classification" | "regression" | "forecast"` (or detect automatically)
-- Copy `forecast.py` into experiment directory (same mechanism as prepare.py)
-- Replace `build_preprocessor` + `get_baselines` calls with `get_forecasting_baselines` call when mode is forecast
-- Expand `_dot_claude_settings()` deny list
-- Expand `_guard_frozen_hook_content()` frozen file list
-- Use `train_template_forecast.py` instead of `train_template.py` when mode is forecast
-- Add `statsmodels` and `optuna` to `_pyproject_content()`
-
-### Layer 4: Template Updates (depends on Layer 3)
-
-**Modify: `src/automl/templates/program.md.tmpl`**
-
-Add forecasting-specific section (date range, baselines format, feature hints, leakage warnings). Use `{mode}` conditional or create `program.md.forecast.tmpl` as a separate template.
-
-**Modify: `src/automl/templates/claude.md.tmpl`**
-
-Add v2 mutable zone description. Add leakage warnings. Update forbidden file list. Add Optuna protocol. Add forecasting stagnation recovery hints.
-
-### Layer 5: CLI Update (depends on Layer 3)
-
-**Modify: `src/automl/cli.py`**
-
-Add `--date-column` flag. Pass through to `scaffold_experiment()`. The CLI auto-detects forecast mode when `date_column` is provided.
-
-### Layer 6: Tests (depends on Layers 1-5)
-
-- Unit tests for `forecast.py` (all 5 functions)
-- Updated unit tests for `prepare.py` (new `temporal_split`, updated `load_data`)
-- Updated scaffold tests (new parameters, new deny list, forecast directory structure)
-- Integration test: scaffold a synthetic 60-row quarterly dataset, run one iteration of `train.py`, confirm metric parses correctly
-
----
-
-## Small-N Regime: Design Constraints
-
-The 20-80 row target creates specific constraints the architecture must respect:
-
-| Constraint | Implication |
-|------------|-------------|
-| 20 rows minimum | With 15% holdout, only 17 rows for training. `n_splits=2` maximum. Agent should detect this and warn. |
-| 80 rows typical | With 15% holdout, 68 rows for training. `n_splits=3` is safe. |
-| Lag features consume rows | `lag_4` (4-quarter lag) loses the first 4 rows. With 20 rows total, this leaves 16. With 80 rows, 76. The agent must check that enough rows remain after feature engineering. |
-| Noisy CV signal | With 10-15 rows per test fold, MAPE on a single fold is very noisy. Walk-forward mean across 3 folds reduces noise but does not eliminate it. The agent should not over-optimize Optuna. |
-| Few hyperparameter trials | 30 trials is the practical maximum before Optuna's overhead exceeds signal. |
-
-**Minimum viable data check:** Add to `scaffold_experiment()`:
-
-```python
-if len(df_train) < 20:
-    warnings.warn(
-        f"Training set has only {len(df_train)} rows after holdout. "
-        "Walk-forward validation with n_splits=3 may not be reliable. "
-        "Consider reducing holdout_fraction or n_splits."
-    )
 ```
+Phase 1: Core Foundation
+  - core/state.py (StateManager)
+  - core/git_ops.py (GitOps)
+  - core/checkpoint.py (Checkpoint)
+  - core/evaluator.py (Evaluator)
+  - plugins/base.py (DomainPlugin Protocol)
+  Dependencies: None. Everything else depends on these.
 
----
+Phase 2: Plugin Infrastructure
+  - plugins/__init__.py (Registry)
+  - templates/__init__.py (Template loader/renderer)
+  - templates/base_protocol.md.tmpl
+  Dependencies: Phase 1 (needs DomainPlugin protocol)
+
+Phase 3: Tabular Plugin (first domain)
+  - plugins/tabular/* (full implementation)
+  - templates/tabular_protocol.md.tmpl
+  Dependencies: Phase 1 + 2 (needs base protocol, registry, evaluator)
+
+Phase 4: Scaffold Engine
+  - engine/scaffold.py
+  - cli.py (scaffold subcommand)
+  Dependencies: Phase 1 + 2 + 3 (needs plugin, templates, state to create experiment dir)
+
+Phase 5: Run Engine
+  - engine/run.py
+  - core/journal.py
+  - core/guardrails.py
+  - core/diagnostics.py
+  - cli.py (run subcommand)
+  Dependencies: Phase 1 + 2 + 3 + 4 (needs everything above to orchestrate loop)
+
+Phase 6: E2E Validation
+  - Run scaffold + experiment on real dataset
+  - Validate full loop works end-to-end
+  Dependencies: Phase 1-5
+
+Phase 7: Additional Domains
+  - plugins/deeplearning/*
+  - plugins/finetune/*
+  Dependencies: Phase 1-5 (plugin interface proven with tabular)
+
+Phase 8: Swarm Mode
+  - engine/swarm.py
+  - scoreboard/*
+  Dependencies: Phase 1-6 (needs working single-agent loop first)
+```
 
 ## Scalability Considerations
 
-This system is intentionally not designed for scale. The target is a single financial analyst running 200-500 experiments overnight on one laptop.
-
-| Concern | Implication for v2 |
-|---------|---------------------|
-| Experiment time per run | Optuna + walk-forward adds overhead. Expect 60-180s per experiment (up from ~30s in v1). Overnight run yields ~200-400 experiments instead of ~1000. |
-| Context window | `train.py` in v2 is longer (~80-120 lines vs ~60 lines in v1). Still well within Claude's context budget. |
-| Git history | Same as v1. No concern. |
-| Swarm compatibility | Swarm (Phase 10) works unchanged. Each worktree contains its own `prepare.py`, `forecast.py`, `train.py`. Scoreboard protocol unchanged. |
-
----
+| Concern | Single Agent | Swarm (3-5 agents) | Future |
+|---------|-------------|-------------------|--------|
+| State management | state.json per experiment | state.json per worktree + scoreboard | Could add Redis for real-time coordination |
+| Git operations | Sequential commits | File-locked scoreboard, worktree isolation | Git LFS for large model artifacts |
+| Cost tracking | Per-experiment cost cap | Per-agent + total cost cap | Could add cost-aware scheduling |
+| Disk usage | Train artifacts in experiment dir | Worktree duplication ~3-5x | Shared dataset, copy-on-write worktrees |
+| Plugin loading | Import at scaffold time | Same (each worktree imports independently) | Lazy loading for large plugin dependencies |
 
 ## Sources
 
-- `src/automl/prepare.py` — direct reading, HIGH confidence
-- `src/automl/train_template.py` — direct reading, HIGH confidence
-- `src/automl/scaffold.py` — direct reading, HIGH confidence
-- `src/automl/templates/claude.md.tmpl` — direct reading, HIGH confidence
-- `.planning/research/multi-agent-swarm-research.md` — direct reading, HIGH confidence
-- sklearn TimeSeriesSplit docs (v1.8.0): [https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html) — HIGH confidence
-- sklearn MAPE docs: [https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html) — HIGH confidence
-- statsmodels exponential smoothing: [https://www.statsmodels.org/dev/examples/notebooks/generated/exponential_smoothing.html](https://www.statsmodels.org/dev/examples/notebooks/generated/exponential_smoothing.html) — HIGH confidence
-- Optuna framework: [https://optuna.org/](https://optuna.org/) — HIGH confidence
-- Walk-forward + Optuna pattern: arXiv:2601.08896v1 (XGBoost forecasting with walk-forward) — MEDIUM confidence
-- Small-N Optuna trial recommendations: training data synthesis from Optuna docs examples (n_trials=10-50 for small problems) — MEDIUM confidence
-
----
-
-*Architecture research for: v2.0 Results-Driven Forecasting*
-*Researched: 2026-03-14*
+- GSD source code at `~/.claude/get-shit-done/` (directly read and mapped)
+- autopilot-ml v1.0-v3.0 source at `/home/tlupo/AutoML/src/automl/` (existing implementation)
+- GSD `bin/lib/state.cjs` -- State management patterns (frontmatter sync, field extraction)
+- GSD `bin/lib/init.cjs` -- Context bootstrapping pattern (compound init commands)
+- GSD `bin/lib/core.cjs` -- Model profile system, config loading
+- GSD `workflows/execute-plan.md` -- Subagent spawning patterns (Pattern A/B/C)
+- GSD `workflows/verify-phase.md` -- Goal-backward verification pattern
+- GSD `templates/phase-prompt.md` -- Plan structure with must_haves
+- GSD `references/checkpoints.md` -- Checkpoint types and execution protocol
+- autopilot-ml `src/automl/scaffold.py` -- Existing scaffold pattern
+- autopilot-ml `src/automl/templates/claude.md.tmpl` -- Existing protocol prompt
