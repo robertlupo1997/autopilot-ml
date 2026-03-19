@@ -12,7 +12,7 @@ mlforge is a ground-up rebuild of autopilot-ml into a multi-domain autonomous ML
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Core Engine + Plugin Infrastructure** - State management, git ops, checkpoint/resume, config system, plugin protocol, and template rendering
+- [x] **Phase 1: Core Engine + Plugin Infrastructure** - State management, git ops, checkpoint/resume, config system, plugin protocol, and template rendering (completed 2026-03-19)
 - [ ] **Phase 2: Tabular Plugin + Experiment Intelligence** - Tabular ML plugin validating the architecture, plus baselines, diagnostics, stagnation, and multi-draft
 - [ ] **Phase 3: Scaffold, CLI + Run Engine** - User entry point, experiment loop orchestration, guardrails, and overnight reliability
 - [ ] **Phase 4: E2E Validation + UX** - End-to-end tabular validation on real data, user experience modes, artifact export, and run summaries
@@ -111,7 +111,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Engine + Plugin Infrastructure | 2/3 | In Progress|  |
+| 1. Core Engine + Plugin Infrastructure | 3/3 | Complete   | 2026-03-19 |
 | 2. Tabular Plugin + Experiment Intelligence | 0/3 | Not started | - |
 | 3. Scaffold, CLI + Run Engine | 0/3 | Not started | - |
 | 4. E2E Validation + UX | 0/2 | Not started | - |
