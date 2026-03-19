@@ -107,13 +107,60 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Populated during roadmap creation) | | |
+| CORE-01 | Phase 3 | Pending |
+| CORE-02 | Phase 3 | Pending |
+| CORE-03 | Phase 1 | Pending |
+| CORE-04 | Phase 1 | Pending |
+| CORE-05 | Phase 1 | Pending |
+| CORE-06 | Phase 1 | Pending |
+| CORE-07 | Phase 1 | Pending |
+| CORE-08 | Phase 1 | Pending |
+| CORE-09 | Phase 3 | Pending |
+| CORE-10 | Phase 1 | Pending |
+| INTL-01 | Phase 2 | Pending |
+| INTL-02 | Phase 2 | Pending |
+| INTL-03 | Phase 2 | Pending |
+| INTL-04 | Phase 2 | Pending |
+| INTL-05 | Phase 2 | Pending |
+| INTL-06 | Phase 2 | Pending |
+| INTL-07 | Phase 3 | Pending |
+| INTL-08 | Phase 2 | Pending |
+| TABL-01 | Phase 2 | Pending |
+| TABL-02 | Phase 2 | Pending |
+| TABL-03 | Phase 4 | Pending |
+| TABL-04 | Phase 2 | Pending |
+| TABL-05 | Phase 2 | Pending |
+| DL-01 | Phase 5 | Pending |
+| DL-02 | Phase 5 | Pending |
+| DL-03 | Phase 5 | Pending |
+| DL-04 | Phase 5 | Pending |
+| DL-05 | Phase 5 | Pending |
+| FT-01 | Phase 5 | Pending |
+| FT-02 | Phase 5 | Pending |
+| FT-03 | Phase 5 | Pending |
+| FT-04 | Phase 5 | Pending |
+| FT-05 | Phase 5 | Pending |
+| GUARD-01 | Phase 3 | Pending |
+| GUARD-02 | Phase 3 | Pending |
+| GUARD-03 | Phase 3 | Pending |
+| GUARD-04 | Phase 3 | Pending |
+| GUARD-05 | Phase 3 | Pending |
+| GUARD-06 | Phase 4 | Pending |
+| SWARM-01 | Phase 5 | Pending |
+| SWARM-02 | Phase 5 | Pending |
+| SWARM-03 | Phase 5 | Pending |
+| SWARM-04 | Phase 5 | Pending |
+| UX-01 | Phase 4 | Pending |
+| UX-02 | Phase 4 | Pending |
+| UX-03 | Phase 4 | Pending |
+| UX-04 | Phase 4 | Pending |
+| UX-05 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 39 total
-- Mapped to phases: 0
-- Unmapped: 39
+- v1 requirements: 48 total
+- Mapped to phases: 48
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation*

@@ -1,74 +1,118 @@
-# Roadmap: AutoML
+# Roadmap: mlforge
 
-## Milestones
+## Overview
 
-- ✅ **v1.0 AutoML MVP + Swarm** — Phases 1-10 (shipped 2026-03-14)
-- ✅ **v2.0 Results-Driven Forecasting** — Phases 11-14 (shipped 2026-03-15)
-- ✅ **v3.0 Intelligent Iteration** — Phases 15-18 (shipped 2026-03-15)
+mlforge is a ground-up rebuild of autopilot-ml into a multi-domain autonomous ML research framework. The roadmap delivers a shared core engine with plugin architecture, validates it end-to-end with the proven tabular domain, then expands to deep learning and LLM fine-tuning. Five phases move from foundation through validated tabular pipeline to full three-domain support with swarm mode.
 
 ## Phases
 
-<details>
-<summary>✅ v1.0 AutoML MVP + Swarm (Phases 1-10) — SHIPPED 2026-03-14</summary>
+**Phase Numbering:**
+- Integer phases (1, 2, 3): Planned milestone work
+- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [x] Phase 1: Foundation (3/3 plans) — completed 2026-03-10
-- [x] Phase 2: Core Loop (3/3 plans) — completed 2026-03-10
-- [x] Phase 3: CLI and Integration (2/2 plans) — completed 2026-03-10
-- [x] Phase 4: E2E Baseline Test (1/1 plan) — completed 2026-03-11
-- [x] Phase 5: Hooks and Enhanced Scaffolding (2/2 plans) — completed 2026-03-12
-- [x] Phase 6: Structured Output and Metrics Parsing (2/2 plans) — completed 2026-03-13
-- [x] Phase 7: E2E Validation Test (3/3 plans) — completed 2026-03-13
-- [x] Phase 8: Permissions Simplification (1/1 plan) — completed 2026-03-14
-- [x] Phase 9: Resume Capability (2/2 plans) — completed 2026-03-14
-- [x] Phase 10: Multi-Agent Swarm (3/3 plans) — completed 2026-03-14
+Decimal phases appear between their surrounding integers in numeric order.
 
-Full details: `.planning/milestones/v1.0-ROADMAP.md`
+- [ ] **Phase 1: Core Engine + Plugin Infrastructure** - State management, git ops, checkpoint/resume, config system, plugin protocol, and template rendering
+- [ ] **Phase 2: Tabular Plugin + Experiment Intelligence** - Tabular ML plugin validating the architecture, plus baselines, diagnostics, stagnation, and multi-draft
+- [ ] **Phase 3: Scaffold, CLI + Run Engine** - User entry point, experiment loop orchestration, guardrails, and overnight reliability
+- [ ] **Phase 4: E2E Validation + UX** - End-to-end tabular validation on real data, user experience modes, artifact export, and run summaries
+- [ ] **Phase 5: Domain Plugins + Swarm** - Deep learning plugin, LLM fine-tuning plugin, and multi-agent swarm mode
 
-</details>
+## Phase Details
 
-<details>
-<summary>✅ v2.0 Results-Driven Forecasting (Phases 11-14) — SHIPPED 2026-03-15</summary>
+### Phase 1: Core Engine + Plugin Infrastructure
+**Goal**: The foundational engine exists -- state tracking, git operations, checkpoint/resume, configuration, plugin protocol, and protocol template rendering are all operational
+**Depends on**: Nothing (first phase)
+**Requirements**: CORE-03, CORE-04, CORE-05, CORE-06, CORE-07, CORE-08, CORE-10
+**Success Criteria** (what must be TRUE):
+  1. State can be created, persisted to JSON, and restored across simulated context resets with experiment count, best metric, and budget remaining intact
+  2. Git operations create a branch per run, commit on keep, reset on revert, and tag best model -- all programmatically via GitPython
+  3. A crashed session can be resumed from the last checkpoint and continues from where it left off
+  4. A domain plugin conforming to the typing.Protocol interface can register, scaffold files, and render its CLAUDE.md template via Jinja2
+  5. Hook engine intercepts tool calls and blocks writes to files marked as frozen in config
+**Plans**: TBD
 
-- [x] Phase 11: Forecasting Infrastructure (2/2 plans) — completed 2026-03-14
-- [x] Phase 12: Forecast Template and Mutable Zone 2 (2/2 plans) — completed 2026-03-14
-- [x] Phase 13: Scaffold and CLI Updates (1/1 plan) — completed 2026-03-14
-- [x] Phase 14: E2E Validation (1/1 plan) — completed 2026-03-15
+Plans:
+- [ ] 01-01: TBD
+- [ ] 01-02: TBD
+- [ ] 01-03: TBD
 
-Full details: `.planning/milestones/v2.0-ROADMAP.md`
+### Phase 2: Tabular Plugin + Experiment Intelligence
+**Goal**: The tabular ML plugin proves the plugin architecture works, and the experiment intelligence features (baselines, diagnostics, stagnation, multi-draft, diff-aware iteration) are operational
+**Depends on**: Phase 1
+**Requirements**: TABL-01, TABL-02, TABL-03, TABL-04, TABL-05, INTL-01, INTL-02, INTL-03, INTL-04, INTL-05, INTL-06, INTL-08
+**Success Criteria** (what must be TRUE):
+  1. Tabular plugin handles CSV/Parquet input for classification and regression, generating frozen prepare.py and mutable train.py with scikit-learn/XGBoost/LightGBM support
+  2. Baseline establishment runs naive and domain-specific baselines, and the dual-baseline gate rejects experiments that do not beat both
+  3. Diagnostics engine reports worst predictions, bias direction, and feature correlations -- telling the agent WHERE the model fails
+  4. After 3 consecutive reverts, branch-on-stagnation triggers and creates a new branch from the best-ever commit
+  5. Multi-draft start generates 3-5 diverse initial solutions across model families and picks the best before iterating linearly
+**Plans**: TBD
 
-</details>
+Plans:
+- [ ] 02-01: TBD
+- [ ] 02-02: TBD
+- [ ] 02-03: TBD
 
-<details>
-<summary>✅ v3.0 Intelligent Iteration (Phases 15-18) — SHIPPED 2026-03-15</summary>
+### Phase 3: Scaffold, CLI + Run Engine
+**Goal**: Users can install mlforge, run it from the command line, and it orchestrates the full experiment loop with guardrails for unattended overnight execution
+**Depends on**: Phase 2
+**Requirements**: CORE-01, CORE-02, CORE-09, GUARD-01, GUARD-02, GUARD-03, GUARD-04, GUARD-05, INTL-07
+**Success Criteria** (what must be TRUE):
+  1. User can pip install mlforge and run `mlforge <dataset> <goal>` to start an autonomous experiment session
+  2. The run engine executes fresh-context-per-iteration experiment loops -- spawning `claude -p` sessions that keep improvements and revert failures
+  3. Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert) without human intervention
+  4. Resource guardrails enforce cost caps, GPU hour limits, disk usage, and per-experiment timeouts with hard stops
+  5. Live terminal output shows current experiment number, best metric, and remaining budget
+**Plans**: TBD
 
-- [x] Phase 15: Diagnosis and Journal Infrastructure (2/2 plans) — completed 2026-03-15
-- [x] Phase 16: Template and Protocol Updates (2/2 plans) — completed 2026-03-15
-- [x] Phase 17: Branch-on-Stagnation (1/1 plan) — completed 2026-03-15
-- [x] Phase 18: E2E Validation (1/1 plan) — completed 2026-03-15
+Plans:
+- [ ] 03-01: TBD
+- [ ] 03-02: TBD
+- [ ] 03-03: TBD
 
-Full details: `.planning/milestones/v3.0-ROADMAP.md`
+### Phase 4: E2E Validation + UX
+**Goal**: The full tabular pipeline is validated end-to-end on real data, and user experience features (simple/expert modes, artifact export, run summaries) are complete
+**Depends on**: Phase 3
+**Requirements**: UX-01, UX-02, UX-03, UX-04, UX-05, GUARD-06, TABL-03
+**Success Criteria** (what must be TRUE):
+  1. A complete mlforge run on a real tabular dataset scaffolds, iterates, checkpoints, resumes, and produces a best model that beats both baselines
+  2. Simple mode auto-detects task type, selects metrics, and runs with minimal user input (just dataset + goal)
+  3. Expert mode accepts custom CLAUDE.md, custom frozen/mutable zones, custom baselines, and plugin API access
+  4. Best model artifact is exported with metadata (metric value, config, training history) after session completes
+  5. Run retrospective summarizes approaches tried, what worked, what failed, cost breakdown, and recommendations
+**Plans**: TBD
 
-</details>
+Plans:
+- [ ] 04-01: TBD
+- [ ] 04-02: TBD
+
+### Phase 5: Domain Plugins + Swarm
+**Goal**: Deep learning and LLM fine-tuning plugins extend mlforge to all three domains, and swarm mode enables parallel agent exploration
+**Depends on**: Phase 4
+**Requirements**: DL-01, DL-02, DL-03, DL-04, DL-05, FT-01, FT-02, FT-03, FT-04, FT-05, SWARM-01, SWARM-02, SWARM-03, SWARM-04
+**Success Criteria** (what must be TRUE):
+  1. Deep learning plugin trains PyTorch models for image/text classification with GPU management, LR scheduling, early stopping, and fixed time budgets per run
+  2. Fine-tuning plugin runs LoRA/QLoRA fine-tuning of open models with VRAM management, quantization config, and evaluation metrics (perplexity, ROUGE)
+  3. Both new plugins generate domain-specific CLAUDE.md protocols and work through the same scaffold/run/iterate pipeline as tabular
+  4. Swarm mode spawns parallel agents in git worktrees with file-locked scoreboard coordination and budget inheritance preventing spawn explosion
+  5. Verification agent checks metric improvement claims against actual holdout performance
+**Plans**: TBD
+
+Plans:
+- [ ] 05-01: TBD
+- [ ] 05-02: TBD
+- [ ] 05-03: TBD
 
 ## Progress
 
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 1. Foundation | v1.0 | 3/3 | Complete | 2026-03-10 |
-| 2. Core Loop | v1.0 | 3/3 | Complete | 2026-03-10 |
-| 3. CLI and Integration | v1.0 | 2/2 | Complete | 2026-03-10 |
-| 4. E2E Baseline Test | v1.0 | 1/1 | Complete | 2026-03-11 |
-| 5. Hooks + Scaffolding | v1.0 | 2/2 | Complete | 2026-03-12 |
-| 6. Structured Output | v1.0 | 2/2 | Complete | 2026-03-13 |
-| 7. E2E Validation Test | v1.0 | 3/3 | Complete | 2026-03-13 |
-| 8. Permissions Simplification | v1.0 | 1/1 | Complete | 2026-03-14 |
-| 9. Resume Capability | v1.0 | 2/2 | Complete | 2026-03-14 |
-| 10. Multi-Agent Swarm | v1.0 | 3/3 | Complete | 2026-03-14 |
-| 11. Forecasting Infrastructure | v2.0 | 2/2 | Complete | 2026-03-14 |
-| 12. Forecast Template + Zone 2 | v2.0 | 2/2 | Complete | 2026-03-14 |
-| 13. Scaffold and CLI Updates | v2.0 | 1/1 | Complete | 2026-03-14 |
-| 14. E2E Validation | v2.0 | 1/1 | Complete | 2026-03-15 |
-| 15. Diagnosis and Journal Infrastructure | v3.0 | 2/2 | Complete | 2026-03-15 |
-| 16. Template and Protocol Updates | v3.0 | 2/2 | Complete | 2026-03-15 |
-| 17. Branch-on-Stagnation | v3.0 | 1/1 | Complete | 2026-03-15 |
-| 18. E2E Validation | v3.0 | 1/1 | Complete | 2026-03-15 |
+**Execution Order:**
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Core Engine + Plugin Infrastructure | 0/3 | Not started | - |
+| 2. Tabular Plugin + Experiment Intelligence | 0/3 | Not started | - |
+| 3. Scaffold, CLI + Run Engine | 0/3 | Not started | - |
+| 4. E2E Validation + UX | 0/2 | Not started | - |
+| 5. Domain Plugins + Swarm | 0/3 | Not started | - |

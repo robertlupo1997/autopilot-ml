@@ -1,62 +1,62 @@
----
-gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: between_milestones
-stopped_at: v3.0 Intelligent Iteration milestone completed
-last_updated: "2026-03-15T20:30:00Z"
-last_activity: 2026-03-15 — v3.0 milestone completed, archived, tagged
-progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
----
-
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-15)
+See: .planning/PROJECT.md (updated 2026-03-19)
 
-**Core value:** Give Claude Code a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline — running experiments, keeping improvements, reverting failures, and logging everything — without human intervention.
-**Current focus:** Planning next milestone
+**Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
+**Current focus:** Phase 1: Core Engine + Plugin Infrastructure
 
 ## Current Position
 
-Phase: — (between milestones)
-Plan: —
-Status: v3.0 complete, ready for next milestone
-Last activity: 2026-03-15 — v3.0 Intelligent Iteration shipped
+Phase: 1 of 5 (Core Engine + Plugin Infrastructure)
+Plan: 0 of 3 in current phase
+Status: Ready to plan
+Last activity: 2026-03-19 -- Roadmap created
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
-- v1.0: 10 phases, 22 plans (6 days)
-- v2.0: 4 phases, 6 plans (2 days)
-- v3.0: 4 phases, 6 plans (1 day)
+- Total plans completed: 0
+- Average duration: -
+- Total execution time: 0 hours
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| - | - | - | - |
+
+**Recent Trend:**
+- Last 5 plans: -
+- Trend: -
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
 ### Decisions
 
-Key decisions carried forward (full log in PROJECT.md):
-- Agent-driven architecture: CLAUDE.md protocol rules over code enforcement
-- Staged mutable zones: v1 modeling → v2 features+Optuna → v3 intelligence → v4 full pipeline
-- Branch-on-stagnation over full MCTS (80% value, 10% complexity)
-- Protocol rules in CLAUDE.md templates, not hardcoded in Python
+Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
+
+- [Roadmap]: Fresh rewrite -- no code carried from v1-v3, old code is reference only
+- [Roadmap]: Plugin architecture via typing.Protocol (structural subtyping, no ABC inheritance)
+- [Roadmap]: JSON for machine state, markdown for human journal (rejected GSD's markdown-as-database)
+- [Roadmap]: Tabular plugin built first to validate architecture before DL/fine-tuning
 
 ### Pending Todos
 
-None.
+None yet.
 
 ### Blockers/Concerns
 
-- Known limitation: graceful shutdown (stop_reason=tool_use at max turns) persists from v1.0
+- Package name "mlforge" PyPI availability needs confirmation before pyproject.toml is written (Phase 1)
 
 ## Session Continuity
 
-Last session: 2026-03-15
-Stopped at: v3.0 milestone completed
+Last session: 2026-03-19
+Stopped at: Roadmap creation complete
 Resume file: None
