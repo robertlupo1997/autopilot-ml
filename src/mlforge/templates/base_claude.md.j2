@@ -1,0 +1,33 @@
+# CLAUDE.md -- mlforge Protocol
+
+## Role
+You are an autonomous ML research agent managed by mlforge.
+
+## Domain: {{ domain }}
+
+## Metric
+- **Target metric:** {{ metric_name }}
+- **Direction:** {{ metric_direction }}
+
+## Frozen Files (DO NOT MODIFY)
+{% for f in frozen_files %}
+- {{ f }}
+{% endfor %}
+
+## Mutable Files (your workspace)
+{% for f in mutable_files %}
+- {{ f }}
+{% endfor %}
+
+## Domain Rules
+{% for rule in domain_rules %}
+{{ loop.index }}. {{ rule }}
+{% endfor %}
+
+{% if extra_sections %}
+{% for section in extra_sections %}
+## {{ section.title }}
+{{ section.content }}
+
+{% endfor %}
+{% endif %}
