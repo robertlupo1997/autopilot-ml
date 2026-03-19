@@ -1,0 +1,119 @@
+# Requirements: mlforge
+
+**Defined:** 2026-03-19
+**Core Value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results — without human intervention.
+
+## v1 Requirements
+
+Requirements for initial release. Each maps to roadmap phases.
+
+### Core Engine
+
+- [ ] **CORE-01**: User can install mlforge via pip and run `mlforge <dataset> <goal>` to start an autonomous experiment session
+- [ ] **CORE-02**: Agent executes keep/revert experiment loop — modifies code, evaluates, commits on improvement, resets on failure
+- [ ] **CORE-03**: Protocol prompt system injects domain-specific CLAUDE.md templates into agent context at session start
+- [ ] **CORE-04**: State tracking persists experiment progress (current best, budget remaining, experiment count) across context resets
+- [ ] **CORE-05**: Checkpoint/resume allows crashed sessions to restart from last successful experiment
+- [ ] **CORE-06**: Config system (mlforge.config.toml) controls domain, budget, mutable zones, metric, and plugin settings
+- [ ] **CORE-07**: Hook engine (PreToolUse/PostToolUse) intercepts Claude Code tool calls to enforce frozen file zones
+- [ ] **CORE-08**: Experiment journal accumulates structured knowledge (hypothesis, result, diff, metric delta) that survives context resets
+- [ ] **CORE-09**: Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert)
+- [ ] **CORE-10**: Git-based state management: branch per run, commit per kept experiment, reset on revert, tag best model
+
+### Experiment Intelligence
+
+- [ ] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
+- [ ] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
+- [ ] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
+- [ ] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
+- [ ] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
+- [ ] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
+- [ ] **INTL-07**: Experiment time/cost budget with per-experiment timeout and total session budget (wall clock, API cost, GPU hours)
+- [ ] **INTL-08**: Results tracking in structured experiment log with commit hash, metric value, status, description, timestamp
+
+### Tabular ML Plugin
+
+- [ ] **TABL-01**: Tabular ML plugin handles classification and regression tasks on CSV/Parquet tabular data
+- [ ] **TABL-02**: Plugin supports scikit-learn, XGBoost, LightGBM model families with Optuna hyperparameter search
+- [ ] **TABL-03**: Leakage prevention enforces shift-first temporal features and walk-forward CV for time-series data
+- [ ] **TABL-04**: Plugin generates domain-specific CLAUDE.md protocol with tabular ML rules and anti-patterns
+- [ ] **TABL-05**: Frozen prepare.py handles data loading and train/test split; mutable train.py handles modeling
+
+### Deep Learning Plugin
+
+- [ ] **DL-01**: Deep learning plugin handles image classification, text classification, and custom architecture training with PyTorch
+- [ ] **DL-02**: Plugin manages GPU utilization, memory limits, and training time budgets
+- [ ] **DL-03**: Plugin supports learning rate scheduling, early stopping, and gradient clipping as protocol rules
+- [ ] **DL-04**: Plugin generates domain-specific CLAUDE.md protocol with deep learning rules and anti-patterns
+- [ ] **DL-05**: Fixed time budget per training run prevents runaway GPU consumption
+
+### LLM Fine-tuning Plugin
+
+- [ ] **FT-01**: Fine-tuning plugin handles LoRA/QLoRA fine-tuning of open models (Llama, Mistral, etc.) via PEFT/TRL
+- [ ] **FT-02**: Plugin manages VRAM allocation, quantization config, and LoRA rank/alpha selection
+- [ ] **FT-03**: Plugin supports evaluation metrics for generative tasks (perplexity, ROUGE, task-specific eval)
+- [ ] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
+- [ ] **FT-05**: Plugin handles dataset formatting (chat templates, instruction format) and train/eval splits
+
+### Guardrails & Reliability
+
+- [ ] **GUARD-01**: Frozen file zone enforcement prevents agent from modifying infrastructure files (prepare.py, evaluate.py)
+- [ ] **GUARD-02**: Resource guardrails enforce cost caps, GPU hour limits, and disk usage boundaries
+- [ ] **GUARD-03**: Crash recovery automatically saves state before each experiment so sessions can resume
+- [ ] **GUARD-04**: Live progress monitoring shows current experiment, best metric so far, and budget remaining in terminal
+- [ ] **GUARD-05**: Cost tracking records API token usage per experiment with running total and budget cap enforcement
+- [ ] **GUARD-06**: Run summary generated at session end: key findings, best approach, failed hypotheses, next directions
+
+### Multi-Agent
+
+- [ ] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
+- [ ] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
+- [ ] **SWARM-03**: Budget inheritance prevents spawn explosion — child agents inherit parent's remaining budget
+- [ ] **SWARM-04**: Verification agent checks metric improvement claims against actual holdout performance
+
+### User Experience
+
+- [ ] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
+- [ ] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
+- [ ] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
+- [ ] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
+- [ ] **UX-05**: Run retrospective summarizes what approaches worked, what failed, cost analysis, and recommendations for next run
+
+## v2 Requirements
+
+Deferred to future release.
+
+### Advanced Features
+
+- **ADV-01**: AIDE-style tree search as alternative exploration strategy
+- **ADV-02**: Model acceptance testing — user reviews top-3 models interactively
+- **ADV-03**: Global defaults (~/.mlforge/defaults.json) for cross-project settings
+- **ADV-04**: Run archival with experiment journal, best model, config, and summary
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Web UI or dashboard | CLI-first; terminal output and log files are sufficient |
+| Cloud orchestration (AWS/GCP) | Local-first, single machine; users wrap mlforge in their own infra |
+| Kaggle competition integration | Research tool, not competition platform; AutoKaggle exists for that |
+| AutoML grid search (AutoGluon pattern) | mlforge does intelligent hypothesis-driven experimentation, not exhaustive search |
+| Paper writing (AI Scientist style) | Generates experiment reports, not LaTeX manuscripts |
+| Real-time data ingestion | Batch input only (CSV, Parquet, HuggingFace datasets) |
+| Training LLMs from scratch | Fine-tuning existing models only |
+| Reinforcement learning for agent improvement | Use strong foundation models with good protocols instead |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| (Populated during roadmap creation) | | |
+
+**Coverage:**
+- v1 requirements: 39 total
+- Mapped to phases: 0
+- Unmapped: 39
+
+---
+*Requirements defined: 2026-03-19*
+*Last updated: 2026-03-19 after initial definition*
