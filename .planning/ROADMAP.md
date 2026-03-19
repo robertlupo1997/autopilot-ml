@@ -30,12 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A crashed session can be resumed from the last checkpoint and continues from where it left off
   4. A domain plugin conforming to the typing.Protocol interface can register, scaffold files, and render its CLAUDE.md template via Jinja2
   5. Hook engine intercepts tool calls and blocks writes to files marked as frozen in config
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md -- Package skeleton + State + Config + Checkpoint (CORE-04, CORE-06, CORE-05)
+- [ ] 01-02-PLAN.md -- Git ops + Experiment journal (CORE-10, CORE-08)
+- [ ] 01-03-PLAN.md -- Plugin protocol + Templates + Hook engine (CORE-03, CORE-07)
 
 ### Phase 2: Tabular Plugin + Experiment Intelligence
 **Goal**: The tabular ML plugin proves the plugin architecture works, and the experiment intelligence features (baselines, diagnostics, stagnation, multi-draft, diff-aware iteration) are operational
@@ -111,7 +111,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Engine + Plugin Infrastructure | 0/3 | Not started | - |
+| 1. Core Engine + Plugin Infrastructure | 0/3 | Planning complete | - |
 | 2. Tabular Plugin + Experiment Intelligence | 0/3 | Not started | - |
 | 3. Scaffold, CLI + Run Engine | 0/3 | Not started | - |
 | 4. E2E Validation + UX | 0/2 | Not started | - |
