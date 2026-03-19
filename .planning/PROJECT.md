@@ -1,4 +1,4 @@
-# AutoLab
+# mlforge
 
 ## What This Is
 
@@ -29,7 +29,7 @@ Leave an ML research agent running overnight with full confidence it will follow
 - [ ] Deep learning plugin: custom CNN/transformer training with PyTorch
 - [ ] LLM fine-tuning plugin: LoRA/QLoRA fine-tuning of open models (Llama, Mistral, etc.)
 - [ ] Diagnostics engine: error analysis telling the agent WHERE the model fails
-- [ ] Installable CLI: `autolab <dataset> <goal> --mode=tabular|deeplearning|finetune`
+- [ ] Installable CLI: `mlforge <dataset> <goal> --mode=tabular|deeplearning|finetune`
 - [ ] Simple mode for beginners (minimal config) and expert mode (full protocol control)
 - [ ] Verification and phase lifecycle adapted from GSD (plan, execute, verify)
 - [ ] Swarm mode: parallel agents in git worktrees with scoreboard coordination
@@ -58,7 +58,7 @@ This project evolves from autopilot-ml (v1.0-v3.0), an autonomous ML framework f
 
 ### Name Decision
 
-Working name: **AutoLab** — pending research to confirm the name isn't taken by a major existing project. Repo rename from autopilot-ml if clear.
+**mlforge** — "AutoLab" was taken (PyPI + CMU 7k-star GitHub). "autoforge" also taken (PyPI + AutoForgeAI). "mlforge" is available on PyPI. Repo will be renamed from autopilot-ml.
 
 ## Constraints
 
@@ -75,7 +75,7 @@ Working name: **AutoLab** — pending research to confirm the name isn't taken b
 |----------|-----------|---------|
 | Rewrite from scratch | v1-v3 architecture doesn't support plugin model; carrying old code constrains design | -- Pending |
 | Shared core + plugins | GSD pattern — common engine with domain-specific modules | -- Pending |
-| AutoLab name | Short, memorable, fits "automated research lab" vision | -- Pending (research needed) |
+| mlforge name | Available on PyPI, "ML forge" metaphor — where models are shaped | ✓ Good |
 | Full GSD architecture | Hooks, protocols, agents, phases, state, checkpoints — the whole system adapted for ML | -- Pending |
 | Research guardrail design | Let deep research determine optimal control model rather than guessing | -- Pending |
 
