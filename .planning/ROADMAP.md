@@ -33,9 +33,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md -- Package skeleton + State + Config + Checkpoint (CORE-04, CORE-06, CORE-05)
-- [ ] 01-02-PLAN.md -- Git ops + Experiment journal (CORE-10, CORE-08)
-- [ ] 01-03-PLAN.md -- Plugin protocol + Templates + Hook engine (CORE-03, CORE-07)
+- [x] 01-01-PLAN.md -- Package skeleton + State + Config + Checkpoint (CORE-04, CORE-06, CORE-05)
+- [x] 01-02-PLAN.md -- Git ops + Experiment journal (CORE-10, CORE-08)
+- [x] 01-03-PLAN.md -- Plugin protocol + Templates + Hook engine (CORE-03, CORE-07)
 
 ### Phase 2: Tabular Plugin + Experiment Intelligence
 **Goal**: The tabular ML plugin proves the plugin architecture works, and the experiment intelligence features (baselines, diagnostics, stagnation, multi-draft, diff-aware iteration) are operational
@@ -47,12 +47,12 @@ Plans:
   3. Diagnostics engine reports worst predictions, bias direction, and feature correlations -- telling the agent WHERE the model fails
   4. After 3 consecutive reverts, branch-on-stagnation triggers and creates a new branch from the best-ever commit
   5. Multi-draft start generates 3-5 diverse initial solutions across model families and picks the best before iterating linearly
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md -- TabularPlugin + prepare.py + baselines + train.py template (TABL-01, TABL-02, TABL-03, TABL-04, TABL-05, INTL-01, INTL-02)
+- [ ] 02-02-PLAN.md -- Diagnostics engine + multi-draft + branch-on-stagnation (INTL-03, INTL-04, INTL-05)
+- [ ] 02-03-PLAN.md -- Diff-aware journal + structured results tracking (INTL-06, INTL-08)
 
 ### Phase 3: Scaffold, CLI + Run Engine
 **Goal**: Users can install mlforge, run it from the command line, and it orchestrates the full experiment loop with guardrails for unattended overnight execution
