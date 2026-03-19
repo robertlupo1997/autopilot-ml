@@ -12,25 +12,25 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 Phase: 1 of 5 (Core Engine + Plugin Infrastructure)
 Plan: 2 of 3 in current phase
 Status: Executing
-Last activity: 2026-03-19 -- Completed 01-02 (Git Ops + Journal)
+Last activity: 2026-03-19 -- Completed 01-01 (State + Config + Checkpoint)
 
 Progress: [██░░░░░░░░] 13%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 4 min
-- Total execution time: 0.07 hours
+- Total plans completed: 2
+- Average duration: 7 min
+- Total execution time: 0.23 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-core-engine | 1 | 4 min | 4 min |
+| 01-core-engine | 2 | 14 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (4 min)
+- Last 5 plans: 01-01 (10 min), 01-02 (4 min)
 - Trend: Starting
 
 *Updated after each plan completion*
@@ -46,6 +46,8 @@ Recent decisions affecting current work:
 - [Roadmap]: Plugin architecture via typing.Protocol (structural subtyping, no ABC inheritance)
 - [Roadmap]: JSON for machine state, markdown for human journal (rejected GSD's markdown-as-database)
 - [Roadmap]: Tabular plugin built first to validate architecture before DL/fine-tuning
+- [01-01]: Guarded old conftest.py numpy/pandas imports to allow mlforge tests without heavy ML deps
+- [01-01]: Package renamed from automl to mlforge in pyproject.toml; old src/automl/ left intact
 - [01-02]: JournalEntry as dataclass with typed fields rather than free-form dict args
 - [01-02]: Journal takes Path to file directly (not directory + filename constant)
 - [01-02]: GitManager checks for no-changes via index.diff('HEAD') before committing
@@ -61,5 +63,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 01-02-PLAN.md (Git Ops + Journal)
+Stopped at: Completed 01-01-PLAN.md (State + Config + Checkpoint)
 Resume file: None
