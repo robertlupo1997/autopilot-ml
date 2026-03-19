@@ -111,7 +111,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Engine + Plugin Infrastructure | 0/3 | Planning complete | - |
+| 1. Core Engine + Plugin Infrastructure | 1/3 | In Progress|  |
 | 2. Tabular Plugin + Experiment Intelligence | 0/3 | Not started | - |
 | 3. Scaffold, CLI + Run Engine | 0/3 | Not started | - |
 | 4. E2E Validation + UX | 0/2 | Not started | - |

@@ -16,9 +16,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **CORE-05**: Checkpoint/resume allows crashed sessions to restart from last successful experiment
 - [ ] **CORE-06**: Config system (mlforge.config.toml) controls domain, budget, mutable zones, metric, and plugin settings
 - [ ] **CORE-07**: Hook engine (PreToolUse/PostToolUse) intercepts Claude Code tool calls to enforce frozen file zones
-- [ ] **CORE-08**: Experiment journal accumulates structured knowledge (hypothesis, result, diff, metric delta) that survives context resets
+- [x] **CORE-08**: Experiment journal accumulates structured knowledge (hypothesis, result, diff, metric delta) that survives context resets
 - [ ] **CORE-09**: Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert)
-- [ ] **CORE-10**: Git-based state management: branch per run, commit per kept experiment, reset on revert, tag best model
+- [x] **CORE-10**: Git-based state management: branch per run, commit per kept experiment, reset on revert, tag best model
 
 ### Experiment Intelligence
 
@@ -114,9 +114,9 @@ Deferred to future release.
 | CORE-05 | Phase 1 | Pending |
 | CORE-06 | Phase 1 | Pending |
 | CORE-07 | Phase 1 | Pending |
-| CORE-08 | Phase 1 | Pending |
+| CORE-08 | Phase 1 | Complete |
 | CORE-09 | Phase 3 | Pending |
-| CORE-10 | Phase 1 | Pending |
+| CORE-10 | Phase 1 | Complete |
 | INTL-01 | Phase 2 | Pending |
 | INTL-02 | Phase 2 | Pending |
 | INTL-03 | Phase 2 | Pending |
