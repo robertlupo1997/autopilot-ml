@@ -1,1 +1,3 @@
-# mlforge - Autonomous ML research framework
+"""mlforge -- Autonomous ML research framework."""
+
+__version__ = "0.1.0"

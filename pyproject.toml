@@ -1,20 +1,15 @@
 [project]
-name = "automl"
-version = "1.0.0"
-description = "Autonomous ML research framework for traditional tabular ML"
+name = "mlforge"
+version = "0.1.0"
+description = "Autonomous ML research framework"
 requires-python = ">=3.11"
 dependencies = [
-    "scikit-learn>=1.5",
-    "pandas>=2.0",
-    "numpy>=2.0",
-    "xgboost",
-    "lightgbm",
-    "optuna>=4.7.0",
-    "gitpython>=3.1.46",
+    "gitpython>=3.1",
+    "jinja2>=3.1",
 ]
 
 [project.scripts]
-automl = "automl.cli:main"
+mlforge = "mlforge.cli:main"
 
 [dependency-groups]
 dev = [
@@ -26,7 +21,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/automl", "src/mlforge"]
+packages = ["src/mlforge"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

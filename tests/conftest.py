@@ -1,14 +1,25 @@
 """Shared test fixtures for AutoML test suite."""
 
-import numpy as np
-import pandas as pd
 import pytest
 from pathlib import Path
+
+try:
+    import numpy as np
+    import pandas as pd
+except ImportError:
+    np = None  # type: ignore[assignment]
+    pd = None  # type: ignore[assignment]
+
+
+def _require_numpy():
+    if np is None:
+        pytest.skip("numpy/pandas not installed")
 
 
 @pytest.fixture
 def sample_classification_csv(tmp_path: Path) -> Path:
     """Generate a classification CSV with 200 rows, 5 numeric + 2 categorical columns, binary target."""
+    _require_numpy()
     rng = np.random.RandomState(42)
 
     df = pd.DataFrame({
@@ -30,6 +41,7 @@ def sample_classification_csv(tmp_path: Path) -> Path:
 @pytest.fixture
 def sample_regression_csv(tmp_path: Path) -> Path:
     """Generate a regression CSV with 200 rows, numeric target."""
+    _require_numpy()
     rng = np.random.RandomState(42)
 
     df = pd.DataFrame({
@@ -49,12 +61,9 @@ def sample_regression_csv(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def quarterly_revenue_series() -> np.ndarray:
-    """40-row synthetic quarterly revenue series (dollars) with trend and seasonality.
-
-    Generates: base=1000 + 50*quarter_index + 200*sin(quarter_index * pi/2) + noise
-    Returned as np.ndarray of shape (40,) with positive dollar values.
-    """
+def quarterly_revenue_series():
+    """40-row synthetic quarterly revenue series (dollars) with trend and seasonality."""
+    _require_numpy()
     rng = np.random.RandomState(7)
     quarters = np.arange(40)
     series = (
@@ -68,11 +77,8 @@ def quarterly_revenue_series() -> np.ndarray:
 
 @pytest.fixture
 def sample_forecast_csv(tmp_path: Path) -> Path:
-    """Generate a forecasting CSV with 40 rows of quarterly revenue data.
-
-    Columns: date (Q1 2015 to Q4 2024), feature1 (numeric), feature2 (numeric),
-    revenue (target, dollar values with trend).
-    """
+    """Generate a forecasting CSV with 40 rows of quarterly revenue data."""
+    _require_numpy()
     rng = np.random.RandomState(7)
     dates = pd.date_range(start="2015-01-01", periods=40, freq="QS")
     quarters = np.arange(40)
@@ -98,6 +104,7 @@ def sample_forecast_csv(tmp_path: Path) -> Path:
 @pytest.fixture
 def sample_csv_with_missing(tmp_path: Path) -> Path:
     """Generate a classification CSV with ~10% missing values in numeric and categorical columns."""
+    _require_numpy()
     rng = np.random.RandomState(42)
 
     df = pd.DataFrame({
@@ -111,7 +118,6 @@ def sample_csv_with_missing(tmp_path: Path) -> Path:
         "target": rng.choice([0, 1], size=200),
     })
 
-    # Inject ~10% missing values into feature columns (not target)
     feature_cols = [c for c in df.columns if c != "target"]
     for col in feature_cols:
         mask = rng.random(200) < 0.10

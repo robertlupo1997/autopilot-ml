@@ -1,0 +1,65 @@
+"""Config dataclass with TOML loading.
+
+Reads mlforge.config.toml using tomllib (stdlib). Falls back to sensible
+defaults when the config file is missing or incomplete.
+"""
+
+from __future__ import annotations
+
+import tomllib
+from dataclasses import dataclass, field
+from pathlib import Path
+
+CONFIG_FILENAME = "mlforge.config.toml"
+
+
+@dataclass
+class Config:
+    """Configuration for an mlforge session."""
+
+    domain: str = "tabular"
+    metric: str = "accuracy"
+    direction: str = "maximize"
+    budget_minutes: int = 60
+    budget_experiments: int = 50
+    frozen_files: list[str] = field(default_factory=lambda: ["prepare.py"])
+    mutable_files: list[str] = field(default_factory=lambda: ["train.py"])
+    plugin_settings: dict = field(default_factory=dict)
+
+    @classmethod
+    def load(cls, path: Path | None = None) -> Config:
+        """Load config from a TOML file, falling back to defaults.
+
+        Args:
+            path: Path to the config file. If None, looks for
+                  CONFIG_FILENAME in the current directory.
+
+        Returns:
+            Config instance with values from TOML merged over defaults.
+
+        Raises:
+            ValueError: If direction is not "maximize" or "minimize".
+        """
+        config_path = path or Path(CONFIG_FILENAME)
+        if not config_path.exists():
+            return cls()
+
+        with open(config_path, "rb") as f:
+            data = tomllib.load(f)
+
+        config = cls(
+            domain=data.get("domain", "tabular"),
+            metric=data.get("metric", {}).get("name", "accuracy"),
+            direction=data.get("metric", {}).get("direction", "maximize"),
+            budget_minutes=data.get("budget", {}).get("minutes", 60),
+            budget_experiments=data.get("budget", {}).get("experiments", 50),
+            frozen_files=data.get("files", {}).get("frozen", ["prepare.py"]),
+            mutable_files=data.get("files", {}).get("mutable", ["train.py"]),
+            plugin_settings=data.get("plugin", {}),
+        )
+
+        if config.direction not in ("maximize", "minimize"):
+            msg = f"direction must be 'maximize' or 'minimize', got '{config.direction}'"
+            raise ValueError(msg)
+
+        return config
