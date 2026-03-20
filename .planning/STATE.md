@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-03-20T23:17:17.010Z"
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-20T23:33:53.322Z"
 last_activity: 2026-03-20 -- Completed 14-01 (Fix Swarm Agent Subprocess)
 progress:
   total_phases: 16
-  completed_phases: 14
-  total_plans: 25
-  completed_plans: 25
+  completed_phases: 15
+  total_plans: 26
+  completed_plans: 26
   percent: 93
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 14 complete -- swarm agent subprocess fixed
+**Current focus:** Phase 15 complete -- FT simple mode metric mapping fixed
 
 ## Current Position
 
-Phase: 14 of 16 (Fix Swarm Agent Subprocess)
+Phase: 15 of 16 (Fix FT Simple Mode Metric Mapping)
 Plan: 1 of 1 complete
-Status: Phase 14 complete
-Last activity: 2026-03-20 -- Completed 14-01 (Fix Swarm Agent Subprocess)
+Status: Phase 15 complete
+Last activity: 2026-03-20 -- Completed 15-01 (FT Simple Mode Metric Mapping)
 
-Progress: [████████░░] 25/27 plans (93%)
+Progress: [██████████] 26/26 plans (100%)
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Progress: [████████░░] 25/27 plans (93%)
 | Phase 12 P01 | 3min | 2 tasks | 2 files |
 | Phase 13 P01 | 4min | 2 tasks | 6 files |
 | Phase 14 P01 | 3min | 2 tasks | 3 files |
+| Phase 15 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -148,6 +149,9 @@ Recent decisions affecting current work:
 - [14-01]: Use child_config.budget_usd (total session budget) for --max-budget-usd, not per_experiment_budget_usd
 - [14-01]: Read CLAUDE.md content inline via Path.read_text() for --append-system-prompt (matching engine.py pattern)
 - [14-01]: Omit --append-system-prompt entirely when CLAUDE.md missing (graceful skip)
+- [Phase 15]: Lazy import FineTuningPlugin._VALID_METRICS inside _map_task_for_domain to avoid import-time dependency
+- [Phase 15]: Override metric only when NOT in plugin _VALID_METRICS (preserves expert mode explicit metrics)
+- [Phase 15]: Auto-default model_name for FT domain replaces hard rejection -- test updated accordingly
 
 ### Pending Todos
 
@@ -159,6 +163,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T23:10:08Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-03-20T23:33:53.318Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None

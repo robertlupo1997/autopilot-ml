@@ -52,7 +52,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **FT-01**: Fine-tuning plugin handles LoRA/QLoRA fine-tuning of open models (Llama, Mistral, etc.) via PEFT/TRL
 - [x] **FT-02**: Plugin manages VRAM allocation, quantization config, and LoRA rank/alpha selection
 - [x] **FT-03**: Plugin supports evaluation metrics for generative tasks (perplexity, ROUGE, task-specific eval)
-- [ ] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
+- [x] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
 - [x] **FT-05**: Plugin handles dataset formatting (chat templates, instruction format) and train/eval splits
 
 ### Guardrails & Reliability
@@ -73,7 +73,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### User Experience
 
-- [ ] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
+- [x] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
 - [x] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
 - [ ] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
 - [x] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
@@ -138,7 +138,7 @@ Deferred to future release.
 | FT-01 | Phase 8 | Complete |
 | FT-02 | Phase 8 | Complete |
 | FT-03 | Phase 8 | Complete |
-| FT-04 | Phase 15 | Pending |
+| FT-04 | Phase 15 | Complete |
 | FT-05 | Phase 8 | Complete |
 | GUARD-01 | Phase 3 | Complete |
 | GUARD-02 | Phase 3 | Complete |
@@ -150,7 +150,7 @@ Deferred to future release.
 | SWARM-02 | Phase 14 | Pending |
 | SWARM-03 | Phase 14 | Pending |
 | SWARM-04 | Phase 14 | Pending |
-| UX-01 | Phase 15 | Pending |
+| UX-01 | Phase 15 | Complete |
 | UX-02 | Phase 4 | Complete |
 | UX-03 | Phase 16 | Pending |
 | UX-04 | Phase 13 | Complete |
