@@ -92,6 +92,18 @@ _TASK_TYPE_MAP: dict[str, dict[str, str]] = {
         "classification": "image_classification",
         "regression": "custom",
     },
+    "finetuning": {
+        "classification": "sft",
+        "regression": "sft",
+    },
+}
+
+_METRIC_DEFAULTS: dict[str, tuple[str, str]] = {
+    "finetuning": ("loss", "minimize"),
+}
+
+_MODEL_NAME_DEFAULTS: dict[str, str] = {
+    "finetuning": "meta-llama/Llama-3.2-1B",
 }
 
 
@@ -107,12 +119,25 @@ def _map_task_for_domain(config: Config) -> None:
         config: Session configuration (mutated in-place).
     """
     domain_map = _TASK_TYPE_MAP.get(config.domain)
-    if domain_map is None:
-        return
+    if domain_map is not None:
+        current_task = config.plugin_settings.get("task")
+        if current_task is not None and current_task in domain_map:
+            config.plugin_settings["task"] = domain_map[current_task]
 
-    current_task = config.plugin_settings.get("task")
-    if current_task is not None and current_task in domain_map:
-        config.plugin_settings["task"] = domain_map[current_task]
+    # Override metric/direction for domains with defaults when current metric is invalid
+    metric_default = _METRIC_DEFAULTS.get(config.domain)
+    if metric_default is not None:
+        from mlforge.finetuning import FineTuningPlugin
+
+        valid_metrics = FineTuningPlugin._VALID_METRICS
+        if config.metric not in valid_metrics:
+            config.metric = metric_default[0]
+            config.direction = metric_default[1]
+
+    # Set default model_name for domains that require it
+    model_default = _MODEL_NAME_DEFAULTS.get(config.domain)
+    if model_default is not None and not config.plugin_settings.get("model_name"):
+        config.plugin_settings["model_name"] = model_default
 
 
 def _ensure_plugin_registered(domain: str) -> None:

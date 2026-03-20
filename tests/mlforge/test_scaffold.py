@@ -147,10 +147,12 @@ class TestScaffoldValidation:
         with pytest.raises(ValueError, match=r"Invalid config.*tabular"):
             scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
 
-    def test_rejects_ft_without_model_name(self, dataset, target_dir):
+    def test_ft_without_model_name_gets_default(self, dataset, target_dir):
+        """FT without explicit model_name gets auto-default and succeeds."""
         cfg = Config(domain="finetuning", metric="perplexity")
-        with pytest.raises(ValueError, match="model_name"):
-            scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        result = scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert result == target_dir
+        assert cfg.plugin_settings["model_name"]  # auto-set
 
     def test_rejects_dl_invalid_task(self, dataset, target_dir):
         cfg = Config(domain="deeplearning", metric="accuracy", plugin_settings={"task": "invalid_task"})
@@ -160,6 +162,11 @@ class TestScaffoldValidation:
     def test_valid_config_scaffolds_ok(self, dataset, target_dir):
         cfg = Config(domain="tabular")
         result = scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert result == target_dir
+
+    def test_ft_simple_mode_reaches_scaffold(self, dataset, target_dir):
+        cfg = Config(domain="finetuning", metric="accuracy", plugin_settings={"task": "classification"})
+        result = scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-ft")
         assert result == target_dir
 
 
@@ -191,10 +198,30 @@ class TestTaskTypeMapping:
         scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
         assert cfg.plugin_settings["task"] == "classification"
 
-    def test_ft_task_no_mapping(self, dataset, target_dir):
+    def test_ft_task_mapped_to_sft(self, dataset, target_dir):
         cfg = Config(domain="finetuning", metric="perplexity", plugin_settings={"task": "classification", "model_name": "test/model"})
         scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
-        assert cfg.plugin_settings["task"] == "classification"
+        assert cfg.plugin_settings["task"] == "sft"
+
+    def test_ft_simple_mode_metric_override(self, dataset, target_dir):
+        cfg = Config(domain="finetuning", metric="accuracy", plugin_settings={"task": "classification"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.metric == "loss"
+
+    def test_ft_expert_mode_metric_preserved(self, dataset, target_dir):
+        cfg = Config(domain="finetuning", metric="perplexity", plugin_settings={"model_name": "test/model"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.metric == "perplexity"
+
+    def test_ft_direction_set_to_minimize(self, dataset, target_dir):
+        cfg = Config(domain="finetuning", metric="accuracy", plugin_settings={"task": "classification"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.direction == "minimize"
+
+    def test_ft_simple_mode_default_model_name(self, dataset, target_dir):
+        cfg = Config(domain="finetuning", metric="accuracy", plugin_settings={"task": "classification"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.plugin_settings["model_name"]
 
 
 class TestPluginRegistrationDispatch:
