@@ -27,7 +27,7 @@ def trigger_stagnation_branch(
     git_manager: GitManager,
     state: SessionState,
     new_family: str,
-) -> str:
+) -> str | None:
     """Create an exploration branch from the best-ever commit.
 
     Args:
@@ -36,13 +36,11 @@ def trigger_stagnation_branch(
         new_family: Algorithm family name for the new branch.
 
     Returns:
-        The branch name created (``explore-{new_family}``).
-
-    Raises:
-        ValueError: If state.best_commit is None.
+        The branch name created (``explore-{new_family}``), or None if
+        best_commit is not set.
     """
     if state.best_commit is None:
-        raise ValueError("Cannot branch: best_commit is None")
+        return None
 
     # Checkout the best-ever commit (detached HEAD)
     git_manager.repo.git.checkout(state.best_commit)

@@ -254,8 +254,9 @@ class RunEngine:
                 untried = [f for f in ALGORITHM_FAMILIES if f not in self.state.tried_families]
                 if untried:
                     new_family = untried[0]
-                    trigger_stagnation_branch(self.git, self.state, new_family)
-                    self.state.tried_families.append(new_family)
+                    branch = trigger_stagnation_branch(self.git, self.state, new_family)
+                    if branch is not None:
+                        self.state.tried_families.append(new_family)
 
             return "revert"
 
