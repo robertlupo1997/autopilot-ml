@@ -350,6 +350,58 @@ class TestSimpleMode:
             assert config.metric == "rmse"
             mock_profile.assert_not_called()
 
+    def test_auto_detection_sets_task_in_plugin_settings(self, tmp_path):
+        """Simple mode propagates task type to plugin_settings."""
+        dataset = tmp_path / "data.csv"
+        # Classification dataset: 2 unique target values
+        lines = ["feature,target"]
+        for i in range(50):
+            lines.append(f"{i},{i % 2}")
+        dataset.write_text("\n".join(lines) + "\n")
+
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict target"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.plugin_settings["task"] == "classification"
+
+    def test_auto_detection_sets_csv_path_in_plugin_settings(self, tmp_path):
+        """Simple mode sets csv_path to dataset filename (not full path)."""
+        dataset = tmp_path / "data.csv"
+        lines = ["feature,target"]
+        for i in range(50):
+            lines.append(f"{i},{float(i) * 1.5}")
+        dataset.write_text("\n".join(lines) + "\n")
+
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict target"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.plugin_settings["csv_path"] == "data.csv"
+
+    def test_auto_detection_sets_target_column_in_plugin_settings(self, tmp_path):
+        """Simple mode sets target_column from extracted target."""
+        dataset = tmp_path / "data.csv"
+        lines = ["feature,price"]
+        for i in range(50):
+            lines.append(f"{i},{float(i) * 1.5}")
+        dataset.write_text("\n".join(lines) + "\n")
+
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict price"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.plugin_settings["target_column"] == "price"
+
 
 class TestSwarmCli:
     """Swarm mode CLI flags: --swarm, --n-agents."""

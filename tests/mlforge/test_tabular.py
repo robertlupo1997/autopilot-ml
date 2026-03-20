@@ -89,6 +89,60 @@ class TestScaffold:
         content = (tmp_dir / "train.py").read_text()
         assert "optuna" in content
 
+    def test_scaffold_classification_has_classifier_models(self, tmp_dir: Path):
+        """Classification task renders RandomForestClassifier and LogisticRegression."""
+        from mlforge.tabular import TabularPlugin
+
+        plugin = TabularPlugin()
+        config = Config(plugin_settings={"task": "classification", "csv_path": "data.csv", "target_column": "y"})
+        plugin.scaffold(tmp_dir, config)
+        content = (tmp_dir / "train.py").read_text()
+        assert "RandomForestClassifier" in content
+        assert "LogisticRegression" in content
+
+    def test_scaffold_regression_has_regressor_models(self, tmp_dir: Path):
+        """Regression task renders RandomForestRegressor and Ridge."""
+        from mlforge.tabular import TabularPlugin
+
+        plugin = TabularPlugin()
+        config = Config(plugin_settings={"task": "regression", "csv_path": "data.csv", "target_column": "y"})
+        plugin.scaffold(tmp_dir, config)
+        content = (tmp_dir / "train.py").read_text()
+        assert "RandomForestRegressor" in content
+        assert "Ridge" in content
+
+    def test_scaffold_evaluate_uses_task_variable(self, tmp_dir: Path):
+        """evaluate() call uses the correct task string, not hardcoded regression."""
+        from mlforge.tabular import TabularPlugin
+
+        plugin = TabularPlugin()
+        # Classification should NOT have task="regression" in evaluate call
+        config = Config(plugin_settings={"task": "classification", "csv_path": "data.csv", "target_column": "y"})
+        plugin.scaffold(tmp_dir, config)
+        content = (tmp_dir / "train.py").read_text()
+        assert 'task="classification"' in content
+        assert 'task="regression"' not in content
+
+    def test_scaffold_date_column_temporal_comment(self, tmp_dir: Path):
+        """Date column presence triggers temporal_split comment in rendered train.py."""
+        from mlforge.tabular import TabularPlugin
+
+        plugin = TabularPlugin()
+        config = Config(plugin_settings={"task": "regression", "date_column": "date", "csv_path": "data.csv", "target_column": "y"})
+        plugin.scaffold(tmp_dir, config)
+        content = (tmp_dir / "train.py").read_text()
+        assert "temporal_split" in content
+
+    def test_scaffold_default_task_is_classification(self, tmp_dir: Path):
+        """Empty plugin_settings defaults to classification models."""
+        from mlforge.tabular import TabularPlugin
+
+        plugin = TabularPlugin()
+        config = Config(plugin_settings={})
+        plugin.scaffold(tmp_dir, config)
+        content = (tmp_dir / "train.py").read_text()
+        assert "RandomForestClassifier" in content
+
 
 # ---------------------------------------------------------------------------
 # TabularPlugin.template_context()
