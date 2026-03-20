@@ -70,6 +70,65 @@ class TestRenderClaudeMd:
         assert "# CLAUDE.md" in output
 
 
+class TestTabularTrainJsonOutput:
+    """Verify tabular_train.py.j2 renders JSON metric output."""
+
+    def test_tabular_train_renders_json_output(self):
+        env = get_template_env()
+        template = env.get_template("tabular_train.py.j2")
+        output = template.render(
+            csv_path="data.csv",
+            target_column="target",
+            metric="accuracy",
+            time_budget=5,
+            task="classification",
+            date_column=None,
+        )
+        assert "json.dumps" in output
+        assert "metric_value" in output
+        assert 'print(f"Best value:' not in output
+
+    def test_tabular_train_imports_json(self):
+        env = get_template_env()
+        template = env.get_template("tabular_train.py.j2")
+        output = template.render(
+            csv_path="data.csv",
+            target_column="target",
+            metric="accuracy",
+            time_budget=5,
+            task="classification",
+            date_column=None,
+        )
+        assert "import json" in output
+
+
+class TestClaudeMdOutputFormat:
+    """Verify CLAUDE.md contains output format section."""
+
+    @pytest.fixture()
+    def plugin(self):
+        return MockTabularPlugin()
+
+    @pytest.fixture()
+    def config(self):
+        return Config(
+            domain="tabular",
+            metric="accuracy",
+            direction="maximize",
+            frozen_files=["prepare.py"],
+            mutable_files=["train.py"],
+        )
+
+    def test_claude_md_contains_output_format(self, plugin, config):
+        output = render_claude_md(plugin, config)
+        assert "Output Format" in output
+        assert "metric_value" in output
+
+    def test_claude_md_contains_revert_warning(self, plugin, config):
+        output = render_claude_md(plugin, config)
+        assert "revert" in output.lower()
+
+
 class TestRenderExperimentsMd:
     """Verify experiments.md rendering."""
 
