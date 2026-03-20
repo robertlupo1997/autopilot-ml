@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 03-03-PLAN.md (Run Engine + CLI Wiring)
-last_updated: "2026-03-20T00:56:29.977Z"
-last_activity: 2026-03-20 -- Completed 03-03 (Run Engine + CLI Wiring)
+status: in-progress
+stopped_at: Completed 04-02-PLAN.md (Artifact Export + Run Retrospective)
+last_updated: "2026-03-20T01:20:11Z"
+last_activity: 2026-03-20 -- Completed 04-02 (Artifact Export + Run Retrospective)
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  completed_phases: 4
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 3: Scaffold, CLI + Run Engine
+**Current focus:** Phase 4: E2E Validation + UX
 
 ## Current Position
 
-Phase: 3 of 5 (Scaffold, CLI + Run Engine)
-Plan: 3 of 3 in current phase
-Status: Phase 03 Complete
-Last activity: 2026-03-20 -- Completed 03-03 (Run Engine + CLI Wiring)
+Phase: 4 of 5 (E2E Validation + UX)
+Plan: 2 of 2 in current phase
+Status: Phase 04 Complete
+Last activity: 2026-03-20 -- Completed 04-02 (Artifact Export + Run Retrospective)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 11
 - Average duration: 4 min
-- Total execution time: 0.48 hours
+- Total execution time: 0.60 hours
 
 **By Phase:**
 
@@ -46,14 +46,11 @@ Progress: [██████████] 100%
 | 01-core-engine | 3 | 17 min | 6 min |
 | 02-tabular-plugin | 3 | 6 min | 2 min |
 | 03-scaffold-cli-run-engine | 3 | 10 min | 3 min |
+| 04-e2e-validation-ux | 2 | 7 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (10 min), 01-02 (4 min), 01-03 (3 min), 02-01 (3 min), 02-02 (3 min)
-- Trend: Accelerating
-
-*Updated after each plan completion*
-| Phase 02 P02 | 3 | 2 tasks | 7 files |
-| Phase 02 P03 | 3 | 2 tasks | 4 files |
+- Last 5 plans: 02-02 (3 min), 02-03 (3 min), 03-01 (4 min), 03-02 (3 min), 04-01 (3 min)
+- Trend: Stable at ~3 min/plan
 
 ## Accumulated Context
 
@@ -92,6 +89,12 @@ Recent decisions affecting current work:
 - [03-03]: OOM retry recursively calls _process_result with fresh _run_one_experiment
 - [03-03]: SIGINT handler sets _stop_requested flag for clean checkpoint save in finally block
 - [03-03]: CLI resume returns error 1 if no checkpoint found (not silent failure)
+- [04-01]: Binary classification uses accuracy, multi-class uses f1_weighted, regression uses r2
+- [04-01]: Numeric target with <=20 unique values treated as classification
+- [04-01]: Date detection samples head(20) with >80% parse threshold
+- [04-01]: Target column extracted from goal via 'predict X' regex with last-word fallback
+- [04-01]: Simple mode profiling failure falls back silently to defaults
+- [04-01]: Custom frozen/mutable replace plugin defaults entirely (not merge)
 
 ### Pending Todos
 
@@ -103,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T00:51:01Z
-Stopped at: Completed 03-03-PLAN.md (Run Engine + CLI Wiring)
+Last session: 2026-03-20T01:15:57Z
+Stopped at: Completed 04-01-PLAN.md (Dataset Profiler + Simple/Expert Mode)
 Resume file: None

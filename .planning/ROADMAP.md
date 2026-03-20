@@ -84,7 +84,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Dataset profiler + simple/expert mode CLI integration (UX-01, UX-02, UX-04, TABL-03)
+- [x] 04-01-PLAN.md -- Dataset profiler + simple/expert mode CLI integration (UX-01, UX-02, UX-04, TABL-03)
 - [ ] 04-02-PLAN.md -- Artifact export + run retrospective + engine post-loop wiring (UX-03, UX-05, GUARD-06)
 
 ### Phase 5: Domain Plugins + Swarm
@@ -114,5 +114,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Core Engine + Plugin Infrastructure | 3/3 | Complete   | 2026-03-19 |
 | 2. Tabular Plugin + Experiment Intelligence | 2/3 | In Progress|  |
 | 3. Scaffold, CLI + Run Engine | 3/3 | Complete   | 2026-03-20 |
-| 4. E2E Validation + UX | 0/2 | Not started | - |
+| 4. E2E Validation + UX | 1/2 | In Progress | - |
 | 5. Domain Plugins + Swarm | 0/3 | Not started | - |

@@ -73,10 +73,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### User Experience
 
-- [ ] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
-- [ ] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
+- [x] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
+- [x] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
 - [ ] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
-- [ ] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
+- [x] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
 - [ ] **UX-05**: Run retrospective summarizes what approaches worked, what failed, cost analysis, and recommendations for next run
 
 ## v2 Requirements
@@ -150,10 +150,10 @@ Deferred to future release.
 | SWARM-02 | Phase 5 | Pending |
 | SWARM-03 | Phase 5 | Pending |
 | SWARM-04 | Phase 5 | Pending |
-| UX-01 | Phase 4 | Pending |
-| UX-02 | Phase 4 | Pending |
+| UX-01 | Phase 4 | Complete |
+| UX-02 | Phase 4 | Complete |
 | UX-03 | Phase 4 | Pending |
-| UX-04 | Phase 4 | Pending |
+| UX-04 | Phase 4 | Complete |
 | UX-05 | Phase 4 | Pending |
 
 **Coverage:**
