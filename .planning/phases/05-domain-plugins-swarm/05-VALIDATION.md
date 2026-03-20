@@ -2,8 +2,8 @@
 phase: 05
 slug: domain-plugins-swarm
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-20
 ---
 
@@ -38,27 +38,29 @@ created: 2026-03-20
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 05-01-01 | 01 | 1 | DL-01, DL-02 | unit | `pytest tests/mlforge/test_dl_plugin.py -x -q` | ❌ W0 | ⬜ pending |
-| 05-01-02 | 01 | 1 | DL-03, DL-04 | unit | `pytest tests/mlforge/test_dl_plugin.py -x -q` | ❌ W0 | ⬜ pending |
-| 05-01-03 | 01 | 1 | DL-05 | unit | `pytest tests/mlforge/test_dl_plugin.py -x -q` | ❌ W0 | ⬜ pending |
-| 05-02-01 | 02 | 1 | FT-01, FT-02 | unit | `pytest tests/mlforge/test_ft_plugin.py -x -q` | ❌ W0 | ⬜ pending |
-| 05-02-02 | 02 | 1 | FT-03, FT-04 | unit | `pytest tests/mlforge/test_ft_plugin.py -x -q` | ❌ W0 | ⬜ pending |
-| 05-02-03 | 02 | 1 | FT-05 | unit | `pytest tests/mlforge/test_ft_plugin.py -x -q` | ❌ W0 | ⬜ pending |
-| 05-03-01 | 03 | 2 | SWARM-01, SWARM-02 | unit | `pytest tests/mlforge/test_swarm.py -x -q` | ❌ W0 | ⬜ pending |
-| 05-03-02 | 03 | 2 | SWARM-03 | unit | `pytest tests/mlforge/test_swarm.py -x -q` | ❌ W0 | ⬜ pending |
-| 05-03-03 | 03 | 2 | SWARM-04 | unit | `pytest tests/mlforge/test_swarm.py -x -q` | ❌ W0 | ⬜ pending |
+| 05-01-01 | 01 | 1 | DL-01 | unit | `pytest tests/mlforge/test_dl_plugin.py -x -q` | TDD self-created | pending |
+| 05-01-02 | 01 | 1 | DL-02 | unit | `pytest tests/mlforge/test_dl_plugin.py -x -q` | TDD self-created | pending |
+| 05-01-03 | 01 | 1 | DL-03, DL-04, DL-05 | unit | `pytest tests/mlforge/test_dl_plugin.py -x -q` | TDD self-created | pending |
+| 05-02-01 | 02 | 1 | FT-01 | unit | `pytest tests/mlforge/test_ft_plugin.py -x -q` | TDD self-created | pending |
+| 05-02-02 | 02 | 1 | FT-02, FT-05 | unit | `pytest tests/mlforge/test_ft_plugin.py -x -q` | TDD self-created | pending |
+| 05-02-03 | 02 | 1 | FT-03, FT-04 | unit | `pytest tests/mlforge/test_ft_plugin.py -x -q` | TDD self-created | pending |
+| 05-03-01 | 03 | 1 | SWARM-02 | unit | `pytest tests/mlforge/test_scoreboard.py -x -q` | TDD self-created | pending |
+| 05-03-02 | 03 | 1 | SWARM-01, SWARM-03, SWARM-04 | unit | `pytest tests/mlforge/test_swarm.py -x -q` | TDD self-created | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending -- green -- red -- flaky*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `tests/mlforge/test_dl_plugin.py` — stubs for DL-01 through DL-05
-- [ ] `tests/mlforge/test_ft_plugin.py` — stubs for FT-01 through FT-05
-- [ ] `tests/mlforge/test_swarm.py` — stubs for SWARM-01 through SWARM-04
+All plans use TDD pattern where Task 1 writes tests before implementation. Test files are self-created by the TDD tasks -- no separate Wave 0 scaffolding needed.
 
-*Existing infrastructure covers test framework and conftest needs.*
+- [x] `tests/mlforge/test_dl_plugin.py` -- created by Plan 01 Task 1 (TDD: tests written first)
+- [x] `tests/mlforge/test_ft_plugin.py` -- created by Plan 02 Task 1 (TDD: tests written first)
+- [x] `tests/mlforge/test_swarm.py` -- created by Plan 03 Task 2 (TDD: tests written first)
+- [x] `tests/mlforge/test_scoreboard.py` -- created by Plan 03 Task 1 (TDD: tests written first)
+
+*Wave 0 is satisfied by TDD self-creation pattern. No pre-existing test stubs required.*
 
 ---
 
@@ -75,11 +77,11 @@ created: 2026-03-20
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (TDD self-creation resolves all)
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
