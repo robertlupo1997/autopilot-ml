@@ -33,6 +33,8 @@ class Config:
     custom_claude_md_path: Path | None = None
     custom_frozen: list[str] | None = None
     custom_mutable: list[str] | None = None
+    enable_drafts: bool = False
+    stagnation_threshold: int = 3
 
     @classmethod
     def load(cls, path: Path | None = None) -> Config:
@@ -76,6 +78,8 @@ class Config:
             ),
             custom_frozen=data.get("files", {}).get("custom_frozen"),
             custom_mutable=data.get("files", {}).get("custom_mutable"),
+            enable_drafts=data.get("intelligence", {}).get("enable_drafts", False),
+            stagnation_threshold=data.get("intelligence", {}).get("stagnation_threshold", 3),
         )
 
         if config.direction not in ("maximize", "minimize"):

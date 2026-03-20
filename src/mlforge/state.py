@@ -7,7 +7,7 @@ write-then-rename to prevent corruption on crash.
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
 
@@ -24,6 +24,9 @@ class SessionState:
     total_reverts: int = 0
     run_id: str = ""
     cost_spent_usd: float = 0.0
+    baselines: dict | None = None
+    tried_families: list = field(default_factory=list)
+    task: str = "classification"
 
     def to_json(self, path: Path) -> None:
         """Atomic write: write to .tmp file then rename.
