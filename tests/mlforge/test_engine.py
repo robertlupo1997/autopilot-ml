@@ -477,6 +477,106 @@ class TestSignalHandling:
         engine.git.close()
 
 
+class TestPostLoop:
+    """RunEngine post-loop calls export and retrospective."""
+
+    def test_engine_exports_artifact_after_run(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+            patch("mlforge.engine.export_artifact", return_value=None) as mock_export,
+        ):
+            engine.run()
+
+        mock_export.assert_called_once_with(tmp_path, state, config)
+        engine.git.close()
+
+    def test_engine_writes_retrospective_after_run(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+            patch("mlforge.engine.generate_retrospective", return_value="# Retro") as mock_retro,
+        ):
+            engine.run()
+
+        mock_retro.assert_called_once()
+        retro_path = tmp_path / "RETROSPECTIVE.md"
+        assert retro_path.exists()
+        assert retro_path.read_text() == "# Retro"
+        engine.git.close()
+
+    def test_engine_records_results_in_tracker(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(budget_experiments=2)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+        ):
+            engine.run()
+
+        assert len(engine.results_tracker.results) == 2
+        assert engine.results_tracker.results[0].status == "keep"
+        engine.git.close()
+
+
 # --- Helpers ---
 
 def _init_git(path: Path) -> None:

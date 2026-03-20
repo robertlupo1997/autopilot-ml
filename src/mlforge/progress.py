@@ -48,6 +48,21 @@ class LiveProgress:
         if self._live is not None:
             self._live.update(self._render())
 
+    def log(self, message: str) -> None:
+        """Print a log message below the live display.
+
+        If the live display is active, uses ``Live.console.print`` so the
+        message appears outside the refreshing table. Otherwise falls back
+        to plain ``print``.
+
+        Args:
+            message: The message to display.
+        """
+        if self._live is not None:
+            self._live.console.print(message)
+        else:
+            print(message)  # noqa: T201
+
     def _render(self) -> Table:
         """Build a rich Table with current session status."""
         table = Table(title="mlforge")
