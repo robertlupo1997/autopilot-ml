@@ -136,3 +136,77 @@ class TestScaffoldValidation:
                 target_dir=target_dir,
                 run_id="run-1",
             )
+
+
+class TestPluginRegistrationDispatch:
+    """_ensure_plugin_registered dispatches registration by domain string."""
+
+    def setup_method(self):
+        """Clear plugin registry before each test."""
+        from mlforge.plugins import _registry
+        _registry.clear()
+
+    def test_deeplearning_registered(self):
+        from mlforge.scaffold import _ensure_plugin_registered
+        from mlforge.plugins import get_plugin
+
+        _ensure_plugin_registered("deeplearning")
+        plugin = get_plugin("deeplearning")
+        assert plugin.name == "deeplearning"
+
+    def test_finetuning_registered(self):
+        from mlforge.scaffold import _ensure_plugin_registered
+        from mlforge.plugins import get_plugin
+
+        _ensure_plugin_registered("finetuning")
+        plugin = get_plugin("finetuning")
+        assert plugin.name == "finetuning"
+
+    def test_tabular_registered(self):
+        from mlforge.scaffold import _ensure_plugin_registered
+        from mlforge.plugins import get_plugin
+
+        _ensure_plugin_registered("tabular")
+        plugin = get_plugin("tabular")
+        assert plugin.name == "tabular"
+
+    def test_unknown_domain_noop(self):
+        from mlforge.scaffold import _ensure_plugin_registered
+
+        # Should not raise for unknown domain
+        _ensure_plugin_registered("unknown_domain_xyz")
+
+    def test_idempotent_registration(self):
+        from mlforge.scaffold import _ensure_plugin_registered
+        from mlforge.plugins import get_plugin
+
+        _ensure_plugin_registered("deeplearning")
+        plugin1 = get_plugin("deeplearning")
+        _ensure_plugin_registered("deeplearning")
+        plugin2 = get_plugin("deeplearning")
+        assert plugin1 is plugin2
+
+
+class TestScaffoldDomainDispatch:
+    """scaffold_experiment dispatches registration by config.domain."""
+
+    def setup_method(self):
+        """Clear plugin registry before each test."""
+        from mlforge.plugins import _registry
+        _registry.clear()
+
+    def test_scaffold_deeplearning_domain(self, dataset, target_dir):
+        from mlforge.plugins import get_plugin
+
+        config = Config(domain="deeplearning")
+        scaffold_experiment(config=config, dataset_path=dataset, target_dir=target_dir, run_id="run-dl")
+        plugin = get_plugin("deeplearning")
+        assert plugin.name == "deeplearning"
+
+    def test_scaffold_finetuning_domain(self, dataset, target_dir):
+        from mlforge.plugins import get_plugin
+
+        config = Config(domain="finetuning")
+        scaffold_experiment(config=config, dataset_path=dataset, target_dir=target_dir, run_id="run-ft")
+        plugin = get_plugin("finetuning")
+        assert plugin.name == "finetuning"
