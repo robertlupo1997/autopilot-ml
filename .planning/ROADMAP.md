@@ -188,10 +188,10 @@ Plans:
   2. `base_claude.md.j2` contains an output format rule instructing the agent to emit `{"metric_value": X}` as the last line of output
   3. `trigger_stagnation_branch()` gracefully handles `best_commit=None` instead of raising ValueError
   4. Standard tabular E2E flow completes without metric_value=None or stagnation crash
-**Plans**: 0 plans
+**Plans**: 1 plan
 
 Plans:
-- (none yet — run `/gsd:plan-phase 11`)
+- [ ] 11-01-PLAN.md -- Fix tabular JSON output, CLAUDE.md output format rule, and stagnation None guard (CORE-02, CORE-03, CORE-09, INTL-04)
 
 ### Phase 12: Wire Plugin Validation + Task Type Mapping
 **Goal**: Call validate_config() before scaffolding and map profiler task types to DL/FT expected types so simple mode works for all domains
@@ -240,6 +240,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 8. Register Domain Plugins + Swarm CLI | 2/2 | Complete   | 2026-03-20 |
 | 9. Wire Simple Mode Task Propagation | 1/1 | Complete   | 2026-03-20 |
 | 10. Fix Runtime Wiring Bugs | 1/1 | Complete    | 2026-03-20 |
-| 11. Fix Tabular Output + Stagnation Guard | 0/0 | Planned | — |
+| 11. Fix Tabular Output + Stagnation Guard | 0/1 | In Progress | — |
 | 12. Wire Plugin Validation + Task Mapping | 0/0 | Planned | — |
 | 13. Wire Dead Code + Rich Profile Display | 0/0 | Planned | — |
