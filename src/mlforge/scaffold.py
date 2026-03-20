@@ -61,6 +61,45 @@ def _ensure_tabular_registered() -> None:
         register_plugin(TabularPlugin())
 
 
+def _ensure_deeplearning_registered() -> None:
+    """Register the deep learning plugin if not already registered."""
+    try:
+        get_plugin("deeplearning")
+    except KeyError:
+        from mlforge.deeplearning import DeepLearningPlugin
+
+        register_plugin(DeepLearningPlugin())
+
+
+def _ensure_finetuning_registered() -> None:
+    """Register the fine-tuning plugin if not already registered."""
+    try:
+        get_plugin("finetuning")
+    except KeyError:
+        from mlforge.finetuning import FineTuningPlugin
+
+        register_plugin(FineTuningPlugin())
+
+
+_REGISTRATION_FUNCTIONS = {
+    "tabular": _ensure_tabular_registered,
+    "deeplearning": _ensure_deeplearning_registered,
+    "finetuning": _ensure_finetuning_registered,
+}
+
+
+def _ensure_plugin_registered(domain: str) -> None:
+    """Register the plugin for the given domain if not already registered.
+
+    Args:
+        domain: The domain name (tabular, deeplearning, finetuning).
+            Unknown domains are silently ignored.
+    """
+    reg_fn = _REGISTRATION_FUNCTIONS.get(domain)
+    if reg_fn is not None:
+        reg_fn()
+
+
 def scaffold_experiment(
     config: Config,
     dataset_path: Path,
@@ -92,7 +131,7 @@ def scaffold_experiment(
     target_dir.mkdir(parents=True, exist_ok=True)
 
     # 2. Ensure plugin is registered and get it
-    _ensure_tabular_registered()
+    _ensure_plugin_registered(config.domain)
     plugin = get_plugin(config.domain)
 
     # 3. Plugin scaffolds domain-specific files (prepare.py, train.py)
