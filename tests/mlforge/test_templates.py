@@ -188,6 +188,37 @@ class TestTabularTrainArtifacts:
         assert json_pos > joblib_pos
 
 
+class TestClaudeMdArtifactRule:
+    """Verify CLAUDE.md contains artifact preservation rule."""
+
+    @pytest.fixture()
+    def plugin(self):
+        from mlforge.tabular import TabularPlugin
+        return TabularPlugin()
+
+    @pytest.fixture()
+    def config(self):
+        return Config(
+            domain="tabular",
+            metric="accuracy",
+            direction="maximize",
+            frozen_files=["prepare.py"],
+            mutable_files=["train.py"],
+        )
+
+    def test_claude_md_mentions_predictions_csv(self, plugin, config):
+        output = render_claude_md(plugin, config)
+        assert "predictions.csv" in output
+
+    def test_claude_md_mentions_best_model_joblib(self, plugin, config):
+        output = render_claude_md(plugin, config)
+        assert "best_model.joblib" in output
+
+    def test_claude_md_mentions_diagnostics_or_export(self, plugin, config):
+        output = render_claude_md(plugin, config)
+        assert "diagnostics" in output.lower() or "export" in output.lower()
+
+
 class TestRenderExperimentsMd:
     """Verify experiments.md rendering."""
 
