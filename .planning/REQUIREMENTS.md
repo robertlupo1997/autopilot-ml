@@ -27,9 +27,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
 - [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
-- [ ] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
+- [x] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
 - [ ] **INTL-07**: Experiment time/cost budget with per-experiment timeout and total session budget (wall clock, API cost, GPU hours)
-- [ ] **INTL-08**: Results tracking in structured experiment log with commit hash, metric value, status, description, timestamp
+- [x] **INTL-08**: Results tracking in structured experiment log with commit hash, metric value, status, description, timestamp
 
 ### Tabular ML Plugin
 
@@ -122,9 +122,9 @@ Deferred to future release.
 | INTL-03 | Phase 2 | Complete |
 | INTL-04 | Phase 2 | Complete |
 | INTL-05 | Phase 2 | Complete |
-| INTL-06 | Phase 2 | Pending |
+| INTL-06 | Phase 2 | Complete |
 | INTL-07 | Phase 3 | Pending |
-| INTL-08 | Phase 2 | Pending |
+| INTL-08 | Phase 2 | Complete |
 | TABL-01 | Phase 2 | Complete |
 | TABL-02 | Phase 2 | Complete |
 | TABL-03 | Phase 4 | Complete |
