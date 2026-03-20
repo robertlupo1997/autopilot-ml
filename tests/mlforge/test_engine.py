@@ -678,6 +678,308 @@ class TestCommandFlags:
         engine.git.close()
 
 
+class TestIntelligenceIntegration:
+    """Tests for baseline, journal, and stagnation integration in RunEngine."""
+
+    def test_compute_baselines_called_before_loop(self, tmp_path):
+        """When domain=='tabular' and prepare.py exists with X_train/y_train,
+        compute_baselines() is called and result stored in state.baselines."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+
+        # Create a prepare.py with X_train and y_train
+        prepare_code = (
+            "import numpy as np\n"
+            "X_train = np.array([[1,2],[3,4],[5,6],[7,8],[9,10]])\n"
+            "y_train = np.array([0,1,0,1,0])\n"
+        )
+        (tmp_path / "prepare.py").write_text(prepare_code)
+
+        config = Config(domain="tabular", budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        baselines_result = {"most_frequent": {"score": 0.5, "std": 0.1}}
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+            patch("mlforge.engine.compute_baselines", return_value=baselines_result) as mock_bl,
+        ):
+            engine.run()
+
+        mock_bl.assert_called_once()
+        assert state.baselines == baselines_result
+        engine.git.close()
+
+    def test_baselines_skipped_for_non_tabular(self, tmp_path):
+        """When domain!='tabular', baselines are None and loop runs normally."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(domain="dl", budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+        ):
+            engine.run()
+
+        assert state.baselines is None
+        assert state.experiment_count == 1
+        engine.git.close()
+
+    def test_baseline_gate_rejects_sub_baseline_keep(self, tmp_path):
+        """When metric_value does not beat baselines, _process_result returns 'revert'."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config()
+        state = SessionState()
+        # Set baselines that are higher than the metric
+        state.baselines = {"most_frequent": {"score": 0.8, "std": 0.05}}
+        engine = RunEngine(tmp_path, config, state)
+
+        # metric 0.7 does NOT beat baseline 0.8 (maximize direction)
+        result = {"metric_value": 0.7, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "revert_to_last_commit"),
+            patch("mlforge.engine.passes_baseline_gate", return_value=False) as mock_gate,
+            patch("mlforge.engine.append_journal_entry"),
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+        ):
+            action = engine._process_result(result)
+
+        assert action == "revert"
+        assert state.total_reverts == 1
+        assert state.consecutive_reverts == 1
+        engine.git.close()
+
+    def test_baseline_gate_passes_when_beating_baselines(self, tmp_path):
+        """When metric_value beats all baselines, keep proceeds normally."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config()
+        state = SessionState()
+        state.baselines = {"most_frequent": {"score": 0.5, "std": 0.05}}
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.passes_baseline_gate", return_value=True),
+            patch("mlforge.engine.append_journal_entry"),
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.get_last_diff", return_value="some diff"),
+        ):
+            action = engine._process_result(result)
+
+        assert action == "keep"
+        assert state.total_keeps == 1
+        assert state.best_metric == 0.9
+        engine.git.close()
+
+    def test_journal_entry_written_on_keep(self, tmp_path):
+        """After a keep action, append_journal_entry() is called with correct fields."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config()
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.append_journal_entry") as mock_append,
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.get_last_diff", return_value="diff text"),
+        ):
+            engine._process_result(result)
+
+        mock_append.assert_called_once()
+        entry = mock_append.call_args[0][1]
+        assert entry.status == "keep"
+        assert entry.metric_value == 0.9
+        assert entry.commit_hash == "abc12345"
+        engine.git.close()
+
+    def test_journal_entry_written_on_revert(self, tmp_path):
+        """After a revert action, append_journal_entry() is called with status='revert'."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config()
+        state = SessionState(best_metric=0.95)
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.8, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "revert_to_last_commit"),
+            patch("mlforge.engine.append_journal_entry") as mock_append,
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.check_stagnation", return_value=False),
+        ):
+            engine._process_result(result)
+
+        mock_append.assert_called_once()
+        entry = mock_append.call_args[0][1]
+        assert entry.status == "revert"
+        assert entry.metric_value == 0.8
+        engine.git.close()
+
+    def test_journal_diff_captured_on_keep(self, tmp_path):
+        """On keep, get_last_diff() is called and diff is stored in journal entry."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config()
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.append_journal_entry") as mock_append,
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.get_last_diff", return_value="my diff content") as mock_diff,
+        ):
+            engine._process_result(result)
+
+        mock_diff.assert_called_once_with(tmp_path)
+        entry = mock_append.call_args[0][1]
+        assert entry.diff == "my diff content"
+        engine.git.close()
+
+    def test_stagnation_branch_triggered(self, tmp_path):
+        """After consecutive_reverts reaches threshold, stagnation branch is triggered."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config()
+        state = SessionState(
+            best_metric=0.95,
+            best_commit="abc1234",
+            consecutive_reverts=2,  # Will become 3 after this revert
+        )
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.8, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "revert_to_last_commit"),
+            patch("mlforge.engine.append_journal_entry"),
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.check_stagnation", return_value=True) as mock_check,
+            patch("mlforge.engine.trigger_stagnation_branch", return_value="explore-random_forest") as mock_branch,
+        ):
+            engine._process_result(result)
+
+        mock_check.assert_called_once()
+        mock_branch.assert_called_once()
+        engine.git.close()
+
+    def test_stagnation_picks_untried_family(self, tmp_path):
+        """Stagnation picks a family from ALGORITHM_FAMILIES not already in tried_families."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config()
+        state = SessionState(
+            best_metric=0.95,
+            best_commit="abc1234",
+            consecutive_reverts=2,
+            tried_families=["linear"],  # linear already tried
+        )
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.8, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "revert_to_last_commit"),
+            patch("mlforge.engine.append_journal_entry"),
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.check_stagnation", return_value=True),
+            patch("mlforge.engine.trigger_stagnation_branch", return_value="explore-random_forest") as mock_branch,
+            patch("mlforge.engine.ALGORITHM_FAMILIES", {"linear": {}, "random_forest": {}, "xgboost": {}}),
+        ):
+            engine._process_result(result)
+
+        # Should pick random_forest (first untried), not linear (already tried)
+        call_args = mock_branch.call_args
+        new_family = call_args[0][2]
+        assert new_family == "random_forest"
+        assert "random_forest" in state.tried_families
+        engine.git.close()
+
+    def test_no_stagnation_below_threshold(self, tmp_path):
+        """With fewer than 3 consecutive reverts, no stagnation branch is triggered."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config()
+        state = SessionState(best_metric=0.95, consecutive_reverts=0)
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.8, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "revert_to_last_commit"),
+            patch("mlforge.engine.append_journal_entry"),
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.check_stagnation", return_value=False) as mock_check,
+            patch("mlforge.engine.trigger_stagnation_branch") as mock_branch,
+        ):
+            engine._process_result(result)
+
+        mock_check.assert_called_once()
+        mock_branch.assert_not_called()
+        engine.git.close()
+
+
 # --- Helpers ---
 
 def _init_git(path: Path) -> None:
