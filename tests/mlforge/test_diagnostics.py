@@ -50,10 +50,13 @@ class TestDiagnoseRegression:
 
     def test_feature_correlations(self):
         rng = np.random.default_rng(42)
-        X = rng.standard_normal((100, 2))
+        # Feature 0: positive values so abs_error = error = feature value
+        feat0 = np.abs(rng.standard_normal(100)) + 0.1
+        feat1 = rng.standard_normal(100)
+        X = np.column_stack([feat0, feat1])
         y_true = np.zeros(100)
-        # Feature 0 perfectly correlated with error
-        y_pred = X[:, 0]  # error = y_pred - y_true = X[:, 0]
+        # error = y_pred - y_true = feat0, abs_error = feat0
+        y_pred = feat0
         result = diagnose_regression(
             y_true, y_pred, feature_names=["correlated", "random"], X=X
         )
