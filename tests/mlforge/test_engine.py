@@ -577,6 +577,107 @@ class TestPostLoop:
         engine.git.close()
 
 
+class TestCommandFlags:
+    """Verify corrected CLI flag structure in _run_one_experiment."""
+
+    def test_uses_append_system_prompt_with_inline_content(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("my protocol content")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config()
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with patch("subprocess.run", return_value=mock_result) as mock_sub:
+            engine._run_one_experiment()
+            cmd = mock_sub.call_args[0][0]
+            assert "--append-system-prompt" in cmd
+            idx = cmd.index("--append-system-prompt")
+            assert cmd[idx + 1] == "my protocol content"
+            assert "--append-system-prompt-file" not in cmd
+        engine.git.close()
+
+    def test_no_max_turns_flag(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config()
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with patch("subprocess.run", return_value=mock_result) as mock_sub:
+            engine._run_one_experiment()
+            cmd = mock_sub.call_args[0][0]
+            assert "--max-turns" not in cmd
+        engine.git.close()
+
+    def test_no_append_system_prompt_when_claude_md_missing(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        # Do NOT create CLAUDE.md
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config()
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with patch("subprocess.run", return_value=mock_result) as mock_sub:
+            engine._run_one_experiment()
+            cmd = mock_sub.call_args[0][0]
+            assert "--append-system-prompt" not in cmd
+        engine.git.close()
+
+    def test_max_budget_usd_still_present(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(per_experiment_budget_usd=1.50)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with patch("subprocess.run", return_value=mock_result) as mock_sub:
+            engine._run_one_experiment()
+            cmd = mock_sub.call_args[0][0]
+            assert "--max-budget-usd" in cmd
+            idx = cmd.index("--max-budget-usd")
+            assert cmd[idx + 1] == "1.5"
+        engine.git.close()
+
+
 # --- Helpers ---
 
 def _init_git(path: Path) -> None:
