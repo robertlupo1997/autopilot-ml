@@ -113,6 +113,10 @@ Plans:
   1. `--append-system-prompt-file` replaced with `--append-system-prompt` using inline string content
   2. `--max-turns` replaced with valid claude CLI flag or removed
   3. Simple mode and expert mode E2E flows reach experiment execution without subprocess crash
+**Plans**: 1 plan
+
+Plans:
+- [ ] 06-01-PLAN.md -- Fix invalid CLI flags in engine.py subprocess command (CORE-02, CORE-03, INTL-07, GUARD-03)
 
 ### Phase 7: Wire Intelligence Subsystem to Engine
 **Goal**: Connect all intelligence modules (baselines, diagnostics, stagnation, multi-draft, journal) to the engine runtime loop
@@ -158,7 +162,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (7, 8
 | 3. Scaffold, CLI + Run Engine | 3/3 | Complete   | 2026-03-20 |
 | 4. E2E Validation + UX | 2/2 | Complete   | 2026-03-20 |
 | 5. Domain Plugins + Swarm | 3/3 | Complete   | 2026-03-20 |
-| 6. Fix Engine Subprocess Flags | 0/0 | Pending    |  |
+| 6. Fix Engine Subprocess Flags | 0/1 | Pending    |  |
 | 7. Wire Intelligence Subsystem | 0/0 | Pending    |  |
 | 8. Register Domain Plugins + Swarm CLI | 0/0 | Pending    |  |
 | 9. Wire Simple Mode Task Propagation | 0/0 | Pending    |  |
