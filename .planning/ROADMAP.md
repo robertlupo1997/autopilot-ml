@@ -129,6 +129,11 @@ Plans:
   3. `check_stagnation()` and `trigger_stagnation_branch()` called when `consecutive_reverts` threshold reached
   4. `select_best_draft()` called during multi-draft start phase
   5. `append_journal_entry()` and `get_last_diff()` called after each experiment to persist knowledge
+**Plans**: 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md -- Baselines + journal + stagnation wiring into engine loop (INTL-01, INTL-02, CORE-08, INTL-06, INTL-04)
+- [ ] 07-02-PLAN.md -- Multi-draft phase + diagnostics engine wiring (INTL-05, INTL-03)
 
 ### Phase 8: Register Domain Plugins + Swarm CLI
 **Goal**: Register DL/FT plugins in scaffold.py and add swarm CLI entry point so all Phase 5 features are reachable
@@ -163,6 +168,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (7, 8
 | 4. E2E Validation + UX | 2/2 | Complete   | 2026-03-20 |
 | 5. Domain Plugins + Swarm | 3/3 | Complete   | 2026-03-20 |
 | 6. Fix Engine Subprocess Flags | 0/1 | Pending    |  |
-| 7. Wire Intelligence Subsystem | 0/0 | Pending    |  |
+| 7. Wire Intelligence Subsystem | 0/2 | Pending    |  |
 | 8. Register Domain Plugins + Swarm CLI | 0/0 | Pending    |  |
 | 9. Wire Simple Mode Task Propagation | 0/0 | Pending    |  |
