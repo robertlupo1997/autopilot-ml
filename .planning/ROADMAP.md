@@ -64,12 +64,12 @@ Plans:
   3. Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert) without human intervention
   4. Resource guardrails enforce cost caps, GPU hour limits, disk usage, and per-experiment timeouts with hard stops
   5. Live terminal output shows current experiment number, best metric, and remaining budget
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md -- CLI entry point + experiment scaffolding (CORE-01, GUARD-01)
+- [ ] 03-02-PLAN.md -- Guardrails + cost tracking + deviation handling + live progress (GUARD-02, GUARD-04, GUARD-05, INTL-07, CORE-09)
+- [ ] 03-03-PLAN.md -- Run engine + CLI wiring (CORE-02, GUARD-03)
 
 ### Phase 4: E2E Validation + UX
 **Goal**: The full tabular pipeline is validated end-to-end on real data, and user experience features (simple/expert modes, artifact export, run summaries) are complete
