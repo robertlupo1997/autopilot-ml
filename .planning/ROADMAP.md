@@ -67,7 +67,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- CLI entry point + experiment scaffolding (CORE-01, GUARD-01)
+- [x] 03-01-PLAN.md -- CLI entry point + experiment scaffolding (CORE-01, GUARD-01)
 - [ ] 03-02-PLAN.md -- Guardrails + cost tracking + deviation handling + live progress (GUARD-02, GUARD-04, GUARD-05, INTL-07, CORE-09)
 - [ ] 03-03-PLAN.md -- Run engine + CLI wiring (CORE-02, GUARD-03)
 
@@ -113,6 +113,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Core Engine + Plugin Infrastructure | 3/3 | Complete   | 2026-03-19 |
 | 2. Tabular Plugin + Experiment Intelligence | 2/3 | In Progress|  |
-| 3. Scaffold, CLI + Run Engine | 0/3 | Not started | - |
+| 3. Scaffold, CLI + Run Engine | 2/3 | In Progress|  |
 | 4. E2E Validation + UX | 0/2 | Not started | - |
 | 5. Domain Plugins + Swarm | 0/3 | Not started | - |

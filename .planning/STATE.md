@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 02-03-PLAN.md (Journal Diff + Results Tracking)
-last_updated: "2026-03-20T00:21:55.861Z"
-last_activity: 2026-03-20 -- Completed 02-03 (Journal Diff + Results Tracking)
+stopped_at: Completed 03-02-PLAN.md (Guardrails + Cost Tracking + Live Progress)
+last_updated: "2026-03-20T00:43:41.000Z"
+last_activity: 2026-03-20 -- Completed 03-02 (Guardrails + Cost Tracking + Live Progress)
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_plans: 9
+  completed_plans: 8
+  percent: 89
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 2: Tabular Plugin + Experiment Intelligence
+**Current focus:** Phase 3: Scaffold, CLI + Run Engine
 
 ## Current Position
 
-Phase: 2 of 5 (Tabular Plugin + Experiment Intelligence)
-Plan: 3 of 3 in current phase (COMPLETE)
-Status: Phase 02 Complete
-Last activity: 2026-03-20 -- Completed 02-03 (Journal Diff + Results Tracking)
+Phase: 3 of 5 (Scaffold, CLI + Run Engine)
+Plan: 2 of 3 in current phase
+Status: Plan 03-02 Complete
+Last activity: 2026-03-20 -- Completed 03-02 (Guardrails + Cost Tracking + Live Progress)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 89%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 8
 - Average duration: 4 min
-- Total execution time: 0.38 hours
+- Total execution time: 0.48 hours
 
 **By Phase:**
 
@@ -45,6 +45,7 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | 01-core-engine | 3 | 17 min | 6 min |
 | 02-tabular-plugin | 3 | 6 min | 2 min |
+| 03-scaffold-cli-run-engine | 2 | 6 min | 3 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-01 (10 min), 01-02 (4 min), 01-03 (3 min), 02-01 (3 min), 02-02 (3 min)
@@ -80,6 +81,13 @@ Recent decisions affecting current work:
 - [02-01]: prepare.py copied via Path.read_text for scaffold -- avoids import-time ML dep issues
 - [02-01]: Baseline gate uses strict inequality (must beat, not tie) for both directions
 - [Phase 02]: Diff rendered in collapsible details sections, not as extra table column
+- [03-01]: CLI overrides Config defaults (not TOML merge) for simplicity
+- [03-01]: Auto-register TabularPlugin in scaffold if not in registry
+- [03-02]: ResourceGuardrails.should_stop delegates to stop_reason for DRY single-source-of-truth
+- [03-02]: CostTracker updates SessionState.cost_spent_usd directly for crash-safe persistence
+- [03-02]: DeviationHandler resets retry count on keep (not on revert) to prevent retry leak
+- [03-02]: min_free_disk_gb defaults to 1.0 GB as instance attribute (not Config field)
+- [03-01]: TOML serialization via string formatting (no tomli_w dependency)
 
 ### Pending Todos
 
@@ -91,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T00:16:56.447Z
-Stopped at: Completed 02-03-PLAN.md (Journal Diff + Results Tracking)
+Last session: 2026-03-20T00:43:41Z
+Stopped at: Completed 03-02-PLAN.md (Guardrails + Cost Tracking + Live Progress)
 Resume file: None

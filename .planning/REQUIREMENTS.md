@@ -9,7 +9,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Core Engine
 
-- [ ] **CORE-01**: User can install mlforge via pip and run `mlforge <dataset> <goal>` to start an autonomous experiment session
+- [x] **CORE-01**: User can install mlforge via pip and run `mlforge <dataset> <goal>` to start an autonomous experiment session
 - [ ] **CORE-02**: Agent executes keep/revert experiment loop — modifies code, evaluates, commits on improvement, resets on failure
 - [x] **CORE-03**: Protocol prompt system injects domain-specific CLAUDE.md templates into agent context at session start
 - [x] **CORE-04**: State tracking persists experiment progress (current best, budget remaining, experiment count) across context resets
@@ -17,7 +17,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CORE-06**: Config system (mlforge.config.toml) controls domain, budget, mutable zones, metric, and plugin settings
 - [x] **CORE-07**: Hook engine (PreToolUse/PostToolUse) intercepts Claude Code tool calls to enforce frozen file zones
 - [x] **CORE-08**: Experiment journal accumulates structured knowledge (hypothesis, result, diff, metric delta) that survives context resets
-- [ ] **CORE-09**: Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert)
+- [x] **CORE-09**: Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert)
 - [x] **CORE-10**: Git-based state management: branch per run, commit per kept experiment, reset on revert, tag best model
 
 ### Experiment Intelligence
@@ -28,7 +28,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
 - [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
 - [x] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
-- [ ] **INTL-07**: Experiment time/cost budget with per-experiment timeout and total session budget (wall clock, API cost, GPU hours)
+- [x] **INTL-07**: Experiment time/cost budget with per-experiment timeout and total session budget (wall clock, API cost, GPU hours)
 - [x] **INTL-08**: Results tracking in structured experiment log with commit hash, metric value, status, description, timestamp
 
 ### Tabular ML Plugin
@@ -57,11 +57,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Guardrails & Reliability
 
-- [ ] **GUARD-01**: Frozen file zone enforcement prevents agent from modifying infrastructure files (prepare.py, evaluate.py)
-- [ ] **GUARD-02**: Resource guardrails enforce cost caps, GPU hour limits, and disk usage boundaries
+- [x] **GUARD-01**: Frozen file zone enforcement prevents agent from modifying infrastructure files (prepare.py, evaluate.py)
+- [x] **GUARD-02**: Resource guardrails enforce cost caps, GPU hour limits, and disk usage boundaries
 - [ ] **GUARD-03**: Crash recovery automatically saves state before each experiment so sessions can resume
-- [ ] **GUARD-04**: Live progress monitoring shows current experiment, best metric so far, and budget remaining in terminal
-- [ ] **GUARD-05**: Cost tracking records API token usage per experiment with running total and budget cap enforcement
+- [x] **GUARD-04**: Live progress monitoring shows current experiment, best metric so far, and budget remaining in terminal
+- [x] **GUARD-05**: Cost tracking records API token usage per experiment with running total and budget cap enforcement
 - [ ] **GUARD-06**: Run summary generated at session end: key findings, best approach, failed hypotheses, next directions
 
 ### Multi-Agent
@@ -107,7 +107,7 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CORE-01 | Phase 3 | Pending |
+| CORE-01 | Phase 3 | Complete |
 | CORE-02 | Phase 3 | Pending |
 | CORE-03 | Phase 1 | Complete |
 | CORE-04 | Phase 1 | Complete |
@@ -115,7 +115,7 @@ Deferred to future release.
 | CORE-06 | Phase 1 | Complete |
 | CORE-07 | Phase 1 | Complete |
 | CORE-08 | Phase 1 | Complete |
-| CORE-09 | Phase 3 | Pending |
+| CORE-09 | Phase 3 | Complete |
 | CORE-10 | Phase 1 | Complete |
 | INTL-01 | Phase 2 | Complete |
 | INTL-02 | Phase 2 | Complete |
@@ -123,7 +123,7 @@ Deferred to future release.
 | INTL-04 | Phase 2 | Complete |
 | INTL-05 | Phase 2 | Complete |
 | INTL-06 | Phase 2 | Complete |
-| INTL-07 | Phase 3 | Pending |
+| INTL-07 | Phase 3 | Complete |
 | INTL-08 | Phase 2 | Complete |
 | TABL-01 | Phase 2 | Complete |
 | TABL-02 | Phase 2 | Complete |
@@ -140,11 +140,11 @@ Deferred to future release.
 | FT-03 | Phase 5 | Pending |
 | FT-04 | Phase 5 | Pending |
 | FT-05 | Phase 5 | Pending |
-| GUARD-01 | Phase 3 | Pending |
-| GUARD-02 | Phase 3 | Pending |
+| GUARD-01 | Phase 3 | Complete |
+| GUARD-02 | Phase 3 | Complete |
 | GUARD-03 | Phase 3 | Pending |
-| GUARD-04 | Phase 3 | Pending |
-| GUARD-05 | Phase 3 | Pending |
+| GUARD-04 | Phase 3 | Complete |
+| GUARD-05 | Phase 3 | Complete |
 | GUARD-06 | Phase 4 | Pending |
 | SWARM-01 | Phase 5 | Pending |
 | SWARM-02 | Phase 5 | Pending |
