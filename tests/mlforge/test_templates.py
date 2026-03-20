@@ -129,6 +129,65 @@ class TestClaudeMdOutputFormat:
         assert "revert" in output.lower()
 
 
+class TestTabularTrainArtifacts:
+    """Verify tabular_train.py.j2 renders predictions.csv and best_model.joblib writes."""
+
+    def _render(self, task: str = "classification") -> str:
+        env = get_template_env()
+        template = env.get_template("tabular_train.py.j2")
+        return template.render(
+            csv_path="data.csv",
+            target_column="target",
+            metric="accuracy" if task == "classification" else "r2",
+            time_budget=5,
+            task=task,
+            date_column=None,
+        )
+
+    def test_classification_imports_joblib(self):
+        output = self._render("classification")
+        assert "import joblib" in output
+
+    def test_classification_predictions_csv_with_columns(self):
+        output = self._render("classification")
+        assert "predictions.csv" in output
+        assert '"y_true"' in output
+        assert '"y_pred"' in output
+
+    def test_classification_saves_model(self):
+        output = self._render("classification")
+        assert "joblib.dump" in output
+        assert "best_model.joblib" in output
+
+    def test_regression_predictions_csv_with_columns(self):
+        output = self._render("regression")
+        assert "predictions.csv" in output
+        assert '"y_true"' in output
+        assert '"y_pred"' in output
+
+    def test_regression_saves_model(self):
+        output = self._render("regression")
+        assert "joblib.dump" in output
+        assert "best_model.joblib" in output
+
+    def test_json_output_after_artifact_writes(self):
+        """JSON output must be the last line -- after predictions and model save."""
+        output = self._render("classification")
+        predictions_pos = output.index("predictions.csv")
+        joblib_pos = output.index("joblib.dump")
+        json_pos = output.index("json.dumps")
+        assert json_pos > predictions_pos
+        assert json_pos > joblib_pos
+
+    def test_regression_json_output_after_artifact_writes(self):
+        output = self._render("regression")
+        predictions_pos = output.index("predictions.csv")
+        joblib_pos = output.index("joblib.dump")
+        json_pos = output.index("json.dumps")
+        assert json_pos > predictions_pos
+        assert json_pos > joblib_pos
+
+
 class TestRenderExperimentsMd:
     """Verify experiments.md rendering."""
 
