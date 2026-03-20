@@ -221,7 +221,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- (none yet — run `/gsd:plan-phase 13`)
+- [ ] 13-01-PLAN.md -- Wire tag_best + publish_result + rich profile display (CORE-10, SWARM-01, SWARM-02, UX-04)
 
 ## Progress
 
@@ -242,4 +242,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 10. Fix Runtime Wiring Bugs | 1/1 | Complete    | 2026-03-20 |
 | 11. Fix Tabular Output + Stagnation Guard | 1/1 | Complete    | 2026-03-20 |
 | 12. Wire Plugin Validation + Task Mapping | 1/1 | Complete    | 2026-03-20 |
-| 13. Wire Dead Code + Rich Profile Display | 0/0 | Planned | — |
+| 13. Wire Dead Code + Rich Profile Display | 0/1 | Planned | — |
