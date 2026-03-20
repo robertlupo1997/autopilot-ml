@@ -155,6 +155,9 @@ def main(argv: list[str] | None = None) -> int:
                 profile = profile_dataset(df, target_column)
                 config.metric = profile.metric
                 config.direction = profile.direction
+                config.plugin_settings["task"] = profile.task
+                config.plugin_settings["csv_path"] = dataset_path.name
+                config.plugin_settings["target_column"] = target_column
                 if profile.date_columns:
                     config.plugin_settings["date_column"] = profile.date_columns[0]
                 print(

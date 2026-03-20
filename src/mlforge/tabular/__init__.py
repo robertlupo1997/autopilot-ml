@@ -54,6 +54,8 @@ class TabularPlugin:
             target_column=config.plugin_settings.get("target_column", "target"),
             metric=config.metric,
             time_budget=config.plugin_settings.get("time_budget", 60),
+            task=config.plugin_settings.get("task", "classification"),
+            date_column=config.plugin_settings.get("date_column", ""),
         )
         (target_dir / "train.py").write_text(train_content)
 

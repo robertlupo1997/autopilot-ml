@@ -11,8 +11,13 @@ import numpy as np
 from pathlib import Path
 
 # ML libraries
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.linear_model import LogisticRegression, Ridge
+{% if task == "regression" %}
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import Ridge
+{% else %}
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+{% endif %}
 try:
     import xgboost as xgb
 except ImportError:
@@ -30,6 +35,10 @@ CSV_PATH = "{{ csv_path }}"
 TARGET_COLUMN = "{{ target_column }}"
 METRIC = "{{ metric }}"
 TIME_BUDGET = {{ time_budget }}  # minutes
+TASK = "{{ task }}"
+{% if date_column %}
+# NOTE: Temporal data detected (column: {{ date_column }}). Consider prepare.temporal_split for walk-forward CV.
+{% endif %}
 
 
 def objective(trial: optuna.Trial) -> float:
@@ -48,6 +57,7 @@ def objective(trial: optuna.Trial) -> float:
     X_test_processed = preprocessor.transform(X_test)
 
     # Choose model family
+{% if task == "regression" %}
     model_name = trial.suggest_categorical("model", ["rf", "ridge"])
 
     if model_name == "rf":
@@ -60,9 +70,24 @@ def objective(trial: optuna.Trial) -> float:
         model = Ridge(
             alpha=trial.suggest_float("alpha", 1e-3, 100.0, log=True),
         )
+{% else %}
+    model_name = trial.suggest_categorical("model", ["rf", "lr"])
+
+    if model_name == "rf":
+        model = RandomForestClassifier(
+            n_estimators=trial.suggest_int("n_estimators", 50, 300),
+            max_depth=trial.suggest_int("max_depth", 3, 15),
+            random_state=42,
+        )
+    elif model_name == "lr":
+        model = LogisticRegression(
+            C=trial.suggest_float("C", 1e-3, 100.0, log=True),
+            max_iter=500,
+        )
+{% endif %}
 
     # Evaluate with cross-validation
-    result = evaluate(model, X_train_processed, y_train, scoring=METRIC, task="regression")
+    result = evaluate(model, X_train_processed, y_train, scoring=METRIC, task="{{ task }}")
     return result["mean"]
 
 
