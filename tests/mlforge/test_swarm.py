@@ -309,7 +309,7 @@ class TestVerifierWiringInRun:
             patch.object(sm, "_build_agent_command", return_value=["echo", "test"]),
             patch.object(sm.scoreboard, "read_best", return_value=(0.95, "agent-0")),
             patch.object(sm.scoreboard, "read_all", return_value=[]),
-            patch("mlforge.swarm.verify_best_result", new=mock_verify),
+            patch("mlforge.swarm.verifier.verify_best_result", new=mock_verify),
         ):
             result = sm.run()
         # verify_best_result should have been called with experiment_dir and scoreboard

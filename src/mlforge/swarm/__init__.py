@@ -112,11 +112,22 @@ class SwarmManager:
             best_score, best_agent = self.scoreboard.read_best()
             all_results = self.scoreboard.read_all()
 
+            # Verify best result
+            try:
+                from mlforge.swarm.verifier import verify_best_result
+
+                verification = verify_best_result(
+                    self.experiment_dir, self.scoreboard
+                )
+            except Exception:
+                verification = None
+
             return {
                 "agents": self.n_agents,
                 "best_score": best_score,
                 "best_agent": best_agent,
                 "results": all_results,
+                "verification": verification,
             }
         finally:
             signal.signal(signal.SIGINT, original_handler)

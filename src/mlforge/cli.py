@@ -87,6 +87,13 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Additional mutable files beyond plugin defaults",
     )
+    # Swarm mode flags
+    parser.add_argument(
+        "--swarm", action="store_true", help="Enable swarm mode with parallel agents"
+    )
+    parser.add_argument(
+        "--n-agents", type=int, default=3, help="Number of swarm agents (default: 3)"
+    )
 
     # Handle empty args
     if argv is not None and len(argv) == 0:
@@ -94,6 +101,19 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     args = parser.parse_args(argv)
+
+    # Validate swarm + resume conflict
+    if args.swarm and args.resume:
+        print(
+            "Error: --swarm and --resume cannot be used together",
+            file=sys.stderr,
+        )
+        return 1
+    if args.n_agents != 3 and not args.swarm:
+        print(
+            "Warning: --n-agents has no effect without --swarm",
+            file=sys.stderr,
+        )
 
     # Validate dataset exists
     dataset_path = Path(args.dataset)
@@ -179,6 +199,27 @@ def main(argv: list[str] | None = None) -> int:
             git.close()
 
             state = SessionState(run_id=run_id, budget_remaining=config.budget_usd)
+
+        if args.swarm:
+            from mlforge.swarm import SwarmManager
+
+            manager = SwarmManager(
+                config=config, experiment_dir=target_dir, n_agents=args.n_agents
+            )
+            manager.setup()
+            try:
+                results = manager.run()
+                print(
+                    f"\nSwarm complete: {results['agents']} agents, "
+                    f"best={results['best_score']} (agent {results['best_agent']})"
+                )
+                if results.get("verification"):
+                    v = results["verification"]
+                    status = "VERIFIED" if v.get("match") else "MISMATCH"
+                    print(f"Verification: {status}")
+            finally:
+                manager.teardown()
+            return 0
 
         # Run the experiment engine
         engine = RunEngine(target_dir, config, state)

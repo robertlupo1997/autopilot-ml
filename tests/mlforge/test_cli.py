@@ -360,7 +360,7 @@ class TestSwarmCli:
         with (
             patch("mlforge.cli.scaffold_experiment"),
             patch("mlforge.cli.GitManager"),
-            patch("mlforge.cli.SwarmManager") as MockSM,
+            patch("mlforge.swarm.SwarmManager") as MockSM,
         ):
             mock_sm = MockSM.return_value
             mock_sm.run.return_value = {
@@ -383,7 +383,7 @@ class TestSwarmCli:
         with (
             patch("mlforge.cli.scaffold_experiment"),
             patch("mlforge.cli.GitManager"),
-            patch("mlforge.cli.SwarmManager") as MockSM,
+            patch("mlforge.swarm.SwarmManager") as MockSM,
         ):
             mock_sm = MockSM.return_value
             mock_sm.run.return_value = {
@@ -424,7 +424,7 @@ class TestSwarmCli:
             patch("mlforge.cli.scaffold_experiment"),
             patch("mlforge.cli.GitManager"),
             patch("mlforge.cli.RunEngine") as MockEngine,
-            patch("mlforge.cli.SwarmManager") as MockSM,
+            patch("mlforge.swarm.SwarmManager") as MockSM,
         ):
             mock_sm = MockSM.return_value
             mock_sm.run.return_value = {
