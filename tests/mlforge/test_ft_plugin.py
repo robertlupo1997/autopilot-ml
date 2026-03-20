@@ -231,3 +231,177 @@ class TestFineTuningLazyImports:
 
         # Restore
         sys.modules.update(saved)
+
+
+# ---------------------------------------------------------------------------
+# prepare.py: get_vram_info (mocked torch.cuda)
+# ---------------------------------------------------------------------------
+
+
+class TestGetVramInfo:
+    """get_vram_info() returns VRAM details with quantization recommendation."""
+
+    def test_returns_expected_keys_with_gpu(self):
+        mock_torch = MagicMock()
+        mock_torch.cuda.is_available.return_value = True
+        mock_torch.cuda.get_device_name.return_value = "NVIDIA RTX 4090"
+        mock_torch.cuda.get_device_properties.return_value = MagicMock(
+            total_mem=24 * 1024**3  # 24 GB
+        )
+        with patch.dict("sys.modules", {"torch": mock_torch}):
+            from mlforge.finetuning.prepare import get_vram_info
+
+            info = get_vram_info()
+        assert info["device"] == "cuda"
+        assert info["gpu_name"] == "NVIDIA RTX 4090"
+        assert abs(info["vram_gb"] - 24.0) < 0.1
+        assert info["recommend_quantization"] is False
+
+    def test_recommends_quantization_for_low_vram(self):
+        mock_torch = MagicMock()
+        mock_torch.cuda.is_available.return_value = True
+        mock_torch.cuda.get_device_name.return_value = "NVIDIA RTX 3060"
+        mock_torch.cuda.get_device_properties.return_value = MagicMock(
+            total_mem=12 * 1024**3  # 12 GB
+        )
+        with patch.dict("sys.modules", {"torch": mock_torch}):
+            from mlforge.finetuning.prepare import get_vram_info
+
+            info = get_vram_info()
+        assert info["recommend_quantization"] is True
+
+    def test_cpu_fallback(self):
+        mock_torch = MagicMock()
+        mock_torch.cuda.is_available.return_value = False
+        with patch.dict("sys.modules", {"torch": mock_torch}):
+            from mlforge.finetuning.prepare import get_vram_info
+
+            info = get_vram_info()
+        assert info["device"] == "cpu"
+        assert info["gpu_name"] is None
+        assert info["vram_gb"] == 0.0
+        assert info["recommend_quantization"] is True
+
+
+# ---------------------------------------------------------------------------
+# prepare.py: format_dataset (mocked transformers/datasets)
+# ---------------------------------------------------------------------------
+
+
+class TestFormatDataset:
+    """format_dataset() loads data and applies tokenizer."""
+
+    def test_loads_json_and_tokenizes(self, tmp_dir: Path):
+        import json
+
+        # Create a small JSON dataset
+        data = [
+            {"instruction": "Say hello", "output": "Hello!"},
+            {"instruction": "Say goodbye", "output": "Goodbye!"},
+            {"instruction": "Count", "output": "1, 2, 3"},
+            {"instruction": "Greet", "output": "Hi there"},
+            {"instruction": "Farewell", "output": "See you"},
+            {"instruction": "Sum", "output": "1+1=2"},
+            {"instruction": "Name", "output": "I am AI"},
+            {"instruction": "Help", "output": "Sure"},
+            {"instruction": "Thanks", "output": "Welcome"},
+            {"instruction": "Bye", "output": "Later"},
+        ]
+        data_path = tmp_dir / "data.json"
+        data_path.write_text(json.dumps(data))
+
+        # Mock tokenizer
+        mock_tokenizer = MagicMock()
+        mock_tokenizer.apply_chat_template.return_value = "formatted text"
+        mock_tokenizer.pad_token = None
+        mock_tokenizer.eos_token = "</s>"
+
+        mock_auto_tokenizer = MagicMock()
+        mock_auto_tokenizer.from_pretrained.return_value = mock_tokenizer
+
+        mock_transformers = MagicMock()
+        mock_transformers.AutoTokenizer = mock_auto_tokenizer
+
+        with patch.dict("sys.modules", {"transformers": mock_transformers}):
+            from mlforge.finetuning.prepare import format_dataset
+
+            result = format_dataset(
+                data_path=str(data_path),
+                tokenizer_name="test-model",
+                max_length=128,
+            )
+
+        assert "train" in result
+        assert "eval" in result
+        assert "num_samples" in result
+
+    def test_loads_csv_data(self, tmp_dir: Path):
+        import csv
+
+        csv_path = tmp_dir / "data.csv"
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["instruction", "output"])
+            writer.writeheader()
+            for i in range(20):
+                writer.writerow({"instruction": f"task {i}", "output": f"result {i}"})
+
+        mock_tokenizer = MagicMock()
+        mock_tokenizer.apply_chat_template.return_value = "formatted"
+        mock_tokenizer.pad_token = "<pad>"
+
+        mock_auto_tokenizer = MagicMock()
+        mock_auto_tokenizer.from_pretrained.return_value = mock_tokenizer
+
+        mock_transformers = MagicMock()
+        mock_transformers.AutoTokenizer = mock_auto_tokenizer
+
+        with patch.dict("sys.modules", {"transformers": mock_transformers}):
+            from mlforge.finetuning.prepare import format_dataset
+
+            result = format_dataset(
+                data_path=str(csv_path),
+                tokenizer_name="test-model",
+            )
+
+        assert len(result["train"]) + len(result["eval"]) == 20
+
+
+# ---------------------------------------------------------------------------
+# prepare.py: create_train_eval_split
+# ---------------------------------------------------------------------------
+
+
+class TestCreateTrainEvalSplit:
+    """create_train_eval_split() returns 90/10 split with reproducible seed."""
+
+    def test_default_90_10_split(self):
+        from mlforge.finetuning.prepare import create_train_eval_split
+
+        dataset = list(range(100))
+        train, eval_ = create_train_eval_split(dataset)
+        assert len(train) == 90
+        assert len(eval_) == 10
+
+    def test_custom_fraction(self):
+        from mlforge.finetuning.prepare import create_train_eval_split
+
+        dataset = list(range(100))
+        train, eval_ = create_train_eval_split(dataset, eval_fraction=0.2)
+        assert len(train) == 80
+        assert len(eval_) == 20
+
+    def test_reproducible(self):
+        from mlforge.finetuning.prepare import create_train_eval_split
+
+        dataset = list(range(50))
+        train1, eval1 = create_train_eval_split(dataset)
+        train2, eval2 = create_train_eval_split(dataset)
+        assert train1 == train2
+        assert eval1 == eval2
+
+    def test_no_overlap(self):
+        from mlforge.finetuning.prepare import create_train_eval_split
+
+        dataset = list(range(100))
+        train, eval_ = create_train_eval_split(dataset)
+        assert set(train).isdisjoint(set(eval_))
