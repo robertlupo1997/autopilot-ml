@@ -104,15 +104,61 @@ Plans:
 - [ ] 05-02-PLAN.md -- Fine-tuning plugin: FineTuningPlugin + frozen prepare.py + ft_train.py.j2 template (FT-01, FT-02, FT-03, FT-04, FT-05)
 - [x] 05-03-PLAN.md -- Swarm mode: SwarmManager + file-locked scoreboard + budget inheritance + verification agent (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
 
+### Phase 6: Fix Engine Subprocess Flags
+**Goal**: Fix invalid claude CLI flags in engine.py subprocess invocation so experiments can actually run
+**Depends on**: Phase 3
+**Requirements**: CORE-02, CORE-03, INTL-07, GUARD-03
+**Gap Closure**: Closes P0 gaps from v1.0 audit — subprocess flags that prevent all experiments from running
+**Success Criteria** (what must be TRUE):
+  1. `--append-system-prompt-file` replaced with `--append-system-prompt` using inline string content
+  2. `--max-turns` replaced with valid claude CLI flag or removed
+  3. Simple mode and expert mode E2E flows reach experiment execution without subprocess crash
+
+### Phase 7: Wire Intelligence Subsystem to Engine
+**Goal**: Connect all intelligence modules (baselines, diagnostics, stagnation, multi-draft, journal) to the engine runtime loop
+**Depends on**: Phase 6
+**Requirements**: INTL-01, INTL-02, INTL-03, INTL-04, INTL-05, CORE-08, INTL-06
+**Gap Closure**: Closes P2 gaps from v1.0 audit — intelligence modules that exist and pass tests but are never called
+**Success Criteria** (what must be TRUE):
+  1. `compute_baselines()` and `passes_baseline_gate()` called programmatically during engine loop (not just CLAUDE.md text rules)
+  2. `diagnose_regression/classification()` called after experiments and output injected into agent context
+  3. `check_stagnation()` and `trigger_stagnation_branch()` called when `consecutive_reverts` threshold reached
+  4. `select_best_draft()` called during multi-draft start phase
+  5. `append_journal_entry()` and `get_last_diff()` called after each experiment to persist knowledge
+
+### Phase 8: Register Domain Plugins + Swarm CLI
+**Goal**: Register DL/FT plugins in scaffold.py and add swarm CLI entry point so all Phase 5 features are reachable
+**Depends on**: Phase 6
+**Requirements**: DL-01, DL-02, DL-03, DL-04, DL-05, FT-01, FT-02, FT-03, FT-04, FT-05, SWARM-01, SWARM-02, SWARM-03, SWARM-04
+**Gap Closure**: Closes P1 gaps from v1.0 audit — Phase 5 features that are implemented but unreachable
+**Success Criteria** (what must be TRUE):
+  1. `get_plugin('deeplearning')` returns `DeepLearningPlugin` without KeyError
+  2. `get_plugin('finetuning')` returns `FineTuningPlugin` without KeyError
+  3. CLI accepts `--swarm` / `--n-agents` flags and invokes `SwarmManager`
+  4. `verify_best_result()` called within `SwarmManager.run()` after agents complete
+
+### Phase 9: Wire Simple Mode Task Propagation
+**Goal**: Propagate auto-detected task type from dataset profiler through to plugin settings so simple mode works correctly
+**Depends on**: Phase 6
+**Requirements**: UX-01, TABL-03
+**Gap Closure**: Closes P3 gaps from v1.0 audit — simple mode task type not propagated
+**Success Criteria** (what must be TRUE):
+  1. `profile_dataset()` result (task, csv_path, target_column) propagated to `plugin_settings`
+  2. `TabularPlugin.scaffold()` renders `train.py` with correct task type (not hardcoded classification)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (7, 8, 9 can run in parallel after 6)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Core Engine + Plugin Infrastructure | 3/3 | Complete   | 2026-03-19 |
-| 2. Tabular Plugin + Experiment Intelligence | 2/3 | In Progress|  |
+| 2. Tabular Plugin + Experiment Intelligence | 3/3 | Complete   | 2026-03-19 |
 | 3. Scaffold, CLI + Run Engine | 3/3 | Complete   | 2026-03-20 |
 | 4. E2E Validation + UX | 2/2 | Complete   | 2026-03-20 |
 | 5. Domain Plugins + Swarm | 3/3 | Complete   | 2026-03-20 |
+| 6. Fix Engine Subprocess Flags | 0/0 | Pending    |  |
+| 7. Wire Intelligence Subsystem | 0/0 | Pending    |  |
+| 8. Register Domain Plugins + Swarm CLI | 0/0 | Pending    |  |
+| 9. Wire Simple Mode Task Propagation | 0/0 | Pending    |  |
