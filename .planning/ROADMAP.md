@@ -112,7 +112,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Core Engine + Plugin Infrastructure | 3/3 | Complete   | 2026-03-19 |
-| 2. Tabular Plugin + Experiment Intelligence | 0/3 | Not started | - |
+| 2. Tabular Plugin + Experiment Intelligence | 2/3 | In Progress|  |
 | 3. Scaffold, CLI + Run Engine | 0/3 | Not started | - |
 | 4. E2E Validation + UX | 0/2 | Not started | - |
 | 5. Domain Plugins + Swarm | 0/3 | Not started | - |
