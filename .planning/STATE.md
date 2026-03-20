@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05-02-PLAN.md (Fine-Tuning Plugin)
-last_updated: "2026-03-20T02:41:45.192Z"
+stopped_at: Completed 06-01-PLAN.md (Fix Engine Subprocess Flags)
+last_updated: "2026-03-20T03:10:14.167Z"
 last_activity: 2026-03-20 -- Completed 05-03 (Swarm Mode)
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 14
-  completed_plans: 14
+  total_phases: 9
+  completed_phases: 6
+  total_plans: 15
+  completed_plans: 15
   percent: 100
 ---
 
@@ -54,6 +54,7 @@ Progress: [██████████] 100%
 - Trend: Stable at ~4 min/plan
 | Phase 05 P01 | 4min | 3 tasks | 5 files |
 | Phase 05 P02 | 5min | 3 tasks | 4 files |
+| Phase 06 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,9 @@ Recent decisions affecting current work:
 - [05-02]: All peft/trl/bitsandbytes imports lazy (in-method) for GPU-free import
 - [05-02]: LoRA config targets all-linear modules for broad adapter coverage
 - [05-02]: Template variables as Python constants (LORA_R, LORA_ALPHA) for readable rendered train.py
+- [Phase 06]: Read CLAUDE.md via Path.read_text() inline rather than passing file path to CLI
+- [Phase 06]: Omit --append-system-prompt entirely when CLAUDE.md missing (graceful skip)
+- [Phase 06]: Keep max_turns_per_experiment in Config for forward compatibility, stop passing to CLI
 
 ### Pending Todos
 
@@ -122,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T02:36:11Z
-Stopped at: Completed 05-02-PLAN.md (Fine-Tuning Plugin)
+Last session: 2026-03-20T03:10:14.163Z
+Stopped at: Completed 06-01-PLAN.md (Fix Engine Subprocess Flags)
 Resume file: None
