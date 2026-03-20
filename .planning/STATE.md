@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 11-01-PLAN.md (Fix Tabular Output + Stagnation Guard)
-last_updated: "2026-03-20T21:48:00.282Z"
-last_activity: 2026-03-20 -- Completed 11-01 (Fix Tabular Output + Stagnation Guard)
+stopped_at: Completed 12-01-PLAN.md (Wire Plugin Validation + Task Type Mapping)
+last_updated: "2026-03-20T22:04:14Z"
+last_activity: 2026-03-20 -- Completed 12-01 (Wire Plugin Validation + Task Type Mapping)
 progress:
   total_phases: 13
-  completed_phases: 11
-  total_plans: 22
-  completed_plans: 22
-  percent: 92
+  completed_phases: 12
+  total_plans: 23
+  completed_plans: 23
+  percent: 95
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 12: Wire Plugin Validation + Task Type Mapping
+**Current focus:** Phase 12 complete, ready for Phase 13
 
 ## Current Position
 
 Phase: 12 of 13 (Wire Plugin Validation + Task Type Mapping)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-20 -- Phase 11 complete, transitioning to Phase 12
+Plan: 1 of 1 complete
+Status: Phase 12 complete
+Last activity: 2026-03-20 -- Completed 12-01 (Wire Plugin Validation + Task Type Mapping)
 
-Progress: [████████████████████] 22/22 plans (100%)
+Progress: [███████████████████░] 23/23 plans (95%)
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [████████████████████] 22/22 p
 | Phase 09 P01 | 3min | 2 tasks | 5 files |
 | Phase 10 P01 | 2min | 2 tasks | 6 files |
 | Phase 11 P01 | 4min | 2 tasks | 7 files |
+| Phase 12 P01 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -138,6 +139,9 @@ Recent decisions affecting current work:
 - [Phase 10]: Use plugin_settings csv_path/target_column to feed prepare.load_data()+split_data() in _compute_baselines()
 - [11-01]: Return None from trigger_stagnation_branch instead of raising ValueError for graceful degradation
 - [11-01]: Output Format section added to base_claude.md.j2 (all domains) not just tabular-specific template
+- [12-01]: Task mapping mutates config in-place (established pattern from CLI override)
+- [12-01]: Mapping runs before validation so profiler outputs pass DL validation
+- [12-01]: Fixed test_scaffold_finetuning_domain to use valid FT config (metric+model_name)
 
 ### Pending Todos
 
@@ -150,5 +154,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Phase 11 complete, ready to plan Phase 12
+Stopped at: Completed 12-01-PLAN.md
 Resume file: None

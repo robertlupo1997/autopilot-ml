@@ -43,7 +43,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **DL-01**: Deep learning plugin handles image classification, text classification, and custom architecture training with PyTorch
 - [x] **DL-02**: Plugin manages GPU utilization, memory limits, and training time budgets
-- [ ] **DL-03**: Plugin supports learning rate scheduling, early stopping, and gradient clipping as protocol rules
+- [x] **DL-03**: Plugin supports learning rate scheduling, early stopping, and gradient clipping as protocol rules
 - [x] **DL-04**: Plugin generates domain-specific CLAUDE.md protocol with deep learning rules and anti-patterns
 - [x] **DL-05**: Fixed time budget per training run prevents runaway GPU consumption
 
@@ -52,7 +52,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **FT-01**: Fine-tuning plugin handles LoRA/QLoRA fine-tuning of open models (Llama, Mistral, etc.) via PEFT/TRL
 - [x] **FT-02**: Plugin manages VRAM allocation, quantization config, and LoRA rank/alpha selection
 - [x] **FT-03**: Plugin supports evaluation metrics for generative tasks (perplexity, ROUGE, task-specific eval)
-- [ ] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
+- [x] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
 - [x] **FT-05**: Plugin handles dataset formatting (chat templates, instruction format) and train/eval splits
 
 ### Guardrails & Reliability
@@ -132,13 +132,13 @@ Deferred to future release.
 | TABL-05 | Phase 2 | Complete |
 | DL-01 | Phase 8 | Complete |
 | DL-02 | Phase 8 | Complete |
-| DL-03 | Phase 12 | Pending |
+| DL-03 | Phase 12 | Complete |
 | DL-04 | Phase 8 | Complete |
 | DL-05 | Phase 8 | Complete |
 | FT-01 | Phase 8 | Complete |
 | FT-02 | Phase 8 | Complete |
 | FT-03 | Phase 8 | Complete |
-| FT-04 | Phase 12 | Pending |
+| FT-04 | Phase 12 | Complete |
 | FT-05 | Phase 8 | Complete |
 | GUARD-01 | Phase 3 | Complete |
 | GUARD-02 | Phase 3 | Complete |
