@@ -23,6 +23,7 @@ class SessionState:
     total_keeps: int = 0
     total_reverts: int = 0
     run_id: str = ""
+    cost_spent_usd: float = 0.0
 
     def to_json(self, path: Path) -> None:
         """Atomic write: write to .tmp file then rename.
