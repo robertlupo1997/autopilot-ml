@@ -203,10 +203,10 @@ Plans:
   2. Profiler task types (`classification`/`regression`) mapped to DL types (`image_classification`/`text_classification`) before passing to DL plugin
   3. FineTuningPlugin rejects missing `model_name` with actionable error message
   4. DL/FT simple mode renders correct model architecture for detected task type
-**Plans**: 0 plans
+**Plans**: 1 plan
 
 Plans:
-- (none yet — run `/gsd:plan-phase 12`)
+- [ ] 12-01-PLAN.md -- Wire validate_config() gate + task type mapping in scaffold (FT-04, DL-03, UX-01, TABL-01, DL-01, FT-01)
 
 ### Phase 13: Wire Dead Code + Rich Profile Display
 **Goal**: Connect orphaned functions (tag_best, publish_result) and surface rich dataset profile data in CLI output
@@ -218,7 +218,7 @@ Plans:
   2. `publish_result()` called from swarm agent completion path (not just protocol text)
   3. CLI displays missing_pct, numeric_features, categorical_features, and leakage_warnings from DatasetProfile
   4. Git tag `best-{run_id}` exists on the best experiment commit after a successful session
-**Plans**: 0 plans
+**Plans**: 1 plan
 
 Plans:
 - (none yet — run `/gsd:plan-phase 13`)
@@ -241,5 +241,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 9. Wire Simple Mode Task Propagation | 1/1 | Complete   | 2026-03-20 |
 | 10. Fix Runtime Wiring Bugs | 1/1 | Complete    | 2026-03-20 |
 | 11. Fix Tabular Output + Stagnation Guard | 1/1 | Complete    | 2026-03-20 |
-| 12. Wire Plugin Validation + Task Mapping | 0/0 | Planned | — |
+| 12. Wire Plugin Validation + Task Mapping | 0/1 | In Progress | — |
 | 13. Wire Dead Code + Rich Profile Display | 0/0 | Planned | — |
