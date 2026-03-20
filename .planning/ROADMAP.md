@@ -236,7 +236,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 14-01-PLAN.md -- Fix _build_agent_command flags + setup CLAUDE.md copy + state.json template (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
+- [x] 14-01-PLAN.md -- Fix _build_agent_command flags + setup CLAUDE.md copy + state.json template (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
 
 ### Phase 15: Fix FT Simple Mode Metric Mapping
 **Goal**: Add finetuning domain to task type mapping and set valid default metric so `--domain finetuning` simple mode works without ValueError
@@ -282,6 +282,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 11. Fix Tabular Output + Stagnation Guard | 1/1 | Complete    | 2026-03-20 |
 | 12. Wire Plugin Validation + Task Mapping | 1/1 | Complete    | 2026-03-20 |
 | 13. Wire Dead Code + Rich Profile Display | 1/1 | Complete    | 2026-03-20 |
-| 14. Fix Swarm Agent Subprocess | 0/1 | Planned     | - |
+| 14. Fix Swarm Agent Subprocess | 1/1 | Complete    | 2026-03-20 |
 | 15. Fix FT Simple Mode Metric Mapping | 0/0 | Planned     | - |
 | 16. Wire Template Runtime Artifacts | 0/0 | Planned     | - |

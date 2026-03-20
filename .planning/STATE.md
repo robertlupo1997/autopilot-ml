@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-03-20T22:37:38.483Z"
-last_activity: 2026-03-20 -- Completed 13-01 (Wire Dead Code + Rich Profile)
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-20T23:10:08Z"
+last_activity: 2026-03-20 -- Completed 14-01 (Fix Swarm Agent Subprocess)
 progress:
-  total_phases: 13
-  completed_phases: 13
-  total_plans: 24
-  completed_plans: 24
+  total_phases: 16
+  completed_phases: 14
+  total_plans: 25
+  completed_plans: 25
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 13 complete -- all phases done
+**Current focus:** Phase 14 complete -- swarm agent subprocess fixed
 
 ## Current Position
 
-Phase: 13 of 13 (Wire Dead Code + Rich Profile)
+Phase: 14 of 16 (Fix Swarm Agent Subprocess)
 Plan: 1 of 1 complete
-Status: Phase 13 complete -- milestone complete
-Last activity: 2026-03-20 -- Completed 13-01 (Wire Dead Code + Rich Profile)
+Status: Phase 14 complete
+Last activity: 2026-03-20 -- Completed 14-01 (Fix Swarm Agent Subprocess)
 
-Progress: [██████████] 24/24 plans (100%)
+Progress: [████████░░] 25/27 plans (93%)
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Progress: [██████████] 24/24 plans (100%)
 | Phase 11 P01 | 4min | 2 tasks | 7 files |
 | Phase 12 P01 | 3min | 2 tasks | 2 files |
 | Phase 13 P01 | 4min | 2 tasks | 6 files |
+| Phase 14 P01 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,9 @@ Recent decisions affecting current work:
 - [12-01]: Mapping runs before validation so profiler outputs pass DL validation
 - [12-01]: Fixed test_scaffold_finetuning_domain to use valid FT config (metric+model_name)
 - [Phase 13]: Tag name format: best-{run_id} with unknown fallback, ValueError caught for resume idempotency
+- [14-01]: Use child_config.budget_usd (total session budget) for --max-budget-usd, not per_experiment_budget_usd
+- [14-01]: Read CLAUDE.md content inline via Path.read_text() for --append-system-prompt (matching engine.py pattern)
+- [14-01]: Omit --append-system-prompt entirely when CLAUDE.md missing (graceful skip)
 
 ### Pending Todos
 
@@ -155,6 +159,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T22:31:28.956Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-03-20T23:10:08Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None
