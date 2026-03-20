@@ -126,7 +126,12 @@ class TestScaffoldConfigToml:
 
 
 class TestScaffoldValidation:
-    """scaffold_experiment raises on invalid inputs."""
+    """scaffold_experiment raises on invalid inputs and configs."""
+
+    def setup_method(self):
+        """Clear plugin registry before each test."""
+        from mlforge.plugins import _registry
+        _registry.clear()
 
     def test_nonexistent_dataset_raises(self, config, target_dir):
         with pytest.raises(FileNotFoundError):
@@ -136,6 +141,60 @@ class TestScaffoldValidation:
                 target_dir=target_dir,
                 run_id="run-1",
             )
+
+    def test_rejects_invalid_tabular_metric(self, dataset, target_dir):
+        cfg = Config(domain="tabular", metric="nonexistent")
+        with pytest.raises(ValueError, match=r"Invalid config.*tabular"):
+            scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+
+    def test_rejects_ft_without_model_name(self, dataset, target_dir):
+        cfg = Config(domain="finetuning", metric="perplexity")
+        with pytest.raises(ValueError, match="model_name"):
+            scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+
+    def test_rejects_dl_invalid_task(self, dataset, target_dir):
+        cfg = Config(domain="deeplearning", metric="accuracy", plugin_settings={"task": "invalid_task"})
+        with pytest.raises(ValueError, match="Unknown deeplearning task"):
+            scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+
+    def test_valid_config_scaffolds_ok(self, dataset, target_dir):
+        cfg = Config(domain="tabular")
+        result = scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert result == target_dir
+
+
+class TestTaskTypeMapping:
+    """_map_task_for_domain maps profiler task types to domain-specific types."""
+
+    def setup_method(self):
+        """Clear plugin registry before each test."""
+        from mlforge.plugins import _registry
+        _registry.clear()
+
+    def test_dl_classification_mapped_to_image_classification(self, dataset, target_dir):
+        cfg = Config(domain="deeplearning", metric="accuracy", plugin_settings={"task": "classification"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.plugin_settings["task"] == "image_classification"
+
+    def test_dl_regression_mapped_to_custom(self, dataset, target_dir):
+        cfg = Config(domain="deeplearning", metric="accuracy", plugin_settings={"task": "regression"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.plugin_settings["task"] == "custom"
+
+    def test_dl_native_task_not_remapped(self, dataset, target_dir):
+        cfg = Config(domain="deeplearning", metric="accuracy", plugin_settings={"task": "text_classification"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.plugin_settings["task"] == "text_classification"
+
+    def test_tabular_task_passthrough(self, dataset, target_dir):
+        cfg = Config(domain="tabular", plugin_settings={"task": "classification"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.plugin_settings["task"] == "classification"
+
+    def test_ft_task_no_mapping(self, dataset, target_dir):
+        cfg = Config(domain="finetuning", metric="perplexity", plugin_settings={"task": "classification", "model_name": "test/model"})
+        scaffold_experiment(config=cfg, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        assert cfg.plugin_settings["task"] == "classification"
 
 
 class TestPluginRegistrationDispatch:
