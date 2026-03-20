@@ -7,6 +7,7 @@ This is the heart of mlforge -- the loop that runs overnight.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import signal
 import subprocess
@@ -18,10 +19,20 @@ from mlforge.config import Config
 from mlforge.export import export_artifact
 from mlforge.git_ops import GitManager
 from mlforge.guardrails import CostTracker, DeviationHandler, ResourceGuardrails
+from mlforge.intelligence.drafts import ALGORITHM_FAMILIES
+from mlforge.intelligence.stagnation import check_stagnation, trigger_stagnation_branch
+from mlforge.journal import (
+    JournalEntry,
+    append_journal_entry,
+    get_last_diff,
+    load_journal,
+    render_journal_markdown,
+)
 from mlforge.progress import LiveProgress
 from mlforge.results import ExperimentResult, ResultsTracker
 from mlforge.retrospective import generate_retrospective
 from mlforge.state import SessionState
+from mlforge.tabular.baselines import compute_baselines, passes_baseline_gate
 
 
 class RunEngine:
@@ -49,6 +60,7 @@ class RunEngine:
         self.progress = LiveProgress(config, state)
         self._checkpoint_dir = experiment_dir / ".mlforge"
         self._journal_path = experiment_dir / "experiments.md"
+        self._journal_jsonl_path = experiment_dir / "experiments.jsonl"
         self._results_path = experiment_dir / "results.jsonl"
         self.results_tracker = ResultsTracker(self._results_path)
         self._stop_requested = False
@@ -70,6 +82,7 @@ class RunEngine:
         try:
             with self.progress:
                 try:
+                    self.state.baselines = self._compute_baselines()
                     while (
                         not self.guardrails.should_stop(self.state)
                         and not self._stop_requested
@@ -187,8 +200,22 @@ class RunEngine:
         action = self.deviation.handle(result_for_handler, self.state)
         exp_id = self.state.experiment_count + 1
         metric_value = result_for_handler.get("metric_value")
+        prev_best = self.state.best_metric
 
         if action == "keep":
+            # Baseline gate: check BEFORE committing
+            if self.state.baselines and metric_value is not None:
+                if not passes_baseline_gate(
+                    metric_value, self.state.baselines, self.config.direction
+                ):
+                    # Downgrade to revert -- did not beat baselines
+                    self.git.revert_to_last_commit()
+                    self.state.total_reverts += 1
+                    self.state.consecutive_reverts += 1
+                    self._write_journal(exp_id, "revert", metric_value, None, prev_best=prev_best)
+                    self._record_result(exp_id, "revert", metric_value, None)
+                    return "revert"
+
             commit_hash = self.git.commit_experiment(
                 f"experiment-{exp_id}: improvement",
                 ["."],
@@ -197,6 +224,7 @@ class RunEngine:
             self.state.best_commit = commit_hash
             self.state.total_keeps += 1
             self.state.consecutive_reverts = 0
+            self._write_journal(exp_id, "keep", metric_value, commit_hash, prev_best=prev_best)
             self._record_result(exp_id, "keep", metric_value, commit_hash)
             return "keep"
 
@@ -204,7 +232,17 @@ class RunEngine:
             self.git.revert_to_last_commit()
             self.state.total_reverts += 1
             self.state.consecutive_reverts += 1
+            self._write_journal(exp_id, "revert", metric_value, None, prev_best=prev_best)
             self._record_result(exp_id, "revert", metric_value, None)
+
+            # Stagnation check after revert
+            if check_stagnation(self.state, threshold=self.config.stagnation_threshold):
+                untried = [f for f in ALGORITHM_FAMILIES if f not in self.state.tried_families]
+                if untried:
+                    new_family = untried[0]
+                    trigger_stagnation_branch(self.git, self.state, new_family)
+                    self.state.tried_families.append(new_family)
+
             return "revert"
 
         if action == "retry":
@@ -264,3 +302,73 @@ class RunEngine:
             prompt += f"\n\nExperiment history:\n{journal_content}"
 
         return prompt
+
+    def _compute_baselines(self) -> dict | None:
+        """Compute baselines for tabular domain before the experiment loop.
+
+        Returns:
+            Baselines dict from compute_baselines(), or None if not tabular
+            or prepare.py is missing.
+        """
+        if self.config.domain != "tabular":
+            return None
+
+        prepare_path = self.experiment_dir / "prepare.py"
+        if not prepare_path.exists():
+            return None
+
+        spec = importlib.util.spec_from_file_location("prepare", str(prepare_path))
+        if spec is None or spec.loader is None:
+            return None
+
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        X_train = getattr(mod, "X_train", None)
+        y_train = getattr(mod, "y_train", None)
+        if X_train is None or y_train is None:
+            return None
+
+        task = self.config.plugin_settings.get("task", "classification")
+        self.state.task = task
+        return compute_baselines(X_train, y_train, self.config.metric, task)
+
+    def _write_journal(
+        self,
+        exp_id: int,
+        status: str,
+        metric_value: float | None,
+        commit_hash: str | None,
+        hypothesis: str = "",
+        prev_best: float | None = None,
+    ) -> None:
+        """Write a journal entry and re-render experiments.md.
+
+        Args:
+            exp_id: Experiment number.
+            status: "keep", "revert", or "crash".
+            metric_value: Observed metric value.
+            commit_hash: Git commit hash if kept.
+            hypothesis: What was tried.
+            prev_best: Previous best metric for delta computation.
+        """
+        diff = get_last_diff(self.experiment_dir) if status == "keep" else None
+        delta = None
+        if metric_value is not None and prev_best is not None:
+            delta = metric_value - prev_best
+
+        entry = JournalEntry(
+            experiment_id=exp_id,
+            hypothesis=hypothesis,
+            result=f"Experiment {exp_id}: {status}",
+            metric_value=metric_value,
+            metric_delta=delta,
+            commit_hash=commit_hash,
+            status=status,
+            diff=diff,
+        )
+        append_journal_entry(self._journal_jsonl_path, entry)
+
+        # Re-render markdown from JSONL
+        entries = load_journal(self._journal_jsonl_path)
+        self._journal_path.write_text(render_journal_markdown(entries))
