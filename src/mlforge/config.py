@@ -22,6 +22,11 @@ class Config:
     direction: str = "maximize"
     budget_minutes: int = 60
     budget_experiments: int = 50
+    budget_usd: float = 5.0
+    per_experiment_timeout_sec: int = 300
+    per_experiment_budget_usd: float = 1.0
+    max_turns_per_experiment: int = 30
+    model: str | None = None
     frozen_files: list[str] = field(default_factory=lambda: ["prepare.py"])
     mutable_files: list[str] = field(default_factory=lambda: ["train.py"])
     plugin_settings: dict = field(default_factory=dict)
@@ -53,6 +58,11 @@ class Config:
             direction=data.get("metric", {}).get("direction", "maximize"),
             budget_minutes=data.get("budget", {}).get("minutes", 60),
             budget_experiments=data.get("budget", {}).get("experiments", 50),
+            budget_usd=data.get("budget", {}).get("usd", 5.0),
+            per_experiment_timeout_sec=data.get("budget", {}).get("per_experiment_timeout_sec", 300),
+            per_experiment_budget_usd=data.get("budget", {}).get("per_experiment_budget_usd", 1.0),
+            max_turns_per_experiment=data.get("budget", {}).get("max_turns", 30),
+            model=data.get("model"),
             frozen_files=data.get("files", {}).get("frozen", ["prepare.py"]),
             mutable_files=data.get("files", {}).get("mutable", ["train.py"]),
             plugin_settings=data.get("plugin", {}),
