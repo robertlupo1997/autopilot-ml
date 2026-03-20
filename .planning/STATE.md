@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 03-02-PLAN.md (Guardrails + Cost Tracking + Live Progress)
-last_updated: "2026-03-20T00:43:41.000Z"
-last_activity: 2026-03-20 -- Completed 03-02 (Guardrails + Cost Tracking + Live Progress)
+stopped_at: Completed 03-03-PLAN.md (Run Engine + CLI Wiring)
+last_updated: "2026-03-20T00:51:01.000Z"
+last_activity: 2026-03-20 -- Completed 03-03 (Run Engine + CLI Wiring)
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 9
-  completed_plans: 8
-  percent: 89
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 3 of 5 (Scaffold, CLI + Run Engine)
-Plan: 2 of 3 in current phase
-Status: Plan 03-02 Complete
-Last activity: 2026-03-20 -- Completed 03-02 (Guardrails + Cost Tracking + Live Progress)
+Plan: 3 of 3 in current phase
+Status: Phase 03 Complete
+Last activity: 2026-03-20 -- Completed 03-03 (Run Engine + CLI Wiring)
 
-Progress: [████████░░] 89%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -45,7 +45,7 @@ Progress: [████████░░] 89%
 |-------|-------|-------|----------|
 | 01-core-engine | 3 | 17 min | 6 min |
 | 02-tabular-plugin | 3 | 6 min | 2 min |
-| 03-scaffold-cli-run-engine | 2 | 6 min | 3 min |
+| 03-scaffold-cli-run-engine | 3 | 10 min | 3 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-01 (10 min), 01-02 (4 min), 01-03 (3 min), 02-01 (3 min), 02-02 (3 min)
@@ -88,6 +88,10 @@ Recent decisions affecting current work:
 - [03-02]: DeviationHandler resets retry count on keep (not on revert) to prevent retry leak
 - [03-02]: min_free_disk_gb defaults to 1.0 GB as instance attribute (not Config field)
 - [03-01]: TOML serialization via string formatting (no tomli_w dependency)
+- [03-03]: RunEngine extracts metric_value from nested JSON result string (claude -p envelope)
+- [03-03]: OOM retry recursively calls _process_result with fresh _run_one_experiment
+- [03-03]: SIGINT handler sets _stop_requested flag for clean checkpoint save in finally block
+- [03-03]: CLI resume returns error 1 if no checkpoint found (not silent failure)
 
 ### Pending Todos
 
@@ -99,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T00:43:41Z
-Stopped at: Completed 03-02-PLAN.md (Guardrails + Cost Tracking + Live Progress)
+Last session: 2026-03-20T00:51:01Z
+Stopped at: Completed 03-03-PLAN.md (Run Engine + CLI Wiring)
 Resume file: None

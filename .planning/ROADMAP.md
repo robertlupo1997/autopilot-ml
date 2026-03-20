@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Core Engine + Plugin Infrastructure** - State management, git ops, checkpoint/resume, config system, plugin protocol, and template rendering (completed 2026-03-19)
 - [ ] **Phase 2: Tabular Plugin + Experiment Intelligence** - Tabular ML plugin validating the architecture, plus baselines, diagnostics, stagnation, and multi-draft
-- [ ] **Phase 3: Scaffold, CLI + Run Engine** - User entry point, experiment loop orchestration, guardrails, and overnight reliability
+- [x] **Phase 3: Scaffold, CLI + Run Engine** - User entry point, experiment loop orchestration, guardrails, and overnight reliability (completed 2026-03-20)
 - [ ] **Phase 4: E2E Validation + UX** - End-to-end tabular validation on real data, user experience modes, artifact export, and run summaries
 - [ ] **Phase 5: Domain Plugins + Swarm** - Deep learning plugin, LLM fine-tuning plugin, and multi-agent swarm mode
 
@@ -68,8 +68,8 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md -- CLI entry point + experiment scaffolding (CORE-01, GUARD-01)
-- [ ] 03-02-PLAN.md -- Guardrails + cost tracking + deviation handling + live progress (GUARD-02, GUARD-04, GUARD-05, INTL-07, CORE-09)
-- [ ] 03-03-PLAN.md -- Run engine + CLI wiring (CORE-02, GUARD-03)
+- [x] 03-02-PLAN.md -- Guardrails + cost tracking + deviation handling + live progress (GUARD-02, GUARD-04, GUARD-05, INTL-07, CORE-09)
+- [x] 03-03-PLAN.md -- Run engine + CLI wiring (CORE-02, GUARD-03)
 
 ### Phase 4: E2E Validation + UX
 **Goal**: The full tabular pipeline is validated end-to-end on real data, and user experience features (simple/expert modes, artifact export, run summaries) are complete
@@ -113,6 +113,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Core Engine + Plugin Infrastructure | 3/3 | Complete   | 2026-03-19 |
 | 2. Tabular Plugin + Experiment Intelligence | 2/3 | In Progress|  |
-| 3. Scaffold, CLI + Run Engine | 2/3 | In Progress|  |
+| 3. Scaffold, CLI + Run Engine | 3/3 | Complete   | 2026-03-20 |
 | 4. E2E Validation + UX | 0/2 | Not started | - |
 | 5. Domain Plugins + Swarm | 0/3 | Not started | - |

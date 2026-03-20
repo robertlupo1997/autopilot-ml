@@ -10,7 +10,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Core Engine
 
 - [x] **CORE-01**: User can install mlforge via pip and run `mlforge <dataset> <goal>` to start an autonomous experiment session
-- [ ] **CORE-02**: Agent executes keep/revert experiment loop — modifies code, evaluates, commits on improvement, resets on failure
+- [x] **CORE-02**: Agent executes keep/revert experiment loop — modifies code, evaluates, commits on improvement, resets on failure
 - [x] **CORE-03**: Protocol prompt system injects domain-specific CLAUDE.md templates into agent context at session start
 - [x] **CORE-04**: State tracking persists experiment progress (current best, budget remaining, experiment count) across context resets
 - [x] **CORE-05**: Checkpoint/resume allows crashed sessions to restart from last successful experiment
@@ -59,7 +59,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **GUARD-01**: Frozen file zone enforcement prevents agent from modifying infrastructure files (prepare.py, evaluate.py)
 - [x] **GUARD-02**: Resource guardrails enforce cost caps, GPU hour limits, and disk usage boundaries
-- [ ] **GUARD-03**: Crash recovery automatically saves state before each experiment so sessions can resume
+- [x] **GUARD-03**: Crash recovery automatically saves state before each experiment so sessions can resume
 - [x] **GUARD-04**: Live progress monitoring shows current experiment, best metric so far, and budget remaining in terminal
 - [x] **GUARD-05**: Cost tracking records API token usage per experiment with running total and budget cap enforcement
 - [ ] **GUARD-06**: Run summary generated at session end: key findings, best approach, failed hypotheses, next directions
@@ -108,7 +108,7 @@ Deferred to future release.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CORE-01 | Phase 3 | Complete |
-| CORE-02 | Phase 3 | Pending |
+| CORE-02 | Phase 3 | Complete |
 | CORE-03 | Phase 1 | Complete |
 | CORE-04 | Phase 1 | Complete |
 | CORE-05 | Phase 1 | Complete |
@@ -142,7 +142,7 @@ Deferred to future release.
 | FT-05 | Phase 5 | Pending |
 | GUARD-01 | Phase 3 | Complete |
 | GUARD-02 | Phase 3 | Complete |
-| GUARD-03 | Phase 3 | Pending |
+| GUARD-03 | Phase 3 | Complete |
 | GUARD-04 | Phase 3 | Complete |
 | GUARD-05 | Phase 3 | Complete |
 | GUARD-06 | Phase 4 | Pending |
