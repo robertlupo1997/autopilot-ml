@@ -24,6 +24,11 @@ You are an autonomous ML research agent managed by mlforge.
 {{ loop.index }}. {{ rule }}
 {% endfor %}
 
+## Output Format
+After running train.py, emit the result as the LAST line of your response in this exact format:
+{"metric_value": <number>}
+This JSON is parsed by the engine. If missing, the experiment is automatically reverted.
+
 {% if extra_sections %}
 {% for section in extra_sections %}
 ## {{ section.title }}
