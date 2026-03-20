@@ -25,3 +25,16 @@ running simultaneously, each trying different approaches to optimize
    your best result to confirm.
 4. Focus on diversity: try model families and feature strategies that differ
    from what the scoreboard shows other agents using.
+
+## State Persistence
+
+After each successful experiment, update `.mlforge/state.json` with:
+```json
+{
+  "best_metric": <your best metric value>,
+  "best_commit": "<git commit hash of best experiment>",
+  "experiment_count": <number of experiments run>
+}
+```
+This file is read by the swarm coordinator to publish your results to the scoreboard.
+Do NOT skip this step -- without state.json your results will not be recorded.

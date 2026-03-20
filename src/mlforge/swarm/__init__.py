@@ -7,6 +7,7 @@ for file-locked coordination between agents.
 from __future__ import annotations
 
 import json
+import shutil
 import signal
 import subprocess
 from dataclasses import replace
@@ -82,6 +83,13 @@ class SwarmManager:
             wt_path = self.swarm_dir / f"agent-{i}"
             repo.git.worktree("add", str(wt_path), "HEAD")
             self._worktree_paths.append(wt_path)
+
+        # Copy CLAUDE.md and create .mlforge/ in each worktree
+        claude_md_src = self.experiment_dir / "CLAUDE.md"
+        for wt_path in self._worktree_paths:
+            if claude_md_src.exists():
+                shutil.copy2(claude_md_src, wt_path / "CLAUDE.md")
+            (wt_path / ".mlforge").mkdir(parents=True, exist_ok=True)
 
         return list(self._worktree_paths)
 
@@ -178,7 +186,21 @@ class SwarmManager:
             budget_experiments=child_config.budget_experiments,
         )
         wt_path = self._worktree_paths[agent_index]
-        return ["claude", "-p", prompt]
+        claude_md_path = wt_path / "CLAUDE.md"
+        system_prompt = claude_md_path.read_text() if claude_md_path.exists() else ""
+
+        cmd = [
+            "claude",
+            "-p", prompt,
+            "--output-format", "json",
+            "--dangerously-skip-permissions",
+            "--max-budget-usd", str(child_config.budget_usd),
+        ]
+
+        if system_prompt:
+            cmd.extend(["--append-system-prompt", system_prompt])
+
+        return cmd
 
     def teardown(self) -> None:
         """Remove all worktrees and clean up.
