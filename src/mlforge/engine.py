@@ -120,6 +120,14 @@ class RunEngine:
                     retro_path.write_text(retrospective)
                     self.progress.log(f"Retrospective written to {retro_path}")
 
+                    # Tag best experiment
+                    if self.state.best_commit:
+                        tag_name = f"best-{getattr(self.state, 'run_id', None) or 'unknown'}"
+                        try:
+                            self.git.tag_best(tag_name, f"Best experiment: {self.state.best_metric}")
+                        except ValueError:
+                            pass  # Tag already exists (resume case)
+
                     self.git.close()
         finally:
             signal.signal(signal.SIGINT, prev_handler)

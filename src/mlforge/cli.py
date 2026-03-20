@@ -166,10 +166,13 @@ def main(argv: list[str] | None = None) -> int:
                 config.plugin_settings["target_column"] = target_column
                 if profile.date_columns:
                     config.plugin_settings["date_column"] = profile.date_columns[0]
-                print(
-                    f"Auto-detected: {profile.task} task, metric={profile.metric}, "
-                    f"{profile.n_rows} rows, {profile.n_features} features"
-                )
+                print(f"Auto-detected: {profile.task} task, metric={profile.metric}")
+                print(f"  Rows: {profile.n_rows}, Features: {profile.n_features}")
+                print(f"  Numeric: {len(profile.numeric_features)}, Categorical: {len(profile.categorical_features)}")
+                print(f"  Missing: {profile.missing_pct:.1f}%")
+                if profile.leakage_warnings:
+                    for warning in profile.leakage_warnings:
+                        print(f"  WARNING: {warning}")
         except Exception:
             # If profiling fails, fall back to defaults silently
             pass

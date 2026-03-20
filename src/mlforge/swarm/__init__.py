@@ -6,6 +6,7 @@ for file-locked coordination between agents.
 
 from __future__ import annotations
 
+import json
 import signal
 import subprocess
 from dataclasses import replace
@@ -108,6 +109,27 @@ class SwarmManager:
             # Wait for all to complete
             for proc in self._processes:
                 proc.wait()
+
+            # Publish results from each agent's state.json
+            for i, _proc in enumerate(self._processes):
+                if i < len(self._worktree_paths):
+                    state_path = self._worktree_paths[i] / ".mlforge" / "state.json"
+                    if state_path.exists():
+                        try:
+                            agent_state = json.loads(state_path.read_text())
+                            metric = agent_state.get("best_metric")
+                            commit = agent_state.get("best_commit", "")
+                            if metric is not None:
+                                self.scoreboard.publish_result(
+                                    agent=f"agent-{i}",
+                                    commit=commit or "",
+                                    metric_value=metric,
+                                    elapsed_sec=0.0,
+                                    status="complete",
+                                    description=f"Agent {i} best result",
+                                )
+                        except (json.JSONDecodeError, OSError):
+                            pass  # Agent crashed or state corrupted
 
             best_score, best_agent = self.scoreboard.read_best()
             all_results = self.scoreboard.read_all()
