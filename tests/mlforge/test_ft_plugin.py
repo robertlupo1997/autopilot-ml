@@ -405,3 +405,84 @@ class TestCreateTrainEvalSplit:
         dataset = list(range(100))
         train, eval_ = create_train_eval_split(dataset)
         assert set(train).isdisjoint(set(eval_))
+
+
+# ---------------------------------------------------------------------------
+# ft_train.py.j2 template rendering
+# ---------------------------------------------------------------------------
+
+
+class TestFtTrainTemplate:
+    """ft_train.py.j2 renders valid Python with QLoRA, SFTTrainer, and evaluation."""
+
+    @pytest.fixture
+    def rendered_template(self):
+        from mlforge.templates import get_template_env
+
+        env = get_template_env()
+        template = env.get_template("ft_train.py.j2")
+        return template.render(
+            model_name="meta-llama/Llama-3.2-1B",
+            lora_r=16,
+            lora_alpha=16,
+            metric="perplexity",
+            max_length=512,
+            batch_size=4,
+            learning_rate=2e-4,
+            num_epochs=3,
+            dataset_format="instruction",
+        )
+
+    def test_renders_valid_python(self, rendered_template):
+        compile(rendered_template, "train.py", "exec")
+
+    def test_contains_bitsandbytes_config(self, rendered_template):
+        assert "BitsAndBytesConfig" in rendered_template
+        assert "load_in_4bit=True" in rendered_template
+        assert 'bnb_4bit_quant_type="nf4"' in rendered_template
+
+    def test_contains_lora_config(self, rendered_template):
+        assert "LoraConfig" in rendered_template
+        # LoRA r and alpha are set via constants: LORA_R = 16, LORA_ALPHA = 16
+        assert "LORA_R = 16" in rendered_template
+        assert "LORA_ALPHA = 16" in rendered_template
+        assert "r=LORA_R" in rendered_template
+        assert "lora_alpha=LORA_ALPHA" in rendered_template
+
+    def test_contains_sft_trainer(self, rendered_template):
+        assert "SFTTrainer" in rendered_template
+
+    def test_contains_perplexity_evaluation(self, rendered_template):
+        assert "math.exp" in rendered_template
+
+    def test_contains_rouge_evaluation(self, rendered_template):
+        assert "rouge" in rendered_template.lower()
+
+    def test_contains_save_pretrained(self, rendered_template):
+        assert "save_pretrained" in rendered_template
+
+    def test_contains_json_output(self, rendered_template):
+        assert "json.dumps" in rendered_template
+
+    def test_contains_gradient_checkpointing(self, rendered_template):
+        assert "gradient_checkpointing_enable" in rendered_template
+
+    def test_renders_with_different_model(self):
+        from mlforge.templates import get_template_env
+
+        env = get_template_env()
+        template = env.get_template("ft_train.py.j2")
+        content = template.render(
+            model_name="mistralai/Mistral-7B-v0.3",
+            lora_r=32,
+            lora_alpha=64,
+            metric="rouge1",
+            max_length=1024,
+            batch_size=2,
+            learning_rate=1e-4,
+            num_epochs=5,
+            dataset_format="instruction",
+        )
+        compile(content, "train.py", "exec")
+        assert "mistralai/Mistral-7B-v0.3" in content
+        assert "LORA_R = 32" in content
