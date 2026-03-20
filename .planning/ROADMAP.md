@@ -159,6 +159,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. `profile_dataset()` result (task, csv_path, target_column) propagated to `plugin_settings`
   2. `TabularPlugin.scaffold()` renders `train.py` with correct task type (not hardcoded classification)
+**Plans**: 1 plan
+
+Plans:
+- [ ] 09-01-PLAN.md -- Wire CLI propagation + task-aware template rendering (UX-01, TABL-03)
 
 ## Progress
 
@@ -175,4 +179,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (7, 8
 | 6. Fix Engine Subprocess Flags | 0/1 | Pending    |  |
 | 7. Wire Intelligence Subsystem | 0/2 | Pending    |  |
 | 8. Register Domain Plugins + Swarm CLI | 1/2 | In Progress|  |
-| 9. Wire Simple Mode Task Propagation | 0/0 | Pending    |  |
+| 9. Wire Simple Mode Task Propagation | 0/1 | Pending    |  |
