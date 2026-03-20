@@ -18,7 +18,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CORE-07**: Hook engine (PreToolUse/PostToolUse) intercepts Claude Code tool calls to enforce frozen file zones
 - [x] **CORE-08**: Experiment journal accumulates structured knowledge (hypothesis, result, diff, metric delta) that survives context resets
 - [x] **CORE-09**: Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert)
-- [ ] **CORE-10**: Git-based state management: branch per run, commit per kept experiment, reset on revert, tag best model
+- [x] **CORE-10**: Git-based state management: branch per run, commit per kept experiment, reset on revert, tag best model
 
 ### Experiment Intelligence
 
@@ -66,8 +66,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Multi-Agent
 
-- [ ] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
-- [ ] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
+- [x] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
+- [x] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
 - [x] **SWARM-03**: Budget inheritance prevents spawn explosion — child agents inherit parent's remaining budget
 - [x] **SWARM-04**: Verification agent checks metric improvement claims against actual holdout performance
 
@@ -76,7 +76,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
 - [x] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
 - [x] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
-- [ ] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
+- [x] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
 - [x] **UX-05**: Run retrospective summarizes what approaches worked, what failed, cost analysis, and recommendations for next run
 
 ## v2 Requirements
@@ -116,7 +116,7 @@ Deferred to future release.
 | CORE-07 | Phase 1 | Complete |
 | CORE-08 | Phase 7 | Complete |
 | CORE-09 | Phase 11 | Complete |
-| CORE-10 | Phase 13 | Pending |
+| CORE-10 | Phase 13 | Complete |
 | INTL-01 | Phase 10 | Complete |
 | INTL-02 | Phase 10 | Complete |
 | INTL-03 | Phase 7 | Complete |
@@ -146,14 +146,14 @@ Deferred to future release.
 | GUARD-04 | Phase 3 | Complete |
 | GUARD-05 | Phase 3 | Complete |
 | GUARD-06 | Phase 4 | Complete |
-| SWARM-01 | Phase 13 | Pending |
-| SWARM-02 | Phase 13 | Pending |
+| SWARM-01 | Phase 13 | Complete |
+| SWARM-02 | Phase 13 | Complete |
 | SWARM-03 | Phase 8 | Complete |
 | SWARM-04 | Phase 8 | Complete |
 | UX-01 | Phase 9 | Complete |
 | UX-02 | Phase 4 | Complete |
 | UX-03 | Phase 4 | Complete |
-| UX-04 | Phase 13 | Pending |
+| UX-04 | Phase 13 | Complete |
 | UX-05 | Phase 4 | Complete |
 
 **Coverage:**

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-03-20T22:11:02.288Z"
-last_activity: 2026-03-20 -- Completed 12-01 (Wire Plugin Validation + Task Type Mapping)
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-20T22:31:28.959Z"
+last_activity: 2026-03-20 -- Completed 13-01 (Wire Dead Code + Rich Profile)
 progress:
   total_phases: 13
-  completed_phases: 12
-  total_plans: 23
-  completed_plans: 23
-  percent: 95
+  completed_phases: 13
+  total_plans: 24
+  completed_plans: 24
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 12 complete, ready for Phase 13
+**Current focus:** Phase 13 complete -- all phases done
 
 ## Current Position
 
-Phase: 12 of 13 (Wire Plugin Validation + Task Type Mapping)
+Phase: 13 of 13 (Wire Dead Code + Rich Profile)
 Plan: 1 of 1 complete
-Status: Phase 12 complete
-Last activity: 2026-03-20 -- Completed 12-01 (Wire Plugin Validation + Task Type Mapping)
+Status: Phase 13 complete -- milestone complete
+Last activity: 2026-03-20 -- Completed 13-01 (Wire Dead Code + Rich Profile)
 
-Progress: [███████████████████░] 23/23 plans (95%)
+Progress: [██████████] 24/24 plans (100%)
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [███████████████████░] 23/23 p
 | Phase 10 P01 | 2min | 2 tasks | 6 files |
 | Phase 11 P01 | 4min | 2 tasks | 7 files |
 | Phase 12 P01 | 3min | 2 tasks | 2 files |
+| Phase 13 P01 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -142,6 +143,7 @@ Recent decisions affecting current work:
 - [12-01]: Task mapping mutates config in-place (established pattern from CLI override)
 - [12-01]: Mapping runs before validation so profiler outputs pass DL validation
 - [12-01]: Fixed test_scaffold_finetuning_domain to use valid FT config (metric+model_name)
+- [Phase 13]: Tag name format: best-{run_id} with unknown fallback, ValueError caught for resume idempotency
 
 ### Pending Todos
 
@@ -153,6 +155,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20
-Stopped at: Completed 12-01-PLAN.md
+Last session: 2026-03-20T22:31:28.956Z
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None
