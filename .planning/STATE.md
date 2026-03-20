@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-01-PLAN.md (Wire Simple Mode Task Propagation)
-last_updated: "2026-03-20T11:46:40.994Z"
-last_activity: 2026-03-20 -- Completed 09-01 (Wire Simple Mode Task Propagation)
+stopped_at: Completed 10-01-PLAN.md (Fix Runtime Wiring Bugs)
+last_updated: "2026-03-20T14:16:53.362Z"
+last_activity: 2026-03-20 -- Completed 10-01 (Fix Runtime Wiring Bugs)
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 20
-  completed_plans: 20
+  total_phases: 10
+  completed_phases: 10
+  total_plans: 21
+  completed_plans: 21
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 9: Wire Simple Mode Task Propagation (COMPLETE)
+**Current focus:** Phase 10: Fix Runtime Wiring Bugs (COMPLETE)
 
 ## Current Position
 
-Phase: 9 of 9 (Wire Simple Mode Task Propagation)
+Phase: 10 of 10 (Fix Runtime Wiring Bugs)
 Plan: 1 of 1 in current phase
-Status: 09-01 Complete
-Last activity: 2026-03-20 -- Completed 09-01 (Wire Simple Mode Task Propagation)
+Status: 10-01 Complete
+Last activity: 2026-03-20 -- Completed 10-01 (Fix Runtime Wiring Bugs)
 
 Progress: [██████████] 100%
 
@@ -60,6 +60,7 @@ Progress: [██████████] 100%
 | Phase 08 P01 | 2min | 2 tasks | 2 files |
 | Phase 08 P02 | 3min | 2 tasks | 4 files |
 | Phase 09 P01 | 3min | 2 tasks | 5 files |
+| Phase 10 P01 | 2min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,7 @@ Recent decisions affecting current work:
 - [Phase 08]: Lazy import of verify_best_result inside SwarmManager.run() try block to avoid circular imports
 - [Phase 09]: Default task is classification when plugin_settings has no task key
 - [Phase 09]: csv_path stored as filename only (dataset_path.name) not full path
+- [Phase 10]: Use plugin_settings csv_path/target_column to feed prepare.load_data()+split_data() in _compute_baselines()
 
 ### Pending Todos
 
@@ -144,6 +146,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T11:43:24.767Z
-Stopped at: Completed 09-01-PLAN.md (Wire Simple Mode Task Propagation)
+Last session: 2026-03-20T14:16:53.359Z
+Stopped at: Completed 10-01-PLAN.md (Fix Runtime Wiring Bugs)
 Resume file: None
