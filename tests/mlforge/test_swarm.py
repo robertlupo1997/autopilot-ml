@@ -265,3 +265,52 @@ class TestVerifier:
         sb = SwarmScoreboard(tmp_path / "scoreboard.tsv", direction="maximize")
         result = verify_best_result(tmp_path, sb)
         assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Verifier wiring in SwarmManager.run()
+# ---------------------------------------------------------------------------
+
+class TestVerifierWiringInRun:
+    """SwarmManager.run() calls verify_best_result and includes result in return dict."""
+
+    def test_run_returns_verification_key(self, tmp_path: Path) -> None:
+        config = Config(metric="accuracy", direction="maximize", budget_usd=6.0)
+        sm = SwarmManager(config=config, experiment_dir=tmp_path, n_agents=1)
+        sm._worktree_paths = [tmp_path / ".swarm" / "agent-0"]
+
+        mock_proc = MagicMock()
+        mock_proc.wait.return_value = 0
+
+        with (
+            patch("subprocess.Popen", return_value=mock_proc),
+            patch.object(sm, "create_child_configs", return_value=[config]),
+            patch.object(sm, "_build_agent_command", return_value=["echo", "test"]),
+            patch.object(sm.scoreboard, "read_best", return_value=(0.95, "agent-0")),
+            patch.object(sm.scoreboard, "read_all", return_value=[]),
+            patch("mlforge.swarm.verifier.verify_best_result", return_value={"match": True}),
+        ):
+            result = sm.run()
+        assert "verification" in result
+
+    def test_run_calls_verify_best_result(self, tmp_path: Path) -> None:
+        config = Config(metric="accuracy", direction="maximize", budget_usd=6.0)
+        sm = SwarmManager(config=config, experiment_dir=tmp_path, n_agents=1)
+        sm._worktree_paths = [tmp_path / ".swarm" / "agent-0"]
+
+        mock_proc = MagicMock()
+        mock_proc.wait.return_value = 0
+
+        mock_verify = MagicMock(return_value={"match": True, "claimed_metric": 0.95})
+
+        with (
+            patch("subprocess.Popen", return_value=mock_proc),
+            patch.object(sm, "create_child_configs", return_value=[config]),
+            patch.object(sm, "_build_agent_command", return_value=["echo", "test"]),
+            patch.object(sm.scoreboard, "read_best", return_value=(0.95, "agent-0")),
+            patch.object(sm.scoreboard, "read_all", return_value=[]),
+            patch("mlforge.swarm.verify_best_result", new=mock_verify),
+        ):
+            result = sm.run()
+        # verify_best_result should have been called with experiment_dir and scoreboard
+        mock_verify.assert_called_once_with(tmp_path, sm.scoreboard)

@@ -351,6 +351,93 @@ class TestSimpleMode:
             mock_profile.assert_not_called()
 
 
+class TestSwarmCli:
+    """Swarm mode CLI flags: --swarm, --n-agents."""
+
+    def test_swarm_flag_routes_to_swarm_manager(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.SwarmManager") as MockSM,
+        ):
+            mock_sm = MockSM.return_value
+            mock_sm.run.return_value = {
+                "agents": 3,
+                "best_score": 0.9,
+                "best_agent": "agent-0",
+                "results": [],
+                "verification": None,
+            }
+            result = main([str(dataset), "predict b", "--swarm"])
+        assert result == 0
+        assert MockSM.called
+        mock_sm.setup.assert_called_once()
+        mock_sm.run.assert_called_once()
+        mock_sm.teardown.assert_called_once()
+
+    def test_swarm_with_n_agents(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.SwarmManager") as MockSM,
+        ):
+            mock_sm = MockSM.return_value
+            mock_sm.run.return_value = {
+                "agents": 5,
+                "best_score": 0.9,
+                "best_agent": "agent-0",
+                "results": [],
+                "verification": None,
+            }
+            main([str(dataset), "predict b", "--swarm", "--n-agents", "5"])
+            call_kwargs = MockSM.call_args[1]
+            assert call_kwargs["n_agents"] == 5
+
+    def test_n_agents_without_swarm_warns(self, tmp_path, capsys):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict b", "--n-agents", "5"])
+        captured = capsys.readouterr()
+        assert "warning" in captured.err.lower()
+
+    def test_swarm_with_resume_returns_error(self, tmp_path, capsys):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        result = main([str(dataset), "predict b", "--swarm", "--resume"])
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "cannot be used together" in captured.err.lower()
+
+    def test_swarm_does_not_call_run_engine(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine") as MockEngine,
+            patch("mlforge.cli.SwarmManager") as MockSM,
+        ):
+            mock_sm = MockSM.return_value
+            mock_sm.run.return_value = {
+                "agents": 3,
+                "best_score": 0.9,
+                "best_agent": "agent-0",
+                "results": [],
+                "verification": None,
+            }
+            main([str(dataset), "predict b", "--swarm"])
+        assert not MockEngine.called
+
+
 class TestConfigNewFields:
     """Config dataclass has budget/timeout/model fields with correct defaults."""
 
