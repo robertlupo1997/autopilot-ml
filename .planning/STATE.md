@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 06-01-PLAN.md (Fix Engine Subprocess Flags)
-last_updated: "2026-03-20T03:13:05.472Z"
-last_activity: 2026-03-20 -- Completed 05-03 (Swarm Mode)
+status: in_progress
+stopped_at: Completed 07-01-PLAN.md (Wire Intelligence Subsystem)
+last_updated: "2026-03-20T03:44:07Z"
+last_activity: 2026-03-20 -- Completed 07-01 (Wire Intelligence Subsystem)
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 16
+  completed_plans: 16
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 5: Domain Plugins + Swarm
+**Current focus:** Phase 7: Wire Intelligence Subsystem
 
 ## Current Position
 
-Phase: 5 of 5 (Domain Plugins + Swarm)
-Plan: 3 of 3 in current phase
-Status: 05-03 Complete
-Last activity: 2026-03-20 -- Completed 05-03 (Swarm Mode)
+Phase: 7 of 9 (Wire Intelligence Subsystem)
+Plan: 1 of 2 in current phase
+Status: 07-01 Complete
+Last activity: 2026-03-20 -- Completed 07-01 (Wire Intelligence Subsystem)
 
 Progress: [██████████] 100%
 
@@ -51,10 +51,11 @@ Progress: [██████████] 100%
 
 **Recent Trend:**
 - Last 5 plans: 04-01 (3 min), 04-02 (4 min), 05-01 (4 min), 05-02 (5 min), 05-03 (4 min)
-- Trend: Stable at ~4 min/plan
+- Trend: Stable at ~3-4 min/plan
 | Phase 05 P01 | 4min | 3 tasks | 5 files |
 | Phase 05 P02 | 5min | 3 tasks | 4 files |
 | Phase 06 P01 | 2min | 2 tasks | 2 files |
+| Phase 07 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,10 @@ Recent decisions affecting current work:
 - [Phase 06]: Read CLAUDE.md via Path.read_text() inline rather than passing file path to CLI
 - [Phase 06]: Omit --append-system-prompt entirely when CLAUDE.md missing (graceful skip)
 - [Phase 06]: Keep max_turns_per_experiment in Config for forward compatibility, stop passing to CLI
+- [07-01]: Baseline gate checks BEFORE git commit in keep path (prevents sub-baseline code from persisting)
+- [07-01]: Previous best_metric saved before state update so journal delta is accurate
+- [07-01]: Stagnation check runs after every revert, not just after baseline gate downgrades
+- [07-01]: importlib.util used to load prepare.py dynamically for baseline computation
 
 ### Pending Todos
 
@@ -126,6 +131,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T03:10:14.163Z
-Stopped at: Completed 06-01-PLAN.md (Fix Engine Subprocess Flags)
+Last session: 2026-03-20T03:44:07Z
+Stopped at: Completed 07-01-PLAN.md (Wire Intelligence Subsystem)
 Resume file: None
