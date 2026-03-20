@@ -24,9 +24,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
 - [x] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
-- [ ] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
+- [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
-- [ ] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
+- [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
 - [x] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
 - [x] **INTL-07**: Experiment time/cost budget with per-experiment timeout and total session budget (wall clock, API cost, GPU hours)
 - [x] **INTL-08**: Results tracking in structured experiment log with commit hash, metric value, status, description, timestamp
@@ -119,9 +119,9 @@ Deferred to future release.
 | CORE-10 | Phase 1 | Complete |
 | INTL-01 | Phase 7 | Complete |
 | INTL-02 | Phase 7 | Complete |
-| INTL-03 | Phase 7 | Pending |
+| INTL-03 | Phase 7 | Complete |
 | INTL-04 | Phase 7 | Complete |
-| INTL-05 | Phase 7 | Pending |
+| INTL-05 | Phase 7 | Complete |
 | INTL-06 | Phase 7 | Complete |
 | INTL-07 | Phase 6 | Complete |
 | INTL-08 | Phase 2 | Complete |
