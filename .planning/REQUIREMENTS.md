@@ -10,22 +10,22 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Core Engine
 
 - [x] **CORE-01**: User can install mlforge via pip and run `mlforge <dataset> <goal>` to start an autonomous experiment session
-- [x] **CORE-02**: Agent executes keep/revert experiment loop — modifies code, evaluates, commits on improvement, resets on failure
-- [x] **CORE-03**: Protocol prompt system injects domain-specific CLAUDE.md templates into agent context at session start
+- [ ] **CORE-02**: Agent executes keep/revert experiment loop — modifies code, evaluates, commits on improvement, resets on failure
+- [ ] **CORE-03**: Protocol prompt system injects domain-specific CLAUDE.md templates into agent context at session start
 - [x] **CORE-04**: State tracking persists experiment progress (current best, budget remaining, experiment count) across context resets
 - [x] **CORE-05**: Checkpoint/resume allows crashed sessions to restart from last successful experiment
 - [x] **CORE-06**: Config system (mlforge.config.toml) controls domain, budget, mutable zones, metric, and plugin settings
 - [x] **CORE-07**: Hook engine (PreToolUse/PostToolUse) intercepts Claude Code tool calls to enforce frozen file zones
 - [x] **CORE-08**: Experiment journal accumulates structured knowledge (hypothesis, result, diff, metric delta) that survives context resets
-- [x] **CORE-09**: Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert)
-- [x] **CORE-10**: Git-based state management: branch per run, commit per kept experiment, reset on revert, tag best model
+- [ ] **CORE-09**: Deviation handling auto-recovers from crashes (retry), OOM (reduce batch), and divergence (revert)
+- [ ] **CORE-10**: Git-based state management: branch per run, commit per kept experiment, reset on revert, tag best model
 
 ### Experiment Intelligence
 
 - [x] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
 - [x] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
 - [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
-- [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
+- [ ] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
 - [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
 - [x] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
 - [x] **INTL-07**: Experiment time/cost budget with per-experiment timeout and total session budget (wall clock, API cost, GPU hours)
@@ -43,7 +43,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **DL-01**: Deep learning plugin handles image classification, text classification, and custom architecture training with PyTorch
 - [x] **DL-02**: Plugin manages GPU utilization, memory limits, and training time budgets
-- [x] **DL-03**: Plugin supports learning rate scheduling, early stopping, and gradient clipping as protocol rules
+- [ ] **DL-03**: Plugin supports learning rate scheduling, early stopping, and gradient clipping as protocol rules
 - [x] **DL-04**: Plugin generates domain-specific CLAUDE.md protocol with deep learning rules and anti-patterns
 - [x] **DL-05**: Fixed time budget per training run prevents runaway GPU consumption
 
@@ -52,7 +52,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **FT-01**: Fine-tuning plugin handles LoRA/QLoRA fine-tuning of open models (Llama, Mistral, etc.) via PEFT/TRL
 - [x] **FT-02**: Plugin manages VRAM allocation, quantization config, and LoRA rank/alpha selection
 - [x] **FT-03**: Plugin supports evaluation metrics for generative tasks (perplexity, ROUGE, task-specific eval)
-- [x] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
+- [ ] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
 - [x] **FT-05**: Plugin handles dataset formatting (chat templates, instruction format) and train/eval splits
 
 ### Guardrails & Reliability
@@ -66,8 +66,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Multi-Agent
 
-- [x] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
-- [x] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
+- [ ] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
+- [ ] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
 - [x] **SWARM-03**: Budget inheritance prevents spawn explosion — child agents inherit parent's remaining budget
 - [x] **SWARM-04**: Verification agent checks metric improvement claims against actual holdout performance
 
@@ -76,7 +76,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
 - [x] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
 - [x] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
-- [x] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
+- [ ] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
 - [x] **UX-05**: Run retrospective summarizes what approaches worked, what failed, cost analysis, and recommendations for next run
 
 ## v2 Requirements
@@ -108,19 +108,19 @@ Deferred to future release.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CORE-01 | Phase 3 | Complete |
-| CORE-02 | Phase 6 | Complete |
-| CORE-03 | Phase 6 | Complete |
+| CORE-02 | Phase 11 | Pending |
+| CORE-03 | Phase 11 | Pending |
 | CORE-04 | Phase 1 | Complete |
 | CORE-05 | Phase 1 | Complete |
 | CORE-06 | Phase 1 | Complete |
 | CORE-07 | Phase 1 | Complete |
 | CORE-08 | Phase 7 | Complete |
-| CORE-09 | Phase 3 | Complete |
-| CORE-10 | Phase 1 | Complete |
+| CORE-09 | Phase 11 | Pending |
+| CORE-10 | Phase 13 | Pending |
 | INTL-01 | Phase 10 | Complete |
 | INTL-02 | Phase 10 | Complete |
 | INTL-03 | Phase 7 | Complete |
-| INTL-04 | Phase 7 | Complete |
+| INTL-04 | Phase 11 | Pending |
 | INTL-05 | Phase 10 | Complete |
 | INTL-06 | Phase 7 | Complete |
 | INTL-07 | Phase 6 | Complete |
@@ -132,13 +132,13 @@ Deferred to future release.
 | TABL-05 | Phase 2 | Complete |
 | DL-01 | Phase 8 | Complete |
 | DL-02 | Phase 8 | Complete |
-| DL-03 | Phase 8 | Complete |
+| DL-03 | Phase 12 | Pending |
 | DL-04 | Phase 8 | Complete |
 | DL-05 | Phase 8 | Complete |
 | FT-01 | Phase 8 | Complete |
 | FT-02 | Phase 8 | Complete |
 | FT-03 | Phase 8 | Complete |
-| FT-04 | Phase 8 | Complete |
+| FT-04 | Phase 12 | Pending |
 | FT-05 | Phase 8 | Complete |
 | GUARD-01 | Phase 3 | Complete |
 | GUARD-02 | Phase 3 | Complete |
@@ -146,20 +146,20 @@ Deferred to future release.
 | GUARD-04 | Phase 3 | Complete |
 | GUARD-05 | Phase 3 | Complete |
 | GUARD-06 | Phase 4 | Complete |
-| SWARM-01 | Phase 10 | Complete |
-| SWARM-02 | Phase 8 | Complete |
+| SWARM-01 | Phase 13 | Pending |
+| SWARM-02 | Phase 13 | Pending |
 | SWARM-03 | Phase 8 | Complete |
 | SWARM-04 | Phase 8 | Complete |
 | UX-01 | Phase 9 | Complete |
 | UX-02 | Phase 4 | Complete |
 | UX-03 | Phase 4 | Complete |
-| UX-04 | Phase 4 | Complete |
+| UX-04 | Phase 13 | Pending |
 | UX-05 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 48 total
-- Satisfied: 44
-- Pending (gap closure): 4
+- Satisfied: 38
+- Pending (gap closure): 10
 - Mapped to phases: 48
 - Unmapped: 0
 

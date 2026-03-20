@@ -178,10 +178,55 @@ Plans:
 Plans:
 - [ ] 10-01-PLAN.md -- Fix baseline gate, add --enable-drafts CLI flag, remove invalid --cwd (INTL-01, INTL-02, INTL-05, SWARM-01)
 
+### Phase 11: Fix Tabular Output + Stagnation Guard
+**Goal**: Fix the P0/P1 wiring gaps that break the core tabular E2E flow — tabular train.py JSON output, CLAUDE.md output format rule, and stagnation crash guard
+**Depends on**: Phase 10
+**Requirements**: CORE-02, CORE-03, CORE-09, INTL-04
+**Gap Closure**: Closes GAP-1 (tabular JSON output), GAP-2 (protocol output format), GAP-3 (stagnation crash) from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `tabular_train.py.j2` outputs `json.dumps({"metric_value": best_value})` instead of plain text `print(f"Best value: ...")`
+  2. `base_claude.md.j2` contains an output format rule instructing the agent to emit `{"metric_value": X}` as the last line of output
+  3. `trigger_stagnation_branch()` gracefully handles `best_commit=None` instead of raising ValueError
+  4. Standard tabular E2E flow completes without metric_value=None or stagnation crash
+**Plans**: 0 plans
+
+Plans:
+- (none yet — run `/gsd:plan-phase 11`)
+
+### Phase 12: Wire Plugin Validation + Task Type Mapping
+**Goal**: Call validate_config() before scaffolding and map profiler task types to DL/FT expected types so simple mode works for all domains
+**Depends on**: Phase 11
+**Requirements**: FT-04, DL-03, UX-01, TABL-01, DL-01, FT-01
+**Gap Closure**: Closes GAP-4 (validate_config dead code), GAP-5 (DL/FT task type mismatch) from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `validate_config()` called from scaffold.py before `plugin.scaffold()` — invalid configs raise clear errors
+  2. Profiler task types (`classification`/`regression`) mapped to DL types (`image_classification`/`text_classification`) before passing to DL plugin
+  3. FineTuningPlugin rejects missing `model_name` with actionable error message
+  4. DL/FT simple mode renders correct model architecture for detected task type
+**Plans**: 0 plans
+
+Plans:
+- (none yet — run `/gsd:plan-phase 12`)
+
+### Phase 13: Wire Dead Code + Rich Profile Display
+**Goal**: Connect orphaned functions (tag_best, publish_result) and surface rich dataset profile data in CLI output
+**Depends on**: Phase 11
+**Requirements**: CORE-10, SWARM-01, SWARM-02, UX-04
+**Gap Closure**: Closes GAP-6 (tag_best dead code), GAP-7 (swarm scoreboard dead code), GAP-8 (profile data discarded) from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `tag_best()` called from engine at session end when a best experiment exists
+  2. `publish_result()` called from swarm agent completion path (not just protocol text)
+  3. CLI displays missing_pct, numeric_features, categorical_features, and leakage_warnings from DatasetProfile
+  4. Git tag `best-{run_id}` exists on the best experiment commit after a successful session
+**Plans**: 0 plans
+
+Plans:
+- (none yet — run `/gsd:plan-phase 13`)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (parallel) → 10
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (parallel) → 10 → 11 → 12/13 (parallel)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -195,3 +240,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 8. Register Domain Plugins + Swarm CLI | 2/2 | Complete   | 2026-03-20 |
 | 9. Wire Simple Mode Task Propagation | 1/1 | Complete   | 2026-03-20 |
 | 10. Fix Runtime Wiring Bugs | 1/1 | Complete    | 2026-03-20 |
+| 11. Fix Tabular Output + Stagnation Guard | 0/0 | Planned | — |
+| 12. Wire Plugin Validation + Task Mapping | 0/0 | Planned | — |
+| 13. Wire Dead Code + Rich Profile Display | 0/0 | Planned | — |
