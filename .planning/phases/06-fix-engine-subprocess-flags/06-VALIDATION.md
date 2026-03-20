@@ -1,10 +1,11 @@
 ---
 phase: 6
 slug: fix-engine-subprocess-flags
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-19
+validated: 2026-03-20
 ---
 
 # Phase 6 — Validation Strategy
@@ -38,23 +39,23 @@ created: 2026-03-19
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 06-01-01 | 01 | 1 | CORE-03 | unit | `python3 -m pytest tests/mlforge/test_engine.py::TestRunOneExperiment -x` | Yes (needs update) | ⬜ pending |
-| 06-01-02 | 01 | 1 | INTL-07 | unit | `python3 -m pytest tests/mlforge/test_engine.py::TestRunOneExperiment -x` | Yes (needs update) | ⬜ pending |
-| 06-01-03 | 01 | 1 | CORE-02 | unit | `python3 -m pytest tests/mlforge/test_engine.py::TestRunLoop -x` | Yes | ⬜ pending |
-| 06-01-04 | 01 | 1 | GUARD-03 | unit | `python3 -m pytest tests/mlforge/test_engine.py::TestRunLoop -x` | Yes | ⬜ pending |
+| 06-01-01 | 01 | 1 | CORE-03 | unit | `python3 -m pytest tests/mlforge/test_engine.py::TestCommandFlags::test_uses_append_system_prompt_with_inline_content -x` | Yes | green |
+| 06-01-02 | 01 | 1 | INTL-07 | unit | `python3 -m pytest tests/mlforge/test_engine.py::TestCommandFlags::test_no_max_turns_flag tests/mlforge/test_engine.py::TestCommandFlags::test_max_budget_usd_still_present -x` | Yes | green |
+| 06-01-03 | 01 | 1 | CORE-02 | unit | `python3 -m pytest tests/mlforge/test_engine.py::TestRunLoop -x` | Yes | green |
+| 06-01-04 | 01 | 1 | GUARD-03 | unit | `python3 -m pytest tests/mlforge/test_engine.py::TestRunLoop::test_saves_checkpoint_before_each_experiment -x` | Yes | green |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending -- green -- red -- flaky*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] New test in `tests/mlforge/test_engine.py` — verify `--append-system-prompt` with inline CLAUDE.md content
-- [ ] New test — verify `--max-turns` is NOT in subprocess command
-- [ ] New test — verify command works when CLAUDE.md is missing (graceful degradation)
-- [ ] Update existing tests that assert on old flag structure
+- [x] New test in `tests/mlforge/test_engine.py` -- verify `--append-system-prompt` with inline CLAUDE.md content (`TestCommandFlags::test_uses_append_system_prompt_with_inline_content`)
+- [x] New test -- verify `--max-turns` is NOT in subprocess command (`TestCommandFlags::test_no_max_turns_flag`)
+- [x] New test -- verify command works when CLAUDE.md is missing (graceful degradation) (`TestCommandFlags::test_no_append_system_prompt_when_claude_md_missing`)
+- [x] Update existing tests that assert on old flag structure (`TestCommandFlags::test_max_budget_usd_still_present`)
 
-*Wave 0 tests created as part of Plan 01 tasks.*
+*Wave 0 tests created as part of Plan 01 tasks. All 4 verified green on 2026-03-20.*
 
 ---
 
@@ -68,11 +69,11 @@ created: 2026-03-19
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 15s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 15s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** validated 2026-03-20 (Nyquist auditor)
