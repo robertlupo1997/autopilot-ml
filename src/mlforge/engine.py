@@ -19,6 +19,7 @@ from mlforge.config import Config
 from mlforge.export import export_artifact
 from mlforge.git_ops import GitManager
 from mlforge.guardrails import CostTracker, DeviationHandler, ResourceGuardrails
+from mlforge.intelligence.diagnostics import diagnose_classification, diagnose_regression
 from mlforge.intelligence.drafts import ALGORITHM_FAMILIES, DraftResult, select_best_draft
 from mlforge.intelligence.stagnation import check_stagnation, trigger_stagnation_branch
 from mlforge.journal import (
@@ -237,6 +238,7 @@ class RunEngine:
             self.state.consecutive_reverts = 0
             self._write_journal(exp_id, "keep", metric_value, commit_hash, prev_best=prev_best)
             self._record_result(exp_id, "keep", metric_value, commit_hash)
+            self._run_diagnostics()
             return "keep"
 
         if action == "revert":
@@ -245,6 +247,7 @@ class RunEngine:
             self.state.consecutive_reverts += 1
             self._write_journal(exp_id, "revert", metric_value, None, prev_best=prev_best)
             self._record_result(exp_id, "revert", metric_value, None)
+            self._run_diagnostics()
 
             # Stagnation check after revert
             if check_stagnation(self.state, threshold=self.config.stagnation_threshold):
@@ -392,7 +395,107 @@ class RunEngine:
         if journal_content:
             prompt += f"\n\nExperiment history:\n{journal_content}"
 
+        diagnostics_path = self.experiment_dir / "diagnostics.md"
+        if diagnostics_path.exists():
+            diagnostics_content = diagnostics_path.read_text()
+            prompt += f"\n\nDiagnostics from last experiment:\n{diagnostics_content}"
+
         return prompt
+
+    def _run_diagnostics(self) -> None:
+        """Run diagnostics on predictions if predictions.csv exists.
+
+        Loads predictions, calls the appropriate diagnose function based on
+        task type, formats the output as markdown, and writes to diagnostics.md.
+        """
+        predictions_path = self.experiment_dir / "predictions.csv"
+        if not predictions_path.exists():
+            return
+
+        import pandas as pd
+
+        df = pd.read_csv(predictions_path)
+        y_true = df["y_true"].values
+        y_pred = df["y_pred"].values
+
+        task = self.config.plugin_settings.get("task", "classification")
+        if task == "regression":
+            diag = diagnose_regression(y_true, y_pred)
+        else:
+            diag = diagnose_classification(y_true, y_pred)
+
+        content = self._format_diagnostics(diag, task)
+        (self.experiment_dir / "diagnostics.md").write_text(content)
+
+    def _format_diagnostics(self, diag: dict, task: str) -> str:
+        """Format diagnostics dict as readable markdown.
+
+        Args:
+            diag: Diagnostics dict from diagnose_regression or diagnose_classification.
+            task: "regression" or "classification".
+
+        Returns:
+            Markdown string with diagnostics.
+        """
+        lines: list[str] = ["# Diagnostics", ""]
+
+        if task == "regression":
+            # Worst predictions
+            lines.append("## Worst Predictions")
+            lines.append("")
+            lines.append("| Index | y_true | y_pred | abs_error |")
+            lines.append("|-------|--------|--------|-----------|")
+            for wp in diag.get("worst_predictions", []):
+                lines.append(
+                    f"| {wp['index']} | {wp['y_true']:.4f} | "
+                    f"{wp['y_pred']:.4f} | {wp['abs_error']:.4f} |"
+                )
+            lines.append("")
+
+            # Bias
+            bias = diag.get("bias", {})
+            lines.append(f"## Bias: {bias.get('direction', 'unknown')} "
+                         f"(magnitude: {bias.get('magnitude', 0):.4f})")
+            lines.append("")
+
+            # Feature correlations
+            corrs = diag.get("feature_error_correlations", {})
+            if corrs:
+                lines.append("## Feature-Error Correlations")
+                lines.append("")
+                for name, val in sorted(corrs.items(), key=lambda x: abs(x[1]), reverse=True):
+                    lines.append(f"- {name}: {val:.4f}")
+                lines.append("")
+
+        else:
+            # Misclassified samples
+            lines.append("## Misclassified Samples")
+            lines.append("")
+            lines.append("| Index | y_true | y_pred |")
+            lines.append("|-------|--------|--------|")
+            for ms in diag.get("misclassified_samples", []):
+                lines.append(f"| {ms['index']} | {ms['y_true']} | {ms['y_pred']} |")
+            lines.append("")
+
+            # Per-class accuracy
+            pca = diag.get("per_class_accuracy", {})
+            if pca:
+                lines.append("## Per-Class Accuracy")
+                lines.append("")
+                for cls, acc in pca.items():
+                    lines.append(f"- {cls}: {acc:.4f}")
+                lines.append("")
+
+            # Confused pairs
+            pairs = diag.get("confused_pairs", [])
+            if pairs:
+                lines.append("## Most Confused Pairs")
+                lines.append("")
+                for true_cls, pred_cls, count in pairs:
+                    lines.append(f"- {true_cls} -> {pred_cls}: {count} errors")
+                lines.append("")
+
+        return "\n".join(lines)
 
     def _compute_baselines(self) -> dict | None:
         """Compute baselines for tabular domain before the experiment loop.

@@ -1218,6 +1218,147 @@ class TestMultiDraftIntegration:
         engine.git.close()
 
 
+class TestDiagnosticsIntegration:
+    """Tests for diagnostics engine wired into RunEngine."""
+
+    def test_diagnostics_run_after_experiment(self, tmp_path):
+        """When predictions.csv exists after an experiment, diagnose_*() is called."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "regression"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        # Create predictions.csv
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n1.0,1.1\n2.0,1.8\n3.0,3.2\n")
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_regression") as mock_diag,
+        ):
+            mock_diag.return_value = {"worst_predictions": [], "bias": {"direction": "neutral", "magnitude": 0.0}, "feature_error_correlations": {}}
+            engine._process_result(result)
+
+        mock_diag.assert_called_once()
+        engine.git.close()
+
+    def test_diagnostics_skipped_when_no_predictions(self, tmp_path):
+        """When predictions.csv does not exist, diagnostics are skipped gracefully."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "regression"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        # Do NOT create predictions.csv
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_regression") as mock_diag,
+        ):
+            engine._process_result(result)
+
+        mock_diag.assert_not_called()
+        engine.git.close()
+
+    def test_diagnostics_output_written_to_file(self, tmp_path):
+        """Diagnostics output is written to diagnostics.md in experiment directory."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "regression"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n1.0,1.1\n2.0,1.8\n")
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_regression") as mock_diag,
+        ):
+            mock_diag.return_value = {"worst_predictions": [{"index": 0, "y_true": 1.0, "y_pred": 1.1, "abs_error": 0.1}], "bias": {"direction": "over", "magnitude": 0.05}, "feature_error_correlations": {}}
+            engine._process_result(result)
+
+        diag_path = tmp_path / "diagnostics.md"
+        assert diag_path.exists()
+        content = diag_path.read_text()
+        assert "Worst Predictions" in content or "worst" in content.lower()
+        engine.git.close()
+
+    def test_diagnostics_injected_into_prompt(self, tmp_path):
+        """_build_prompt() includes diagnostics.md content when it exists."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "experiments.md").write_text("# Experiments")
+        (tmp_path / "diagnostics.md").write_text("## Diagnostics\nModel over-predicts by 0.05")
+        config = Config()
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        prompt = engine._build_prompt()
+        assert "Diagnostics from last experiment" in prompt
+        assert "over-predicts" in prompt
+        engine.git.close()
+
+    def test_regression_diagnostics_used_for_regression(self, tmp_path):
+        """When task is 'regression', diagnose_regression() is called."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "regression"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n1.0,1.1\n2.0,1.8\n")
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_regression") as mock_reg,
+            patch("mlforge.engine.diagnose_classification") as mock_cls,
+        ):
+            mock_reg.return_value = {"worst_predictions": [], "bias": {"direction": "neutral", "magnitude": 0.0}, "feature_error_correlations": {}}
+            engine._process_result(result)
+
+        mock_reg.assert_called_once()
+        mock_cls.assert_not_called()
+        engine.git.close()
+
+    def test_classification_diagnostics_used_for_classification(self, tmp_path):
+        """When task is 'classification', diagnose_classification() is called."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "classification"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n0,0\n1,0\n1,1\n")
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_regression") as mock_reg,
+            patch("mlforge.engine.diagnose_classification") as mock_cls,
+        ):
+            mock_cls.return_value = {"misclassified_samples": [], "per_class_accuracy": {}, "confused_pairs": []}
+            engine._process_result(result)
+
+        mock_cls.assert_called_once()
+        mock_reg.assert_not_called()
+        engine.git.close()
+
+
 # --- Helpers ---
 
 def _init_git(path: Path) -> None:
