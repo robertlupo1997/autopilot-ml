@@ -223,6 +223,42 @@ Plans:
 Plans:
 - [ ] 13-01-PLAN.md -- Wire tag_best + publish_result + rich profile display (CORE-10, SWARM-01, SWARM-02, UX-04)
 
+### Phase 14: Fix Swarm Agent Subprocess
+**Goal**: Fix swarm agent subprocess command to include required permission flags, budget enforcement, and CLAUDE.md in worktrees so swarm mode E2E flow works
+**Depends on**: Phase 13
+**Requirements**: SWARM-01, SWARM-02, SWARM-03, SWARM-04
+**Gap Closure**: Closes INT-03 (swarm subprocess missing flags) and Swarm E2E flow from v1.0 re-audit
+**Success Criteria** (what must be TRUE):
+  1. `_build_agent_command()` includes `--dangerously-skip-permissions` flag so agents can write files
+  2. `--max-budget-usd` passed to child agents with budget inheritance from parent
+  3. CLAUDE.md protocol file copied into each worktree before agent spawn
+  4. Agents write `state.json` so scoreboard reads actual results instead of empty files
+**Plans**: TBD
+
+### Phase 15: Fix FT Simple Mode Metric Mapping
+**Goal**: Add finetuning domain to task type mapping and set valid default metric so `--domain finetuning` simple mode works without ValueError
+**Depends on**: Phase 12
+**Requirements**: FT-04, UX-01
+**Gap Closure**: Closes INT-04 (FT metric mismatch) and FT simple mode flow from v1.0 re-audit
+**Success Criteria** (what must be TRUE):
+  1. `_TASK_TYPE_MAP` has entry for `finetuning` domain mapping to valid FT task type
+  2. Profiler sets FT-valid metric (e.g., `loss` or `perplexity`) instead of `accuracy` for finetuning domain
+  3. `--domain finetuning` simple mode reaches scaffold without ValueError from `validate_config()`
+**Plans**: TBD
+
+### Phase 16: Wire Template Runtime Artifacts
+**Goal**: Train templates write predictions.csv and best_model.joblib so diagnostics engine and artifact export actually fire at runtime
+**Depends on**: Phase 14
+**Requirements**: INTL-03, UX-03
+**Gap Closure**: Closes INT-01 (predictions.csv never written) and INT-02 (model file never saved) from v1.0 re-audit
+**Success Criteria** (what must be TRUE):
+  1. `tabular_train.py.j2` writes `predictions.csv` with test set predictions after model training
+  2. `tabular_train.py.j2` saves best model via `joblib.dump()` as `best_model.joblib`
+  3. CLAUDE.md templates instruct agent to preserve predictions.csv and model artifact writes
+  4. `_run_diagnostics()` finds predictions.csv and produces diagnostic output at runtime
+  5. `export_artifact()` finds best_model.joblib and exports with metadata
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -243,3 +279,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 11. Fix Tabular Output + Stagnation Guard | 1/1 | Complete    | 2026-03-20 |
 | 12. Wire Plugin Validation + Task Mapping | 1/1 | Complete    | 2026-03-20 |
 | 13. Wire Dead Code + Rich Profile Display | 1/1 | Complete    | 2026-03-20 |
+| 14. Fix Swarm Agent Subprocess | 0/0 | Planned     | - |
+| 15. Fix FT Simple Mode Metric Mapping | 0/0 | Planned     | - |
+| 16. Wire Template Runtime Artifacts | 0/0 | Planned     | - |

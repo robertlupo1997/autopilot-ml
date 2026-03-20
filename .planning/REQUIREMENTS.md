@@ -24,7 +24,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
 - [x] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
-- [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
+- [ ] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
 - [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
 - [x] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
@@ -52,7 +52,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **FT-01**: Fine-tuning plugin handles LoRA/QLoRA fine-tuning of open models (Llama, Mistral, etc.) via PEFT/TRL
 - [x] **FT-02**: Plugin manages VRAM allocation, quantization config, and LoRA rank/alpha selection
 - [x] **FT-03**: Plugin supports evaluation metrics for generative tasks (perplexity, ROUGE, task-specific eval)
-- [x] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
+- [ ] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
 - [x] **FT-05**: Plugin handles dataset formatting (chat templates, instruction format) and train/eval splits
 
 ### Guardrails & Reliability
@@ -66,16 +66,16 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Multi-Agent
 
-- [x] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
-- [x] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
-- [x] **SWARM-03**: Budget inheritance prevents spawn explosion — child agents inherit parent's remaining budget
-- [x] **SWARM-04**: Verification agent checks metric improvement claims against actual holdout performance
+- [ ] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
+- [ ] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
+- [ ] **SWARM-03**: Budget inheritance prevents spawn explosion — child agents inherit parent's remaining budget
+- [ ] **SWARM-04**: Verification agent checks metric improvement claims against actual holdout performance
 
 ### User Experience
 
-- [x] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
+- [ ] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
 - [x] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
-- [x] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
+- [ ] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
 - [x] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
 - [x] **UX-05**: Run retrospective summarizes what approaches worked, what failed, cost analysis, and recommendations for next run
 
@@ -119,7 +119,7 @@ Deferred to future release.
 | CORE-10 | Phase 13 | Complete |
 | INTL-01 | Phase 10 | Complete |
 | INTL-02 | Phase 10 | Complete |
-| INTL-03 | Phase 7 | Complete |
+| INTL-03 | Phase 16 | Pending |
 | INTL-04 | Phase 11 | Complete |
 | INTL-05 | Phase 10 | Complete |
 | INTL-06 | Phase 7 | Complete |
@@ -138,7 +138,7 @@ Deferred to future release.
 | FT-01 | Phase 8 | Complete |
 | FT-02 | Phase 8 | Complete |
 | FT-03 | Phase 8 | Complete |
-| FT-04 | Phase 12 | Complete |
+| FT-04 | Phase 15 | Pending |
 | FT-05 | Phase 8 | Complete |
 | GUARD-01 | Phase 3 | Complete |
 | GUARD-02 | Phase 3 | Complete |
@@ -146,20 +146,20 @@ Deferred to future release.
 | GUARD-04 | Phase 3 | Complete |
 | GUARD-05 | Phase 3 | Complete |
 | GUARD-06 | Phase 4 | Complete |
-| SWARM-01 | Phase 13 | Complete |
-| SWARM-02 | Phase 13 | Complete |
-| SWARM-03 | Phase 8 | Complete |
-| SWARM-04 | Phase 8 | Complete |
-| UX-01 | Phase 9 | Complete |
+| SWARM-01 | Phase 14 | Pending |
+| SWARM-02 | Phase 14 | Pending |
+| SWARM-03 | Phase 14 | Pending |
+| SWARM-04 | Phase 14 | Pending |
+| UX-01 | Phase 15 | Pending |
 | UX-02 | Phase 4 | Complete |
-| UX-03 | Phase 4 | Complete |
+| UX-03 | Phase 16 | Pending |
 | UX-04 | Phase 13 | Complete |
 | UX-05 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 48 total
-- Satisfied: 42
-- Pending (gap closure): 6
+- Satisfied: 40
+- Pending (gap closure): 8
 - Mapped to phases: 48
 - Unmapped: 0
 
