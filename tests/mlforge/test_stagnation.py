@@ -73,11 +73,13 @@ class TestTriggerStagnationBranch:
         finally:
             gm.close()
 
-    def test_no_best_commit_raises(self, git_repo: Repo):
+    def test_no_best_commit_returns_none(self, git_repo: Repo):
         state = SessionState(consecutive_reverts=3, best_commit=None)
         gm = GitManager(git_repo.working_dir)
         try:
-            with pytest.raises(ValueError, match="best_commit"):
-                trigger_stagnation_branch(gm, state, "svm")
+            result = trigger_stagnation_branch(gm, state, "svm")
+            assert result is None
+            # Counter should NOT be reset when no branch was created
+            assert state.consecutive_reverts == 3
         finally:
             gm.close()

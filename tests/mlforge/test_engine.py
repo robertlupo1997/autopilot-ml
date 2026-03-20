@@ -993,6 +993,40 @@ class TestIntelligenceIntegration:
         engine.git.close()
 
 
+class TestStagnationNoneGuard:
+    """Stagnation branch returns None when best_commit is None."""
+
+    def test_stagnation_with_no_best_commit_skips_branch(self, tmp_path):
+        """Engine does not append to tried_families when branch returns None."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(stagnation_threshold=3)
+        state = SessionState(
+            best_metric=0.95,
+            best_commit=None,
+            consecutive_reverts=2,  # Will become 3 after this revert
+        )
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.8, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "revert_to_last_commit"),
+            patch("mlforge.engine.append_journal_entry"),
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.check_stagnation", return_value=True),
+            patch("mlforge.engine.trigger_stagnation_branch", return_value=None) as mock_branch,
+        ):
+            engine._process_result(result)
+
+        mock_branch.assert_called_once()
+        # tried_families should be empty because branch returned None
+        assert len(state.tried_families) == 0
+        engine.git.close()
+
+
 class TestMultiDraftIntegration:
     """Tests for multi-draft phase wired into RunEngine."""
 
