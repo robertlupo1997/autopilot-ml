@@ -263,7 +263,10 @@ Plans:
   3. CLAUDE.md templates instruct agent to preserve predictions.csv and model artifact writes
   4. `_run_diagnostics()` finds predictions.csv and produces diagnostic output at runtime
   5. `export_artifact()` finds best_model.joblib and exports with metadata
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 16-01-PLAN.md -- Add predictions.csv + best_model.joblib writes to tabular template + CLAUDE.md artifact rule (INTL-03, UX-03)
 
 ## Progress
 
@@ -287,4 +290,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 13. Wire Dead Code + Rich Profile Display | 1/1 | Complete    | 2026-03-20 |
 | 14. Fix Swarm Agent Subprocess | 1/1 | Complete    | 2026-03-20 |
 | 15. Fix FT Simple Mode Metric Mapping | 1/1 | Complete    | 2026-03-20 |
-| 16. Wire Template Runtime Artifacts | 0/0 | Planned     | - |
+| 16. Wire Template Runtime Artifacts | 0/1 | Planned     | - |
