@@ -145,6 +145,11 @@ Plans:
   2. `get_plugin('finetuning')` returns `FineTuningPlugin` without KeyError
   3. CLI accepts `--swarm` / `--n-agents` flags and invokes `SwarmManager`
   4. `verify_best_result()` called within `SwarmManager.run()` after agents complete
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md -- Register DL/FT plugins in scaffold.py with domain-aware dispatch (DL-01, DL-02, DL-03, DL-04, DL-05, FT-01, FT-02, FT-03, FT-04, FT-05)
+- [ ] 08-02-PLAN.md -- Add swarm CLI flags and wire verify_best_result into SwarmManager.run() (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
 
 ### Phase 9: Wire Simple Mode Task Propagation
 **Goal**: Propagate auto-detected task type from dataset profiler through to plugin settings so simple mode works correctly
@@ -169,5 +174,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (7, 8
 | 5. Domain Plugins + Swarm | 3/3 | Complete   | 2026-03-20 |
 | 6. Fix Engine Subprocess Flags | 0/1 | Pending    |  |
 | 7. Wire Intelligence Subsystem | 0/2 | Pending    |  |
-| 8. Register Domain Plugins + Swarm CLI | 0/0 | Pending    |  |
+| 8. Register Domain Plugins + Swarm CLI | 0/2 | Pending    |  |
 | 9. Wire Simple Mode Task Propagation | 0/0 | Pending    |  |
