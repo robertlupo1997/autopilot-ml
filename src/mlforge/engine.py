@@ -119,15 +119,19 @@ class RunEngine:
                 "Use smaller batch sizes or simpler models.\n\n" + prompt
             )
 
+        claude_md_path = self.experiment_dir / "CLAUDE.md"
+        system_prompt = claude_md_path.read_text() if claude_md_path.exists() else ""
+
         cmd = [
             "claude",
             "-p", prompt,
             "--output-format", "json",
             "--dangerously-skip-permissions",
-            "--max-turns", str(self.config.max_turns_per_experiment),
             "--max-budget-usd", str(self.config.per_experiment_budget_usd),
-            "--append-system-prompt-file", "CLAUDE.md",
         ]
+
+        if system_prompt:
+            cmd.extend(["--append-system-prompt", system_prompt])
 
         if self.config.model is not None:
             cmd.extend(["--model", self.config.model])
