@@ -247,7 +247,10 @@ Plans:
   1. `_TASK_TYPE_MAP` has entry for `finetuning` domain mapping to valid FT task type
   2. Profiler sets FT-valid metric (e.g., `loss` or `perplexity`) instead of `accuracy` for finetuning domain
   3. `--domain finetuning` simple mode reaches scaffold without ValueError from `validate_config()`
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 15-01-PLAN.md -- Add FT domain to task type map + metric/direction override + default model_name (FT-04, UX-01)
 
 ### Phase 16: Wire Template Runtime Artifacts
 **Goal**: Train templates write predictions.csv and best_model.joblib so diagnostics engine and artifact export actually fire at runtime
@@ -283,5 +286,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 12. Wire Plugin Validation + Task Mapping | 1/1 | Complete    | 2026-03-20 |
 | 13. Wire Dead Code + Rich Profile Display | 1/1 | Complete    | 2026-03-20 |
 | 14. Fix Swarm Agent Subprocess | 1/1 | Complete    | 2026-03-20 |
-| 15. Fix FT Simple Mode Metric Mapping | 0/0 | Planned     | - |
+| 15. Fix FT Simple Mode Metric Mapping | 0/1 | In Progress | - |
 | 16. Wire Template Runtime Artifacts | 0/0 | Planned     | - |
