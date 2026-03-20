@@ -116,7 +116,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 06-01-PLAN.md -- Fix invalid CLI flags in engine.py subprocess command (CORE-02, CORE-03, INTL-07, GUARD-03)
+- [x] 06-01-PLAN.md -- Fix invalid CLI flags in engine.py subprocess command (CORE-02, CORE-03, INTL-07, GUARD-03)
 
 ### Phase 7: Wire Intelligence Subsystem to Engine
 **Goal**: Connect all intelligence modules (baselines, diagnostics, stagnation, multi-draft, journal) to the engine runtime loop
@@ -132,8 +132,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md -- Baselines + journal + stagnation wiring into engine loop (INTL-01, INTL-02, CORE-08, INTL-06, INTL-04)
-- [ ] 07-02-PLAN.md -- Multi-draft phase + diagnostics engine wiring (INTL-05, INTL-03)
+- [x] 07-01-PLAN.md -- Baselines + journal + stagnation wiring into engine loop (INTL-01, INTL-02, CORE-08, INTL-06, INTL-04)
+- [x] 07-02-PLAN.md -- Multi-draft phase + diagnostics engine wiring (INTL-05, INTL-03)
 
 ### Phase 8: Register Domain Plugins + Swarm CLI
 **Goal**: Register DL/FT plugins in scaffold.py and add swarm CLI entry point so all Phase 5 features are reachable
@@ -148,8 +148,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md -- Register DL/FT plugins in scaffold.py with domain-aware dispatch (DL-01, DL-02, DL-03, DL-04, DL-05, FT-01, FT-02, FT-03, FT-04, FT-05)
-- [ ] 08-02-PLAN.md -- Add swarm CLI flags and wire verify_best_result into SwarmManager.run() (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
+- [x] 08-01-PLAN.md -- Register DL/FT plugins in scaffold.py with domain-aware dispatch (DL-01, DL-02, DL-03, DL-04, DL-05, FT-01, FT-02, FT-03, FT-04, FT-05)
+- [x] 08-02-PLAN.md -- Add swarm CLI flags and wire verify_best_result into SwarmManager.run() (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
 
 ### Phase 9: Wire Simple Mode Task Propagation
 **Goal**: Propagate auto-detected task type from dataset profiler through to plugin settings so simple mode works correctly
@@ -162,12 +162,26 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 09-01-PLAN.md -- Wire CLI propagation + task-aware template rendering (UX-01, TABL-03)
+- [x] 09-01-PLAN.md -- Wire CLI propagation + task-aware template rendering (UX-01, TABL-03)
+
+### Phase 10: Fix Runtime Wiring Bugs
+**Goal**: Fix three residual integration bugs found by v1.0 milestone audit — baseline gate dead code, unreachable multi-draft, invalid swarm CLI flag
+**Depends on**: Phase 7, Phase 8
+**Requirements**: INTL-01, INTL-02, INTL-05, SWARM-01
+**Gap Closure**: Closes integration gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `_compute_baselines()` calls `prepare.load_data()` + `prepare.split_data()` to get actual data, and `state.baselines` is populated for tabular runs
+  2. `--enable-drafts` CLI flag exists and sets `config.enable_drafts = True`, making multi-draft reachable
+  3. `--cwd` removed from swarm agent command list in `swarm/__init__.py`
+**Plans**: 0 plans
+
+Plans:
+- [ ] 10-01-PLAN.md -- Fix baseline gate, add --enable-drafts CLI flag, remove invalid --cwd (INTL-01, INTL-02, INTL-05, SWARM-01)
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (7, 8, 9 can run in parallel after 6)
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (parallel) → 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -176,7 +190,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (7, 8
 | 3. Scaffold, CLI + Run Engine | 3/3 | Complete   | 2026-03-20 |
 | 4. E2E Validation + UX | 2/2 | Complete   | 2026-03-20 |
 | 5. Domain Plugins + Swarm | 3/3 | Complete   | 2026-03-20 |
-| 6. Fix Engine Subprocess Flags | 0/1 | Pending    |  |
-| 7. Wire Intelligence Subsystem | 0/2 | Pending    |  |
-| 8. Register Domain Plugins + Swarm CLI | 1/2 | In Progress|  |
+| 6. Fix Engine Subprocess Flags | 1/1 | Complete   | 2026-03-20 |
+| 7. Wire Intelligence Subsystem | 2/2 | Complete   | 2026-03-20 |
+| 8. Register Domain Plugins + Swarm CLI | 2/2 | Complete   | 2026-03-20 |
 | 9. Wire Simple Mode Task Propagation | 1/1 | Complete   | 2026-03-20 |
+| 10. Fix Runtime Wiring Bugs | 0/1 | Pending    |  |

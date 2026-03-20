@@ -22,11 +22,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Experiment Intelligence
 
-- [x] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
-- [x] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
+- [ ] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
+- [ ] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
 - [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
-- [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
+- [ ] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
 - [x] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
 - [x] **INTL-07**: Experiment time/cost budget with per-experiment timeout and total session budget (wall clock, API cost, GPU hours)
 - [x] **INTL-08**: Results tracking in structured experiment log with commit hash, metric value, status, description, timestamp
@@ -66,7 +66,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Multi-Agent
 
-- [x] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
+- [ ] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
 - [x] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
 - [x] **SWARM-03**: Budget inheritance prevents spawn explosion — child agents inherit parent's remaining budget
 - [x] **SWARM-04**: Verification agent checks metric improvement claims against actual holdout performance
@@ -117,11 +117,11 @@ Deferred to future release.
 | CORE-08 | Phase 7 | Complete |
 | CORE-09 | Phase 3 | Complete |
 | CORE-10 | Phase 1 | Complete |
-| INTL-01 | Phase 7 | Complete |
-| INTL-02 | Phase 7 | Complete |
+| INTL-01 | Phase 10 | Pending |
+| INTL-02 | Phase 10 | Pending |
 | INTL-03 | Phase 7 | Complete |
 | INTL-04 | Phase 7 | Complete |
-| INTL-05 | Phase 7 | Complete |
+| INTL-05 | Phase 10 | Pending |
 | INTL-06 | Phase 7 | Complete |
 | INTL-07 | Phase 6 | Complete |
 | INTL-08 | Phase 2 | Complete |
@@ -146,7 +146,7 @@ Deferred to future release.
 | GUARD-04 | Phase 3 | Complete |
 | GUARD-05 | Phase 3 | Complete |
 | GUARD-06 | Phase 4 | Complete |
-| SWARM-01 | Phase 8 | Complete |
+| SWARM-01 | Phase 10 | Pending |
 | SWARM-02 | Phase 8 | Complete |
 | SWARM-03 | Phase 8 | Complete |
 | SWARM-04 | Phase 8 | Complete |
@@ -158,8 +158,8 @@ Deferred to future release.
 
 **Coverage:**
 - v1 requirements: 48 total
-- Satisfied: 21
-- Pending (gap closure): 27
+- Satisfied: 44
+- Pending (gap closure): 4
 - Mapped to phases: 48
 - Unmapped: 0
 
