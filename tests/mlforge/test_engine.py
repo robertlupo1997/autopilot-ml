@@ -279,13 +279,22 @@ class TestProcessResult:
         state = SessionState()
         engine = RunEngine(tmp_path, config, state)
 
-        result = {"status": "crash", "error": "MemoryError", "total_cost_usd": 0.05}
+        # OOM crash triggers retry which calls _run_one_experiment again.
+        # Mock the recursive call to return a successful result on retry.
+        oom_result = {"status": "crash", "error": "MemoryError", "total_cost_usd": 0.05}
+        success_result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
 
-        action = engine._process_result(result)
-        assert action == "retry"
+        with (
+            patch.object(engine, "_run_one_experiment", return_value=success_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+        ):
+            action = engine._process_result(oom_result)
+
+        # The retry succeeded -> "keep"
+        assert action == "keep"
         engine.git.close()
 
-    def test_stop_action(self, tmp_path):
+    def test_stop_on_repeated_oom(self, tmp_path):
         from mlforge.engine import RunEngine
 
         _init_git(tmp_path)
@@ -293,10 +302,11 @@ class TestProcessResult:
         state = SessionState()
         engine = RunEngine(tmp_path, config, state)
 
-        # Exhaust retries to trigger stop
-        for _ in range(3):
-            result = {"status": "crash", "error": "OOM", "total_cost_usd": 0.01}
-            action = engine._process_result(result)
+        # Exhaust retries: 2 OOM retries via deviation handler, then stop
+        oom_result = {"status": "crash", "error": "OOM", "total_cost_usd": 0.01}
+
+        with patch.object(engine, "_run_one_experiment", return_value=oom_result):
+            action = engine._process_result(oom_result)
         assert action == "stop"
         engine.git.close()
 
@@ -374,13 +384,12 @@ class TestRunLoop:
         state = SessionState()
         engine = RunEngine(tmp_path, config, state)
 
-        # Return crash with OOM repeatedly to exhaust retries -> stop
-        mock_result = MagicMock()
-        mock_result.returncode = 1
-        mock_result.stdout = json.dumps({"error": "OOM"})
+        # Mock _run_one_experiment to always return OOM crash.
+        # The deviation handler will retry up to MAX_RETRIES=2 then stop.
+        oom_result = {"status": "crash", "error": "OOM", "total_cost_usd": 0.01}
 
         with (
-            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine, "_run_one_experiment", return_value=oom_result),
             patch.object(engine.progress, "start"),
             patch.object(engine.progress, "stop"),
             patch.object(engine.progress, "update"),
