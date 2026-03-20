@@ -139,6 +139,90 @@ class TestDeepLearningPluginRegistry:
         assert retrieved is plugin
 
 
+class TestPreparePyFunctions:
+    """Tests for prepare.py functions with mocked heavy deps."""
+
+    def test_prepare_contains_get_device_info(self):
+        source = Path(__file__).parent.parent.parent / "src/mlforge/deeplearning/prepare.py"
+        content = source.read_text()
+        assert "def get_device_info" in content
+
+    def test_prepare_contains_load_image_data(self):
+        source = Path(__file__).parent.parent.parent / "src/mlforge/deeplearning/prepare.py"
+        content = source.read_text()
+        assert "def load_image_data" in content
+
+    def test_prepare_contains_load_text_data(self):
+        source = Path(__file__).parent.parent.parent / "src/mlforge/deeplearning/prepare.py"
+        content = source.read_text()
+        assert "def load_text_data" in content
+
+    def test_get_device_info_returns_expected_keys(self):
+        """Test get_device_info with mocked torch.cuda."""
+        source = Path(__file__).parent.parent.parent / "src/mlforge/deeplearning/prepare.py"
+        content = source.read_text()
+        # Execute in isolated namespace with mocked torch
+        ns = {}
+        mock_torch = type(sys)("torch")
+        mock_cuda = type(sys)("torch.cuda")
+        mock_cuda.is_available = lambda: True
+        mock_cuda.get_device_name = lambda x=0: "NVIDIA RTX 4090"
+        mock_cuda.mem_get_info = lambda x=0: (20 * 1024**3, 24 * 1024**3)
+        mock_torch.cuda = mock_cuda
+        with patch.dict(sys.modules, {
+            "torch": mock_torch,
+            "torch.cuda": mock_cuda,
+            "torchvision": type(sys)("torchvision"),
+            "torchvision.transforms": type(sys)("torchvision.transforms"),
+            "torchvision.datasets": type(sys)("torchvision.datasets"),
+            "transformers": type(sys)("transformers"),
+            "torch.utils": type(sys)("torch.utils"),
+            "torch.utils.data": type(sys)("torch.utils.data"),
+        }):
+            exec(compile(content, str(source), "exec"), ns)
+        result = ns["get_device_info"]()
+        assert "device" in result
+        assert "gpu_name" in result
+        assert "vram_gb" in result
+        assert result["device"] == "cuda"
+        assert result["gpu_name"] == "NVIDIA RTX 4090"
+        assert result["vram_gb"] == 24.0
+
+
+class TestPyprojectOptionalDeps:
+    """pyproject.toml has dl and ft optional dependency groups."""
+
+    def test_dl_group_exists(self):
+        toml_path = Path(__file__).parent.parent.parent / "pyproject.toml"
+        import tomllib
+        with open(toml_path, "rb") as f:
+            data = tomllib.load(f)
+        dl_deps = data.get("project", {}).get("optional-dependencies", {}).get("dl", [])
+        assert len(dl_deps) > 0
+        dep_names = [d.split(">")[0].split("<")[0].split("=")[0].strip() for d in dl_deps]
+        assert "torch" in dep_names
+        assert "torchvision" in dep_names
+        assert "timm" in dep_names
+        assert "transformers" in dep_names
+        assert "datasets" in dep_names
+
+    def test_ft_group_exists(self):
+        toml_path = Path(__file__).parent.parent.parent / "pyproject.toml"
+        import tomllib
+        with open(toml_path, "rb") as f:
+            data = tomllib.load(f)
+        ft_deps = data.get("project", {}).get("optional-dependencies", {}).get("ft", [])
+        assert len(ft_deps) > 0
+        dep_names = [d.split(">")[0].split("<")[0].split("=")[0].strip() for d in ft_deps]
+        assert "peft" in dep_names
+        assert "trl" in dep_names
+        assert "bitsandbytes" in dep_names
+        assert "evaluate" in dep_names
+        assert "rouge-score" in dep_names
+        assert "transformers" in dep_names
+        assert "datasets" in dep_names
+
+
 class TestDeepLearningLazyImports:
     """Importing mlforge.deeplearning must NOT import torch."""
 
