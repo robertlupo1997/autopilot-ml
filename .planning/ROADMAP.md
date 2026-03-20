@@ -81,11 +81,11 @@ Plans:
   3. Expert mode accepts custom CLAUDE.md, custom frozen/mutable zones, custom baselines, and plugin API access
   4. Best model artifact is exported with metadata (metric value, config, training history) after session completes
   5. Run retrospective summarizes approaches tried, what worked, what failed, cost breakdown, and recommendations
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md -- Dataset profiler + simple/expert mode CLI integration (UX-01, UX-02, UX-04, TABL-03)
+- [ ] 04-02-PLAN.md -- Artifact export + run retrospective + engine post-loop wiring (UX-03, UX-05, GUARD-06)
 
 ### Phase 5: Domain Plugins + Swarm
 **Goal**: Deep learning and LLM fine-tuning plugins extend mlforge to all three domains, and swarm mode enables parallel agent exploration
