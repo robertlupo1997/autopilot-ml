@@ -19,7 +19,7 @@ from mlforge.config import Config
 from mlforge.export import export_artifact
 from mlforge.git_ops import GitManager
 from mlforge.guardrails import CostTracker, DeviationHandler, ResourceGuardrails
-from mlforge.intelligence.drafts import ALGORITHM_FAMILIES
+from mlforge.intelligence.drafts import ALGORITHM_FAMILIES, DraftResult, select_best_draft
 from mlforge.intelligence.stagnation import check_stagnation, trigger_stagnation_branch
 from mlforge.journal import (
     JournalEntry,
@@ -82,6 +82,14 @@ class RunEngine:
         try:
             with self.progress:
                 try:
+                    if self.config.enable_drafts:
+                        draft_results = self._run_draft_phase()
+                        best = select_best_draft(draft_results, self.config.direction)
+                        if best and best.commit_hash:
+                            self.git.repo.git.checkout(best.commit_hash)
+                            self.state.best_metric = best.metric_value
+                            self.state.best_commit = best.commit_hash
+
                     self.state.baselines = self._compute_baselines()
                     while (
                         not self.guardrails.should_stop(self.state)
@@ -115,17 +123,20 @@ class RunEngine:
         finally:
             signal.signal(signal.SIGINT, prev_handler)
 
-    def _run_one_experiment(self, oom_hint: bool = False) -> dict:
+    def _run_one_experiment(
+        self, oom_hint: bool = False, prompt_override: str | None = None
+    ) -> dict:
         """Spawn a single ``claude -p`` session and return parsed JSON.
 
         Args:
             oom_hint: If True, prepend OOM avoidance hint to the prompt.
+            prompt_override: If provided, use this prompt instead of _build_prompt().
 
         Returns:
             Parsed JSON dict from claude stdout. On failure, returns a dict
             with ``status`` set to ``"crash"`` or ``"timeout"``.
         """
-        prompt = self._build_prompt()
+        prompt = prompt_override if prompt_override is not None else self._build_prompt()
         if oom_hint:
             prompt = (
                 "IMPORTANT: The previous attempt ran out of memory. "
@@ -277,6 +288,86 @@ class RunEngine:
             timestamp=datetime.now(timezone.utc).isoformat(),
         )
         self.results_tracker.add(result)
+
+    def _run_draft_phase(self) -> list[DraftResult]:
+        """Run one experiment per algorithm family and return draft results.
+
+        Iterates over ``ALGORITHM_FAMILIES``, builds a draft-specific prompt for
+        each, spawns an experiment, and collects results. Appends each family
+        name to ``state.tried_families``.
+
+        Returns:
+            List of DraftResult objects, one per family.
+        """
+        task = self.config.plugin_settings.get("task", "classification")
+        results: list[DraftResult] = []
+
+        for family_name, family_info in ALGORITHM_FAMILIES.items():
+            prompt = self._build_draft_prompt(family_name, family_info, task)
+            exp_result = self._run_one_experiment(prompt_override=prompt)
+
+            # Track cost
+            cost = exp_result.get("total_cost_usd", 0.0)
+            self.cost_tracker.record(cost, self.state)
+
+            # Extract metric from nested result string
+            metric_value = None
+            if "result" in exp_result and isinstance(exp_result["result"], str):
+                try:
+                    inner = json.loads(exp_result["result"])
+                    if "metric_value" in inner:
+                        metric_value = inner["metric_value"]
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            elif "metric_value" in exp_result:
+                metric_value = exp_result.get("metric_value")
+
+            if metric_value is not None:
+                commit_hash = self.git.commit_experiment(
+                    f"draft-{family_name}",
+                    ["."],
+                )
+                draft = DraftResult(
+                    name=family_name,
+                    metric_value=metric_value,
+                    status="draft-keep",
+                    commit_hash=commit_hash,
+                    description=f"{family_info.get('description', family_name)} draft",
+                )
+            else:
+                draft = DraftResult(
+                    name=family_name,
+                    metric_value=None,
+                    status="draft-discard",
+                    commit_hash="",
+                    description=f"{family_info.get('description', family_name)} draft (failed)",
+                )
+
+            results.append(draft)
+            self.state.tried_families.append(family_name)
+
+        return results
+
+    def _build_draft_prompt(self, family_name: str, family_info: dict, task: str) -> str:
+        """Build a prompt instructing the agent to use a specific model family.
+
+        Args:
+            family_name: Algorithm family key (e.g. "linear").
+            family_info: Dict with 'description', 'classification', 'regression' keys.
+            task: Either "classification" or "regression".
+
+        Returns:
+            Prompt string for ``claude -p``.
+        """
+        model_class = family_info.get(task, family_name)
+        return (
+            "You are an ML research agent. Read CLAUDE.md for your protocol. "
+            f"This is a DRAFT experiment. Use ONLY {model_class} from "
+            f"{family_info.get('description', family_name)}. "
+            "Do NOT use other model families. "
+            "Run train.py, evaluate results, and report the metric value. "
+            f"Metric: {self.config.metric} (direction: {self.config.direction})."
+        )
 
     def _build_prompt(self) -> str:
         """Construct the experiment prompt with context from experiments.md.

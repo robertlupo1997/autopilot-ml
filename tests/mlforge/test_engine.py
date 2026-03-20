@@ -980,6 +980,244 @@ class TestIntelligenceIntegration:
         engine.git.close()
 
 
+class TestMultiDraftIntegration:
+    """Tests for multi-draft phase wired into RunEngine."""
+
+    def test_draft_phase_runs_when_enabled(self, tmp_path):
+        """When config.enable_drafts=True, _run_draft_phase() is called before the main loop."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(enable_drafts=True, budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+            patch.object(engine, "_run_draft_phase", return_value=[]) as mock_draft,
+        ):
+            engine.run()
+
+        mock_draft.assert_called_once()
+        engine.git.close()
+
+    def test_draft_phase_skipped_when_disabled(self, tmp_path):
+        """When config.enable_drafts=False, no draft phase runs."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(enable_drafts=False, budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+        ):
+            engine.run()
+
+        # _run_draft_phase should not exist as a patched call -- no draft phase invoked
+        assert state.experiment_count == 1
+        engine.git.close()
+
+    def test_draft_runs_each_family(self, tmp_path):
+        """_run_draft_phase() spawns one experiment per ALGORITHM_FAMILIES entry."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        config = Config(enable_drafts=True)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_exp_result = {
+            "result": json.dumps({"metric_value": 0.85}),
+            "total_cost_usd": 0.1,
+        }
+
+        with (
+            patch.object(engine, "_run_one_experiment", return_value=mock_exp_result) as mock_run,
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+        ):
+            results = engine._run_draft_phase()
+
+        from mlforge.intelligence.drafts import ALGORITHM_FAMILIES
+        assert mock_run.call_count == len(ALGORITHM_FAMILIES)
+        assert len(results) == len(ALGORITHM_FAMILIES)
+        engine.git.close()
+
+    def test_best_draft_selected(self, tmp_path):
+        """select_best_draft() is called with draft results and direction."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(enable_drafts=True, budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        from mlforge.intelligence.drafts import DraftResult
+        draft_results = [
+            DraftResult(name="linear", metric_value=0.7, status="draft-keep", commit_hash="aaa", description="Linear"),
+            DraftResult(name="xgboost", metric_value=0.9, status="draft-keep", commit_hash="bbb", description="XGBoost"),
+        ]
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.git.repo, "git", MagicMock()),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+            patch.object(engine, "_run_draft_phase", return_value=draft_results),
+            patch("mlforge.engine.select_best_draft", return_value=draft_results[1]) as mock_select,
+        ):
+            engine.run()
+
+        mock_select.assert_called_once_with(draft_results, config.direction)
+        engine.git.close()
+
+    def test_best_draft_checkout(self, tmp_path):
+        """After selection, git checkouts to the best draft's commit_hash."""
+        from mlforge.engine import RunEngine
+        from mlforge.intelligence.drafts import DraftResult
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(enable_drafts=True, budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        best = DraftResult(name="xgboost", metric_value=0.9, status="draft-keep", commit_hash="bbb123", description="XGBoost")
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.git.repo, "git", MagicMock()),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+            patch.object(engine, "_run_draft_phase", return_value=[best]),
+            patch("mlforge.engine.select_best_draft", return_value=best),
+        ):
+            engine.run()
+
+        assert state.best_metric == 0.9
+        assert state.best_commit == "bbb123"
+        engine.git.close()
+
+    def test_draft_results_none_handled(self, tmp_path):
+        """When all drafts fail (metric_value=None), loop continues without checkout."""
+        from mlforge.engine import RunEngine
+        from mlforge.intelligence.drafts import DraftResult
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(enable_drafts=True, budget_experiments=1)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        failed_drafts = [
+            DraftResult(name="linear", metric_value=None, status="draft-discard", commit_hash="", description="Failed"),
+        ]
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+            patch.object(engine, "_run_draft_phase", return_value=failed_drafts),
+            patch("mlforge.engine.select_best_draft", return_value=None),
+        ):
+            engine.run()
+
+        # Loop ran normally despite all drafts failing
+        assert state.experiment_count == 1
+        assert state.best_commit is None or state.best_commit == "abc12345"
+        engine.git.close()
+
+    def test_tried_families_populated(self, tmp_path):
+        """After draft phase, state.tried_families contains all family names tried."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        config = Config(enable_drafts=True)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_exp_result = {
+            "result": json.dumps({"metric_value": 0.85}),
+            "total_cost_usd": 0.1,
+        }
+
+        with (
+            patch.object(engine, "_run_one_experiment", return_value=mock_exp_result) as mock_run,
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+        ):
+            results = engine._run_draft_phase()
+
+        from mlforge.intelligence.drafts import ALGORITHM_FAMILIES
+        for family_name in ALGORITHM_FAMILIES:
+            assert family_name in state.tried_families
+        engine.git.close()
+
+
 # --- Helpers ---
 
 def _init_git(path: Path) -> None:
