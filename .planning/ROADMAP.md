@@ -97,12 +97,12 @@ Plans:
   3. Both new plugins generate domain-specific CLAUDE.md protocols and work through the same scaffold/run/iterate pipeline as tabular
   4. Swarm mode spawns parallel agents in git worktrees with file-locked scoreboard coordination and budget inheritance preventing spawn explosion
   5. Verification agent checks metric improvement claims against actual holdout performance
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
-- [ ] 05-03: TBD
+- [ ] 05-01-PLAN.md -- Deep learning plugin: DeepLearningPlugin + frozen prepare.py + dl_train.py.j2 template (DL-01, DL-02, DL-03, DL-04, DL-05)
+- [ ] 05-02-PLAN.md -- Fine-tuning plugin: FineTuningPlugin + frozen prepare.py + ft_train.py.j2 template (FT-01, FT-02, FT-03, FT-04, FT-05)
+- [ ] 05-03-PLAN.md -- Swarm mode: SwarmManager + file-locked scoreboard + budget inheritance + verification agent (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
 
 ## Progress
 
