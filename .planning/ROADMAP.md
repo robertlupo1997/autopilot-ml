@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Core Engine + Plugin Infrastructure** - State management, git ops, checkpoint/resume, config system, plugin protocol, and template rendering (completed 2026-03-19)
 - [ ] **Phase 2: Tabular Plugin + Experiment Intelligence** - Tabular ML plugin validating the architecture, plus baselines, diagnostics, stagnation, and multi-draft
 - [x] **Phase 3: Scaffold, CLI + Run Engine** - User entry point, experiment loop orchestration, guardrails, and overnight reliability (completed 2026-03-20)
-- [ ] **Phase 4: E2E Validation + UX** - End-to-end tabular validation on real data, user experience modes, artifact export, and run summaries
+- [x] **Phase 4: E2E Validation + UX** - End-to-end tabular validation on real data, user experience modes, artifact export, and run summaries (completed 2026-03-20)
 - [ ] **Phase 5: Domain Plugins + Swarm** - Deep learning plugin, LLM fine-tuning plugin, and multi-agent swarm mode
 
 ## Phase Details
@@ -85,7 +85,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md -- Dataset profiler + simple/expert mode CLI integration (UX-01, UX-02, UX-04, TABL-03)
-- [ ] 04-02-PLAN.md -- Artifact export + run retrospective + engine post-loop wiring (UX-03, UX-05, GUARD-06)
+- [x] 04-02-PLAN.md -- Artifact export + run retrospective + engine post-loop wiring (UX-03, UX-05, GUARD-06)
 
 ### Phase 5: Domain Plugins + Swarm
 **Goal**: Deep learning and LLM fine-tuning plugins extend mlforge to all three domains, and swarm mode enables parallel agent exploration
@@ -114,5 +114,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Core Engine + Plugin Infrastructure | 3/3 | Complete   | 2026-03-19 |
 | 2. Tabular Plugin + Experiment Intelligence | 2/3 | In Progress|  |
 | 3. Scaffold, CLI + Run Engine | 3/3 | Complete   | 2026-03-20 |
-| 4. E2E Validation + UX | 1/2 | In Progress | - |
+| 4. E2E Validation + UX | 2/2 | Complete   | 2026-03-20 |
 | 5. Domain Plugins + Swarm | 0/3 | Not started | - |

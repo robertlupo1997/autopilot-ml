@@ -49,8 +49,8 @@ Progress: [██████████] 100%
 | 04-e2e-validation-ux | 2 | 7 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (3 min), 02-03 (3 min), 03-01 (4 min), 03-02 (3 min), 04-01 (3 min)
-- Trend: Stable at ~3 min/plan
+- Last 5 plans: 02-03 (3 min), 03-01 (4 min), 03-02 (3 min), 04-01 (3 min), 04-02 (4 min)
+- Trend: Stable at ~3-4 min/plan
 
 ## Accumulated Context
 
@@ -95,6 +95,9 @@ Recent decisions affecting current work:
 - [04-01]: Target column extracted from goal via 'predict X' regex with last-word fallback
 - [04-01]: Simple mode profiling failure falls back silently to defaults
 - [04-01]: Custom frozen/mutable replace plugin defaults entirely (not merge)
+- [04-02]: LiveProgress.log() added for post-loop messages (console.print when live, plain print otherwise)
+- [04-02]: Results recorded in _process_result alongside existing deviation logic (not replacing)
+- [04-02]: Stop action records as crash status in results tracker
 
 ### Pending Todos
 
@@ -106,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T01:15:57Z
-Stopped at: Completed 04-01-PLAN.md (Dataset Profiler + Simple/Expert Mode)
+Last session: 2026-03-20T01:20:11Z
+Stopped at: Completed 04-02-PLAN.md (Artifact Export + Run Retrospective)
 Resume file: None
