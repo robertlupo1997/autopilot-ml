@@ -179,4 +179,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (7, 8
 | 6. Fix Engine Subprocess Flags | 0/1 | Pending    |  |
 | 7. Wire Intelligence Subsystem | 0/2 | Pending    |  |
 | 8. Register Domain Plugins + Swarm CLI | 1/2 | In Progress|  |
-| 9. Wire Simple Mode Task Propagation | 0/1 | Pending    |  |
+| 9. Wire Simple Mode Task Propagation | 1/1 | Complete   | 2026-03-20 |

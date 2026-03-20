@@ -35,7 +35,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **TABL-01**: Tabular ML plugin handles classification and regression tasks on CSV/Parquet tabular data
 - [x] **TABL-02**: Plugin supports scikit-learn, XGBoost, LightGBM model families with Optuna hyperparameter search
-- [ ] **TABL-03**: Leakage prevention enforces shift-first temporal features and walk-forward CV for time-series data
+- [x] **TABL-03**: Leakage prevention enforces shift-first temporal features and walk-forward CV for time-series data
 - [x] **TABL-04**: Plugin generates domain-specific CLAUDE.md protocol with tabular ML rules and anti-patterns
 - [x] **TABL-05**: Frozen prepare.py handles data loading and train/test split; mutable train.py handles modeling
 
@@ -73,7 +73,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### User Experience
 
-- [ ] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
+- [x] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
 - [x] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
 - [x] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
 - [x] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
@@ -127,7 +127,7 @@ Deferred to future release.
 | INTL-08 | Phase 2 | Complete |
 | TABL-01 | Phase 2 | Complete |
 | TABL-02 | Phase 2 | Complete |
-| TABL-03 | Phase 9 | Pending |
+| TABL-03 | Phase 9 | Complete |
 | TABL-04 | Phase 2 | Complete |
 | TABL-05 | Phase 2 | Complete |
 | DL-01 | Phase 8 | Complete |
@@ -150,7 +150,7 @@ Deferred to future release.
 | SWARM-02 | Phase 8 | Complete |
 | SWARM-03 | Phase 8 | Complete |
 | SWARM-04 | Phase 8 | Complete |
-| UX-01 | Phase 9 | Pending |
+| UX-01 | Phase 9 | Complete |
 | UX-02 | Phase 4 | Complete |
 | UX-03 | Phase 4 | Complete |
 | UX-04 | Phase 4 | Complete |
