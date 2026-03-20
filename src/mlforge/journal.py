@@ -13,6 +13,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
+from git import GitCommandError, Repo
+
 
 @dataclass
 class JournalEntry:
@@ -35,6 +37,7 @@ class JournalEntry:
     metric_delta: float | None
     commit_hash: str | None
     status: str  # "keep" | "revert" | "crash"
+    diff: str | None = None
 
 
 def append_journal_entry(path: Path, entry: JournalEntry) -> None:
@@ -102,4 +105,38 @@ def render_journal_markdown(entries: list[dict]) -> str:
         commit = e.get("commit_hash", "-") or "-"
         rows.append(f"| {exp_id} | {status} | {metric_str} | {delta_str} | {hypothesis} | {commit} |")
 
+        # Append diff section if present
+        diff = e.get("diff")
+        if diff:
+            truncated = diff[:500]
+            if len(diff) > 500:
+                truncated += "..."
+            rows.append("")
+            rows.append(f"<details><summary>Diff (experiment {exp_id})</summary>")
+            rows.append("")
+            rows.append("```diff")
+            rows.append(truncated)
+            rows.append("```")
+            rows.append("")
+            rows.append("</details>")
+
     return "\n".join(rows) + "\n"
+
+
+def get_last_diff(repo_path: Path | str) -> str | None:
+    """Return the git diff between HEAD and HEAD~1.
+
+    Args:
+        repo_path: Path to the git repository.
+
+    Returns:
+        Diff string, or None if there is no previous commit.
+    """
+    repo = Repo(str(repo_path))
+    try:
+        diff = repo.git.diff("HEAD~1")
+        return diff if diff else None
+    except GitCommandError:
+        return None
+    finally:
+        repo.close()
