@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05-01-PLAN.md (Deep Learning Plugin)
+stopped_at: Completed 05-02-PLAN.md (Fine-Tuning Plugin)
 last_updated: "2026-03-20T02:36:47.083Z"
 last_activity: 2026-03-20 -- Completed 05-03 (Swarm Mode)
 progress:
@@ -47,12 +47,13 @@ Progress: [██████████] 100%
 | 02-tabular-plugin | 3 | 6 min | 2 min |
 | 03-scaffold-cli-run-engine | 3 | 10 min | 3 min |
 | 04-e2e-validation-ux | 2 | 7 min | 4 min |
-| 05-domain-plugins-swarm | 3 | 12 min | 4 min |
+| 05-domain-plugins-swarm | 3 | 17 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (3 min), 04-01 (3 min), 04-02 (4 min), 05-01 (4 min), 05-03 (4 min)
-- Trend: Stable at ~3-4 min/plan
+- Last 5 plans: 04-01 (3 min), 04-02 (4 min), 05-01 (4 min), 05-02 (5 min), 05-03 (4 min)
+- Trend: Stable at ~4 min/plan
 | Phase 05 P01 | 4min | 3 tasks | 5 files |
+| Phase 05 P02 | 5min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Module-level torch imports in prepare.py are safe -- standalone file copied during scaffold, never imported by mlforge core
 - [Phase 05]: Both dl and ft pyproject.toml optional deps added in Plan 01 to avoid parallel write conflicts with Plan 02
 - [Phase 05]: Custom task renders minimal nn.Module skeleton with TODO placeholder, time budget and early stopping pre-wired
+- [05-02]: All peft/trl/bitsandbytes imports lazy (in-method) for GPU-free import
+- [05-02]: LoRA config targets all-linear modules for broad adapter coverage
+- [05-02]: Template variables as Python constants (LORA_R, LORA_ALPHA) for readable rendered train.py
 
 ### Pending Todos
 
@@ -118,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T02:36:47.080Z
-Stopped at: Completed 05-01-PLAN.md (Deep Learning Plugin)
+Last session: 2026-03-20T02:36:11Z
+Stopped at: Completed 05-02-PLAN.md (Fine-Tuning Plugin)
 Resume file: None

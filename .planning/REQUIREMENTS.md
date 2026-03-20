@@ -49,11 +49,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### LLM Fine-tuning Plugin
 
-- [ ] **FT-01**: Fine-tuning plugin handles LoRA/QLoRA fine-tuning of open models (Llama, Mistral, etc.) via PEFT/TRL
-- [ ] **FT-02**: Plugin manages VRAM allocation, quantization config, and LoRA rank/alpha selection
-- [ ] **FT-03**: Plugin supports evaluation metrics for generative tasks (perplexity, ROUGE, task-specific eval)
-- [ ] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
-- [ ] **FT-05**: Plugin handles dataset formatting (chat templates, instruction format) and train/eval splits
+- [x] **FT-01**: Fine-tuning plugin handles LoRA/QLoRA fine-tuning of open models (Llama, Mistral, etc.) via PEFT/TRL
+- [x] **FT-02**: Plugin manages VRAM allocation, quantization config, and LoRA rank/alpha selection
+- [x] **FT-03**: Plugin supports evaluation metrics for generative tasks (perplexity, ROUGE, task-specific eval)
+- [x] **FT-04**: Plugin generates domain-specific CLAUDE.md protocol with fine-tuning rules and anti-patterns
+- [x] **FT-05**: Plugin handles dataset formatting (chat templates, instruction format) and train/eval splits
 
 ### Guardrails & Reliability
 
@@ -135,11 +135,11 @@ Deferred to future release.
 | DL-03 | Phase 5 | Complete |
 | DL-04 | Phase 5 | Complete |
 | DL-05 | Phase 5 | Complete |
-| FT-01 | Phase 5 | Pending |
-| FT-02 | Phase 5 | Pending |
-| FT-03 | Phase 5 | Pending |
-| FT-04 | Phase 5 | Pending |
-| FT-05 | Phase 5 | Pending |
+| FT-01 | Phase 5 | Complete |
+| FT-02 | Phase 5 | Complete |
+| FT-03 | Phase 5 | Complete |
+| FT-04 | Phase 5 | Complete |
+| FT-05 | Phase 5 | Complete |
 | GUARD-01 | Phase 3 | Complete |
 | GUARD-02 | Phase 3 | Complete |
 | GUARD-03 | Phase 3 | Complete |

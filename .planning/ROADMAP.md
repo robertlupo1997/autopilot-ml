@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Tabular Plugin + Experiment Intelligence** - Tabular ML plugin validating the architecture, plus baselines, diagnostics, stagnation, and multi-draft
 - [x] **Phase 3: Scaffold, CLI + Run Engine** - User entry point, experiment loop orchestration, guardrails, and overnight reliability (completed 2026-03-20)
 - [x] **Phase 4: E2E Validation + UX** - End-to-end tabular validation on real data, user experience modes, artifact export, and run summaries (completed 2026-03-20)
-- [ ] **Phase 5: Domain Plugins + Swarm** - Deep learning plugin, LLM fine-tuning plugin, and multi-agent swarm mode
+- [x] **Phase 5: Domain Plugins + Swarm** - Deep learning plugin, LLM fine-tuning plugin, and multi-agent swarm mode (completed 2026-03-20)
 
 ## Phase Details
 
