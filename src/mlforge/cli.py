@@ -1,22 +1,47 @@
 """CLI entry point for mlforge.
 
 Parses command-line arguments, scaffolds the experiment directory, initializes
-git, and runs the experiment engine loop.
+git, and runs the experiment engine loop. Supports simple mode (auto-detect
+task/metric from data) and expert mode (custom CLAUDE.md, frozen/mutable files).
 """
 
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import time
 from pathlib import Path
+
+import pandas as pd
 
 from mlforge.checkpoint import load_checkpoint
 from mlforge.config import Config
 from mlforge.engine import RunEngine
 from mlforge.git_ops import GitManager
+from mlforge.profiler import profile_dataset
 from mlforge.scaffold import scaffold_experiment
 from mlforge.state import SessionState
+
+
+def _extract_target_column(goal: str) -> str:
+    """Extract target column name from a goal string.
+
+    Supports patterns like "predict price", "predict the target", or just
+    uses the last word as a fallback.
+
+    Args:
+        goal: The user's goal description.
+
+    Returns:
+        The extracted target column name.
+    """
+    # Try "predict X" pattern
+    match = re.search(r"\bpredict\s+(?:the\s+)?(\w+)", goal, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    # Fallback: last word
+    return goal.strip().split()[-1]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -43,6 +68,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-dir", default=None, help="Experiment output directory")
     parser.add_argument("--resume", action="store_true", help="Resume a previous run")
     parser.add_argument("--model", default=None, help="Claude model to use")
+    # Expert mode flags
+    parser.add_argument(
+        "--custom-claude-md",
+        type=Path,
+        default=None,
+        help="Path to custom CLAUDE.md template",
+    )
+    parser.add_argument(
+        "--custom-frozen",
+        nargs="+",
+        default=None,
+        help="Additional frozen files beyond plugin defaults",
+    )
+    parser.add_argument(
+        "--custom-mutable",
+        nargs="+",
+        default=None,
+        help="Additional mutable files beyond plugin defaults",
+    )
 
     # Handle empty args
     if argv is not None and len(argv) == 0:
@@ -59,8 +103,6 @@ def main(argv: list[str] | None = None) -> int:
 
     # Build Config from defaults + CLI overrides
     config = Config(domain=args.domain)
-    if args.metric is not None:
-        config.metric = args.metric
     if args.budget_minutes is not None:
         config.budget_minutes = args.budget_minutes
     if args.budget_usd is not None:
@@ -69,6 +111,39 @@ def main(argv: list[str] | None = None) -> int:
         config.budget_experiments = args.budget_experiments
     if args.model is not None:
         config.model = args.model
+
+    # Expert mode config fields
+    if args.custom_claude_md is not None:
+        config.custom_claude_md_path = args.custom_claude_md
+    if args.custom_frozen is not None:
+        config.custom_frozen = args.custom_frozen
+    if args.custom_mutable is not None:
+        config.custom_mutable = args.custom_mutable
+
+    if args.metric is not None:
+        # Expert mode: user specified metric, skip profiling
+        config.metric = args.metric
+    else:
+        # Simple mode: auto-detect from dataset
+        try:
+            if str(dataset_path).endswith(".parquet"):
+                df = pd.read_parquet(dataset_path)
+            else:
+                df = pd.read_csv(dataset_path)
+            target_column = _extract_target_column(args.goal)
+            if target_column in df.columns:
+                profile = profile_dataset(df, target_column)
+                config.metric = profile.metric
+                config.direction = profile.direction
+                if profile.date_columns:
+                    config.plugin_settings["date_column"] = profile.date_columns[0]
+                print(
+                    f"Auto-detected: {profile.task} task, metric={profile.metric}, "
+                    f"{profile.n_rows} rows, {profile.n_features} features"
+                )
+        except Exception:
+            # If profiling fails, fall back to defaults silently
+            pass
 
     # Generate run ID
     run_id = f"run-{int(time.time())}"

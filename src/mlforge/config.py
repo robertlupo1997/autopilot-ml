@@ -30,6 +30,9 @@ class Config:
     frozen_files: list[str] = field(default_factory=lambda: ["prepare.py"])
     mutable_files: list[str] = field(default_factory=lambda: ["train.py"])
     plugin_settings: dict = field(default_factory=dict)
+    custom_claude_md_path: Path | None = None
+    custom_frozen: list[str] | None = None
+    custom_mutable: list[str] | None = None
 
     @classmethod
     def load(cls, path: Path | None = None) -> Config:
@@ -66,6 +69,13 @@ class Config:
             frozen_files=data.get("files", {}).get("frozen", ["prepare.py"]),
             mutable_files=data.get("files", {}).get("mutable", ["train.py"]),
             plugin_settings=data.get("plugin", {}),
+            custom_claude_md_path=(
+                Path(data["files"]["custom_claude_md"])
+                if data.get("files", {}).get("custom_claude_md")
+                else None
+            ),
+            custom_frozen=data.get("files", {}).get("custom_frozen"),
+            custom_mutable=data.get("files", {}).get("custom_mutable"),
         )
 
         if config.direction not in ("maximize", "minimize"):

@@ -246,6 +246,111 @@ class TestCliScaffoldEngineWiring:
         assert "Completed" in captured.out or "completed" in captured.out.lower()
 
 
+class TestExpertMode:
+    """Expert mode CLI flags for custom CLAUDE.md, frozen, and mutable files."""
+
+    def test_custom_claude_md_flag_parsed(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([
+                str(dataset), "predict price",
+                "--metric", "rmse",
+                "--custom-claude-md", "/tmp/my-claude.md",
+            ])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.custom_claude_md_path == Path("/tmp/my-claude.md")
+
+    def test_custom_frozen_flag_parsed(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([
+                str(dataset), "predict price",
+                "--metric", "rmse",
+                "--custom-frozen", "prepare.py", "evaluate.py",
+            ])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.custom_frozen == ["prepare.py", "evaluate.py"]
+
+    def test_custom_mutable_flag_parsed(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([
+                str(dataset), "predict price",
+                "--metric", "rmse",
+                "--custom-mutable", "train.py", "features.py",
+            ])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.custom_mutable == ["train.py", "features.py"]
+
+
+class TestSimpleMode:
+    """Simple mode auto-detects task type and metric from dataset."""
+
+    def test_auto_detection_sets_metric(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        # Regression dataset: numeric target with many unique values
+        import numpy as np
+        lines = ["feature,target"]
+        for i in range(50):
+            lines.append(f"{i},{float(i) * 1.5 + 0.1 * i}")
+        dataset.write_text("\n".join(lines) + "\n")
+
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict target"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.metric == "r2"
+            assert config.direction == "maximize"
+
+    def test_auto_detection_prints_message(self, tmp_path, capsys):
+        dataset = tmp_path / "data.csv"
+        lines = ["feature,target"]
+        for i in range(50):
+            lines.append(f"{i},{float(i) * 1.5}")
+        dataset.write_text("\n".join(lines) + "\n")
+
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict target"])
+        captured = capsys.readouterr()
+        assert "Auto-detected" in captured.out
+
+    def test_explicit_metric_skips_profiling(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+            patch("mlforge.cli.profile_dataset") as mock_profile,
+        ):
+            main([str(dataset), "predict b", "--metric", "rmse"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.metric == "rmse"
+            mock_profile.assert_not_called()
+
+
 class TestConfigNewFields:
     """Config dataclass has budget/timeout/model fields with correct defaults."""
 
