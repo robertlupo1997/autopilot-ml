@@ -87,6 +87,33 @@ _REGISTRATION_FUNCTIONS = {
     "finetuning": _ensure_finetuning_registered,
 }
 
+_TASK_TYPE_MAP: dict[str, dict[str, str]] = {
+    "deeplearning": {
+        "classification": "image_classification",
+        "regression": "custom",
+    },
+}
+
+
+def _map_task_for_domain(config: Config) -> None:
+    """Map profiler task types to domain-specific types.
+
+    The profiler outputs generic types like ``classification`` / ``regression``
+    but some domains expect domain-specific names (e.g. DL needs
+    ``image_classification``).  This mutates *config* in-place so downstream
+    validation and scaffolding see the correct task type.
+
+    Args:
+        config: Session configuration (mutated in-place).
+    """
+    domain_map = _TASK_TYPE_MAP.get(config.domain)
+    if domain_map is None:
+        return
+
+    current_task = config.plugin_settings.get("task")
+    if current_task is not None and current_task in domain_map:
+        config.plugin_settings["task"] = domain_map[current_task]
+
 
 def _ensure_plugin_registered(domain: str) -> None:
     """Register the plugin for the given domain if not already registered.
@@ -133,6 +160,17 @@ def scaffold_experiment(
     # 2. Ensure plugin is registered and get it
     _ensure_plugin_registered(config.domain)
     plugin = get_plugin(config.domain)
+
+    # 2b. Map profiler task types to domain-specific types
+    _map_task_for_domain(config)
+
+    # 2c. Validate config before scaffolding
+    errors = plugin.validate_config(config)
+    if errors:
+        raise ValueError(
+            f"Invalid config for {config.domain} plugin:\n"
+            + "\n".join(f"  - {e}" for e in errors)
+        )
 
     # 3. Plugin scaffolds domain-specific files (prepare.py, train.py)
     plugin.scaffold(target_dir, config)

@@ -265,7 +265,7 @@ class TestScaffoldDomainDispatch:
     def test_scaffold_finetuning_domain(self, dataset, target_dir):
         from mlforge.plugins import get_plugin
 
-        config = Config(domain="finetuning")
+        config = Config(domain="finetuning", metric="perplexity", plugin_settings={"model_name": "test/model"})
         scaffold_experiment(config=config, dataset_path=dataset, target_dir=target_dir, run_id="run-ft")
         plugin = get_plugin("finetuning")
         assert plugin.name == "finetuning"
