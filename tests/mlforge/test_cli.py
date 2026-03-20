@@ -403,6 +403,35 @@ class TestSimpleMode:
             assert config.plugin_settings["target_column"] == "price"
 
 
+class TestEnableDraftsFlag:
+    """--enable-drafts CLI flag sets config.enable_drafts = True."""
+
+    def test_enable_drafts_flag(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            result = main([str(dataset), "predict b", "--enable-drafts"])
+            assert result == 0
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.enable_drafts is True
+
+    def test_no_enable_drafts_flag_defaults_false(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict b"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.enable_drafts is False
+
+
 class TestSwarmCli:
     """Swarm mode CLI flags: --swarm, --n-agents."""
 

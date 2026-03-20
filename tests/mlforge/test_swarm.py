@@ -178,7 +178,7 @@ class TestBuildAgentCommand:
         cmd = sm._build_agent_command(0, child_configs[0])
         assert cmd[0] == "claude"
         assert "-p" in cmd
-        assert "--cwd" in cmd
+        assert "--cwd" not in cmd
 
     def test_renders_swarm_template_in_prompt(self, tmp_path: Path) -> None:
         config = Config(

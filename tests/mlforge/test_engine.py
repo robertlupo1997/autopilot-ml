@@ -682,7 +682,7 @@ class TestIntelligenceIntegration:
     """Tests for baseline, journal, and stagnation integration in RunEngine."""
 
     def test_compute_baselines_called_before_loop(self, tmp_path):
-        """When domain=='tabular' and prepare.py exists with X_train/y_train,
+        """When domain=='tabular' and prepare.py exists with load_data/split_data,
         compute_baselines() is called and result stored in state.baselines."""
         from mlforge.engine import RunEngine
 
@@ -690,15 +690,28 @@ class TestIntelligenceIntegration:
         (tmp_path / "CLAUDE.md").write_text("protocol")
         (tmp_path / "experiments.md").write_text("# Journal")
 
-        # Create a prepare.py with X_train and y_train
+        # Create a minimal CSV so load_data() has something to read
+        csv_content = "f1,f2,target\n1,2,0\n3,4,1\n5,6,0\n7,8,1\n9,10,0\n"
+        (tmp_path / "data.csv").write_text(csv_content)
+
+        # Create a prepare.py with load_data() and split_data() functions
         prepare_code = (
+            "import pandas as pd\n"
             "import numpy as np\n"
-            "X_train = np.array([[1,2],[3,4],[5,6],[7,8],[9,10]])\n"
-            "y_train = np.array([0,1,0,1,0])\n"
+            "\n"
+            "def load_data(path):\n"
+            "    return pd.read_csv(path)\n"
+            "\n"
+            "def split_data(df, target_column):\n"
+            "    X = df.drop(columns=[target_column]).values\n"
+            "    y = df[target_column].values\n"
+            "    return X, X, y, y\n"
         )
         (tmp_path / "prepare.py").write_text(prepare_code)
 
         config = Config(domain="tabular", budget_experiments=1)
+        config.plugin_settings["csv_path"] = "data.csv"
+        config.plugin_settings["target_column"] = "target"
         state = SessionState()
         engine = RunEngine(tmp_path, config, state)
 
