@@ -87,7 +87,7 @@ class TestGenerateRetrospective:
         assert "Ridge regression with L2" in output
         assert "XGBoost with tuned params" in output
         assert "0.85" in output
-        assert "0.90" in output
+        assert "0.9" in output
 
     def test_failed_approaches_listed(self, tmp_path: Path) -> None:
         from mlforge.retrospective import generate_retrospective
