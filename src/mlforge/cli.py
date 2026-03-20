@@ -1,21 +1,26 @@
 """CLI entry point for mlforge.
 
-Parses command-line arguments and orchestrates experiment scaffolding.
-The run engine is wired in a later plan.
+Parses command-line arguments, scaffolds the experiment directory, initializes
+git, and runs the experiment engine loop.
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
+import time
 from pathlib import Path
 
+from mlforge.checkpoint import load_checkpoint
 from mlforge.config import Config
+from mlforge.engine import RunEngine
+from mlforge.git_ops import GitManager
 from mlforge.scaffold import scaffold_experiment
+from mlforge.state import SessionState
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Parse CLI arguments and scaffold an experiment directory.
+    """Parse CLI arguments, scaffold, and run the experiment engine.
 
     Args:
         argv: Command-line arguments. If None, uses sys.argv[1:].
@@ -65,24 +70,56 @@ def main(argv: list[str] | None = None) -> int:
     if args.model is not None:
         config.model = args.model
 
+    # Generate run ID
+    run_id = f"run-{int(time.time())}"
+
     # Determine output directory
     if args.output_dir:
         target_dir = Path(args.output_dir)
     else:
         target_dir = Path(f"mlforge-{dataset_path.stem}")
 
-    # Generate a run ID
-    import time
+    try:
+        if args.resume:
+            # Resume: load checkpoint, skip scaffold and git init
+            checkpoint_dir = target_dir / ".mlforge"
+            state = load_checkpoint(checkpoint_dir)
+            if state is None:
+                print(
+                    f"Error: no checkpoint found in {checkpoint_dir}",
+                    file=sys.stderr,
+                )
+                return 1
+            run_id = state.run_id or run_id
+        else:
+            # Fresh run: scaffold, then init git branch
+            scaffold_experiment(
+                config=config,
+                dataset_path=dataset_path,
+                target_dir=target_dir,
+                run_id=run_id,
+            )
+            git = GitManager(target_dir)
+            git.create_run_branch(run_id)
+            git.close()
 
-    run_id = f"run-{int(time.time())}"
+            state = SessionState(run_id=run_id, budget_remaining=config.budget_usd)
 
-    # Scaffold the experiment directory
-    scaffold_experiment(
-        config=config,
-        dataset_path=dataset_path,
-        target_dir=target_dir,
-        run_id=run_id,
-    )
+        # Run the experiment engine
+        engine = RunEngine(target_dir, config, state)
+        engine.run()
 
-    print(f"Scaffolded experiment in {target_dir}")
-    return 0
+        # Print summary
+        print(
+            f"\nCompleted: {state.experiment_count} experiments, "
+            f"best={state.best_metric}, "
+            f"cost=${state.cost_spent_usd:.2f}"
+        )
+        return 0
+
+    except KeyboardInterrupt:
+        print("\nInterrupted, state saved")
+        return 0
+    except Exception as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1

@@ -4,11 +4,27 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch, PropertyMock
 
 import pytest
 
 from mlforge.cli import main
+
+
+def _mock_engine_run(state):
+    """Return a mock RunEngine whose run() is a no-op."""
+    mock_engine = MagicMock()
+    mock_engine.run = MagicMock()
+    return mock_engine
+
+
+def _patch_all():
+    """Context manager that patches scaffold, GitManager, and RunEngine."""
+    return (
+        patch("mlforge.cli.scaffold_experiment"),
+        patch("mlforge.cli.GitManager"),
+        patch("mlforge.cli.RunEngine"),
+    )
 
 
 class TestCliNoArgs:
@@ -39,14 +55,22 @@ class TestCliArgParsing:
     def test_dataset_and_goal_parsed(self, tmp_path):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        with patch("mlforge.cli.scaffold_experiment"):
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
             result = main([str(dataset), "predict price"])
         assert result == 0
 
     def test_domain_flag(self, tmp_path):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        with patch("mlforge.cli.scaffold_experiment") as mock_scaffold:
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
             main([str(dataset), "predict price", "--domain", "tabular"])
             config = mock_scaffold.call_args[1]["config"]
             assert config.domain == "tabular"
@@ -54,7 +78,11 @@ class TestCliArgParsing:
     def test_budget_usd_flag(self, tmp_path):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        with patch("mlforge.cli.scaffold_experiment") as mock_scaffold:
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
             main([str(dataset), "predict price", "--budget-usd", "10.0"])
             config = mock_scaffold.call_args[1]["config"]
             assert config.budget_usd == 10.0
@@ -62,7 +90,11 @@ class TestCliArgParsing:
     def test_budget_minutes_flag(self, tmp_path):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        with patch("mlforge.cli.scaffold_experiment") as mock_scaffold:
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
             main([str(dataset), "predict price", "--budget-minutes", "30"])
             config = mock_scaffold.call_args[1]["config"]
             assert config.budget_minutes == 30
@@ -70,7 +102,11 @@ class TestCliArgParsing:
     def test_budget_experiments_flag(self, tmp_path):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        with patch("mlforge.cli.scaffold_experiment") as mock_scaffold:
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
             main([str(dataset), "predict price", "--budget-experiments", "20"])
             config = mock_scaffold.call_args[1]["config"]
             assert config.budget_experiments == 20
@@ -78,15 +114,22 @@ class TestCliArgParsing:
     def test_resume_flag(self, tmp_path):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        with patch("mlforge.cli.scaffold_experiment") as mock_scaffold:
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            # Resume requires a checkpoint to exist; without it, returns 1
             main([str(dataset), "predict price", "--resume"])
-            # resume is parsed -- check it's in the namespace
-            # (resume doesn't go into Config, it's a CLI-only flag)
 
     def test_model_flag(self, tmp_path):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        with patch("mlforge.cli.scaffold_experiment") as mock_scaffold:
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
             main([str(dataset), "predict price", "--model", "sonnet"])
             config = mock_scaffold.call_args[1]["config"]
             assert config.model == "sonnet"
@@ -94,7 +137,11 @@ class TestCliArgParsing:
     def test_output_dir_flag(self, tmp_path):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        with patch("mlforge.cli.scaffold_experiment") as mock_scaffold:
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
             main([str(dataset), "predict price", "--output-dir", "/tmp/exp"])
             call_kwargs = mock_scaffold.call_args[1]
             assert str(call_kwargs["target_dir"]) == "/tmp/exp"
@@ -108,6 +155,95 @@ class TestCliValidation:
         assert result == 1
         captured = capsys.readouterr()
         assert "not found" in captured.err.lower() or "does not exist" in captured.err.lower()
+
+
+class TestCliScaffoldEngineWiring:
+    """CLI wires scaffold -> git init -> engine flow."""
+
+    def test_scaffold_called_on_fresh_run(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict price"])
+            assert mock_scaffold.called
+
+    def test_git_branch_created_on_fresh_run(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager") as MockGit,
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict price"])
+            mock_git_instance = MockGit.return_value
+            assert mock_git_instance.create_run_branch.called
+
+    def test_engine_run_called(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine") as MockEngine,
+        ):
+            main([str(dataset), "predict price"])
+            mock_engine_instance = MockEngine.return_value
+            assert mock_engine_instance.run.called
+
+    def test_resume_skips_scaffold(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        target_dir = tmp_path / "output"
+        target_dir.mkdir()
+
+        from mlforge.state import SessionState
+        from mlforge.checkpoint import save_checkpoint
+
+        state = SessionState(run_id="run-123", experiment_count=3)
+        save_checkpoint(state, target_dir / ".mlforge")
+
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            result = main([
+                str(dataset), "predict price",
+                "--resume", "--output-dir", str(target_dir),
+            ])
+            assert result == 0
+            assert not mock_scaffold.called
+
+    def test_resume_no_checkpoint_returns_1(self, tmp_path, capsys):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        target_dir = tmp_path / "output"
+        target_dir.mkdir()
+
+        result = main([
+            str(dataset), "predict price",
+            "--resume", "--output-dir", str(target_dir),
+        ])
+        assert result == 1
+        captured = capsys.readouterr()
+        assert "no checkpoint" in captured.err.lower()
+
+    def test_prints_summary_on_completion(self, tmp_path, capsys):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict price"])
+        captured = capsys.readouterr()
+        assert "Completed" in captured.out or "completed" in captured.out.lower()
 
 
 class TestConfigNewFields:
