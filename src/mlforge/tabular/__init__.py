@@ -80,6 +80,7 @@ class TabularPlugin:
             "Commit before running -- enables clean revert on failure",
             "ALWAYS redirect output to run.log: > run.log 2>&1",
             "Read experiments.md before each iteration for accumulated knowledge",
+            "Do NOT remove predictions.csv or best_model.joblib writes from train.py -- diagnostics and artifact export depend on these files",
         ]
 
         if task == "classification":
