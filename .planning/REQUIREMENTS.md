@@ -41,11 +41,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Deep Learning Plugin
 
-- [ ] **DL-01**: Deep learning plugin handles image classification, text classification, and custom architecture training with PyTorch
-- [ ] **DL-02**: Plugin manages GPU utilization, memory limits, and training time budgets
-- [ ] **DL-03**: Plugin supports learning rate scheduling, early stopping, and gradient clipping as protocol rules
-- [ ] **DL-04**: Plugin generates domain-specific CLAUDE.md protocol with deep learning rules and anti-patterns
-- [ ] **DL-05**: Fixed time budget per training run prevents runaway GPU consumption
+- [x] **DL-01**: Deep learning plugin handles image classification, text classification, and custom architecture training with PyTorch
+- [x] **DL-02**: Plugin manages GPU utilization, memory limits, and training time budgets
+- [x] **DL-03**: Plugin supports learning rate scheduling, early stopping, and gradient clipping as protocol rules
+- [x] **DL-04**: Plugin generates domain-specific CLAUDE.md protocol with deep learning rules and anti-patterns
+- [x] **DL-05**: Fixed time budget per training run prevents runaway GPU consumption
 
 ### LLM Fine-tuning Plugin
 
@@ -130,11 +130,11 @@ Deferred to future release.
 | TABL-03 | Phase 4 | Complete |
 | TABL-04 | Phase 2 | Complete |
 | TABL-05 | Phase 2 | Complete |
-| DL-01 | Phase 5 | Pending |
-| DL-02 | Phase 5 | Pending |
-| DL-03 | Phase 5 | Pending |
-| DL-04 | Phase 5 | Pending |
-| DL-05 | Phase 5 | Pending |
+| DL-01 | Phase 5 | Complete |
+| DL-02 | Phase 5 | Complete |
+| DL-03 | Phase 5 | Complete |
+| DL-04 | Phase 5 | Complete |
+| DL-05 | Phase 5 | Complete |
 | FT-01 | Phase 5 | Pending |
 | FT-02 | Phase 5 | Pending |
 | FT-03 | Phase 5 | Pending |
