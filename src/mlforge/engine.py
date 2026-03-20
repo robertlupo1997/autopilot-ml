@@ -518,9 +518,15 @@ class RunEngine:
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
 
-        X_train = getattr(mod, "X_train", None)
-        y_train = getattr(mod, "y_train", None)
-        if X_train is None or y_train is None:
+        csv_path = self.config.plugin_settings.get("csv_path")
+        target_column = self.config.plugin_settings.get("target_column")
+        if not csv_path or not target_column:
+            return None
+
+        try:
+            df = mod.load_data(self.experiment_dir / csv_path)
+            X_train, _X_test, y_train, _y_test = mod.split_data(df, target_column)
+        except Exception:
             return None
 
         task = self.config.plugin_settings.get("task", "classification")

@@ -156,7 +156,7 @@ class SwarmManager:
             budget_experiments=child_config.budget_experiments,
         )
         wt_path = self._worktree_paths[agent_index]
-        return ["claude", "-p", prompt, "--cwd", str(wt_path)]
+        return ["claude", "-p", prompt]
 
     def teardown(self) -> None:
         """Remove all worktrees and clean up.

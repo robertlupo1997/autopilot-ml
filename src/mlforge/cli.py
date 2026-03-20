@@ -94,6 +94,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--n-agents", type=int, default=3, help="Number of swarm agents (default: 3)"
     )
+    parser.add_argument(
+        "--enable-drafts", action="store_true",
+        help="Enable multi-draft initial exploration (3-5 diverse solutions)",
+    )
 
     # Handle empty args
     if argv is not None and len(argv) == 0:
@@ -139,6 +143,8 @@ def main(argv: list[str] | None = None) -> int:
         config.custom_frozen = args.custom_frozen
     if args.custom_mutable is not None:
         config.custom_mutable = args.custom_mutable
+    if args.enable_drafts:
+        config.enable_drafts = True
 
     if args.metric is not None:
         # Expert mode: user specified metric, skip profiling
