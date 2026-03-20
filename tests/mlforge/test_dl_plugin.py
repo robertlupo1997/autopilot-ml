@@ -223,6 +223,82 @@ class TestPyprojectOptionalDeps:
         assert "datasets" in dep_names
 
 
+class TestDLTrainTemplate:
+    """dl_train.py.j2 renders valid Python with expected features."""
+
+    def _render(self, task="image_classification", metric="accuracy"):
+        from mlforge.templates import get_template_env
+
+        env = get_template_env()
+        template = env.get_template("dl_train.py.j2")
+        return template.render(
+            task=task,
+            data_dir="data",
+            data_path="data.csv",
+            metric=metric,
+            time_budget=3600,
+            img_size=224,
+            batch_size=32,
+            model_name="resnet50" if task == "image_classification" else "distilbert-base-uncased",
+        )
+
+    def test_renders_valid_python_image(self):
+        code = self._render(task="image_classification")
+        compile(code, "<dl_train_image>", "exec")
+
+    def test_renders_valid_python_text(self):
+        code = self._render(task="text_classification")
+        compile(code, "<dl_train_text>", "exec")
+
+    def test_renders_valid_python_custom(self):
+        code = self._render(task="custom")
+        compile(code, "<dl_train_custom>", "exec")
+
+    def test_contains_time_budget_sec(self):
+        code = self._render()
+        assert "TIME_BUDGET_SEC" in code
+
+    def test_contains_early_stopping(self):
+        code = self._render()
+        assert "patience" in code.lower()
+        assert "best_val_loss" in code
+
+    def test_contains_gradient_clipping(self):
+        code = self._render()
+        assert "clip_grad_norm_" in code
+
+    def test_contains_lr_scheduler(self):
+        code = self._render()
+        assert "ReduceLROnPlateau" in code
+
+    def test_contains_wall_clock_check(self):
+        code = self._render()
+        assert "time.time()" in code or "TIME_BUDGET_SEC" in code
+        # Verify time budget break logic
+        assert "TIME_BUDGET_SEC" in code
+        assert "break" in code
+
+    def test_image_classification_uses_timm(self):
+        code = self._render(task="image_classification")
+        assert "timm" in code
+
+    def test_text_classification_uses_transformers(self):
+        code = self._render(task="text_classification")
+        assert "AutoModelForSequenceClassification" in code
+
+    def test_custom_has_todo_placeholder(self):
+        code = self._render(task="custom")
+        assert "TODO" in code
+
+    def test_saves_best_model(self):
+        code = self._render()
+        assert "best_model.pt" in code
+
+    def test_outputs_json_result(self):
+        code = self._render()
+        assert "json.dumps" in code
+
+
 class TestDeepLearningLazyImports:
     """Importing mlforge.deeplearning must NOT import torch."""
 
