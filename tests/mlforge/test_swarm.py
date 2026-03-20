@@ -293,6 +293,72 @@ class TestVerifierWiringInRun:
             result = sm.run()
         assert "verification" in result
 
+class TestPublishResultWiring:
+    """publish_result() is called after agent completion in SwarmManager.run()."""
+
+    def test_publish_result_called_after_agent(self, tmp_path: Path) -> None:
+        config = Config(metric="accuracy", direction="maximize", budget_usd=6.0)
+        sm = SwarmManager(config=config, experiment_dir=tmp_path, n_agents=1)
+        sm._worktree_paths = [tmp_path / ".swarm" / "agent-0"]
+
+        # Create a state.json the agent would leave behind
+        state_dir = sm._worktree_paths[0] / ".mlforge"
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "state.json").write_text(json.dumps({
+            "best_metric": 0.92,
+            "best_commit": "abc123",
+        }))
+
+        mock_proc = MagicMock()
+        mock_proc.wait.return_value = 0
+
+        with (
+            patch("subprocess.Popen", return_value=mock_proc),
+            patch.object(sm, "create_child_configs", return_value=[config]),
+            patch.object(sm, "_build_agent_command", return_value=["echo", "test"]),
+            patch.object(sm.scoreboard, "publish_result") as mock_publish,
+            patch.object(sm.scoreboard, "read_best", return_value=(0.92, "agent-0")),
+            patch.object(sm.scoreboard, "read_all", return_value=[]),
+            patch("mlforge.swarm.verifier.verify_best_result", return_value=None),
+        ):
+            sm.run()
+            mock_publish.assert_called_once()
+            call_kwargs = mock_publish.call_args
+            assert call_kwargs[1]["agent"] == "agent-0" or call_kwargs[0][0] == "agent-0"
+
+    def test_scoreboard_populated_after_swarm(self, tmp_path: Path) -> None:
+        config = Config(metric="accuracy", direction="maximize", budget_usd=6.0)
+        sm = SwarmManager(config=config, experiment_dir=tmp_path, n_agents=2)
+        sm._worktree_paths = [
+            tmp_path / ".swarm" / "agent-0",
+            tmp_path / ".swarm" / "agent-1",
+        ]
+
+        # Create state.json for each agent
+        for i, wt in enumerate(sm._worktree_paths):
+            state_dir = wt / ".mlforge"
+            state_dir.mkdir(parents=True, exist_ok=True)
+            (state_dir / "state.json").write_text(json.dumps({
+                "best_metric": 0.90 + i * 0.05,
+                "best_commit": f"commit-{i}",
+            }))
+
+        mock_proc = MagicMock()
+        mock_proc.wait.return_value = 0
+
+        with (
+            patch("subprocess.Popen", return_value=mock_proc),
+            patch.object(sm, "create_child_configs", return_value=[config, config]),
+            patch.object(sm, "_build_agent_command", return_value=["echo", "test"]),
+            patch.object(sm.scoreboard, "publish_result") as mock_publish,
+            patch.object(sm.scoreboard, "read_best", return_value=(0.95, "agent-1")),
+            patch.object(sm.scoreboard, "read_all", return_value=[]),
+            patch("mlforge.swarm.verifier.verify_best_result", return_value=None),
+        ):
+            sm.run()
+            assert mock_publish.call_count == 2
+
+
     def test_run_calls_verify_best_result(self, tmp_path: Path) -> None:
         config = Config(metric="accuracy", direction="maximize", budget_usd=6.0)
         sm = SwarmManager(config=config, experiment_dir=tmp_path, n_agents=1)

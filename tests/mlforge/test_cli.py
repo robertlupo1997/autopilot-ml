@@ -403,6 +403,74 @@ class TestSimpleMode:
             assert config.plugin_settings["target_column"] == "price"
 
 
+class TestProfileDisplay:
+    """CLI displays rich profile info: missing_pct, numeric/categorical counts, leakage warnings."""
+
+    def test_profile_display_rich_fields(self, tmp_path, capsys):
+        """Capture stdout during simple mode CLI, assert Missing: and Numeric: appear."""
+        dataset = tmp_path / "data.csv"
+        lines = ["feature1,feature2,target"]
+        for i in range(50):
+            lines.append(f"{i},{float(i) * 0.5},{float(i) * 1.5}")
+        dataset.write_text("\n".join(lines) + "\n")
+
+        from mlforge.profiler import DatasetProfile
+
+        mock_profile = DatasetProfile(
+            task="regression",
+            metric="r2",
+            direction="maximize",
+            n_rows=50,
+            n_features=2,
+            numeric_features=["feature1", "feature2"],
+            categorical_features=[],
+            missing_pct=5.2,
+        )
+
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+            patch("mlforge.cli.profile_dataset", return_value=mock_profile),
+        ):
+            main([str(dataset), "predict target"])
+        captured = capsys.readouterr()
+        assert "Missing:" in captured.out
+        assert "Numeric:" in captured.out
+
+    def test_profile_display_leakage_warnings(self, tmp_path, capsys):
+        """Create profile with leakage_warnings, assert WARNING: appears."""
+        dataset = tmp_path / "data.csv"
+        lines = ["feature1,target"]
+        for i in range(50):
+            lines.append(f"{i},{float(i) * 1.5}")
+        dataset.write_text("\n".join(lines) + "\n")
+
+        from mlforge.profiler import DatasetProfile
+
+        mock_profile = DatasetProfile(
+            task="regression",
+            metric="r2",
+            direction="maximize",
+            n_rows=50,
+            n_features=1,
+            numeric_features=["feature1"],
+            categorical_features=[],
+            missing_pct=0.0,
+            leakage_warnings=["target leak detected"],
+        )
+
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+            patch("mlforge.cli.profile_dataset", return_value=mock_profile),
+        ):
+            main([str(dataset), "predict target"])
+        captured = capsys.readouterr()
+        assert "WARNING:" in captured.out
+
+
 class TestEnableDraftsFlag:
     """--enable-drafts CLI flag sets config.enable_drafts = True."""
 

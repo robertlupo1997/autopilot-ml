@@ -1408,6 +1408,63 @@ class TestDiagnosticsIntegration:
 
 # --- Helpers ---
 
+class TestTagBestWiring:
+    """tag_best() is called at engine session end when best experiment exists."""
+
+    def test_tag_best_called_at_session_end(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(budget_experiments=0)
+        state = SessionState(best_commit="abc123", run_id="run-1")
+        engine = RunEngine(tmp_path, config, state)
+
+        with (
+            patch.object(engine.git, "tag_best") as mock_tag,
+            patch.object(engine.git, "close"),
+            patch.object(engine, "_compute_baselines", return_value=None),
+            patch("mlforge.engine.export_artifact", return_value=None),
+            patch("mlforge.engine.generate_retrospective", return_value=""),
+        ):
+            engine.run()
+            mock_tag.assert_called_once_with("best-run-1", "Best experiment: None")
+
+    def test_tag_best_skipped_when_no_best(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(budget_experiments=0)
+        state = SessionState(best_commit=None)
+        engine = RunEngine(tmp_path, config, state)
+
+        with (
+            patch.object(engine.git, "tag_best") as mock_tag,
+            patch.object(engine.git, "close"),
+            patch.object(engine, "_compute_baselines", return_value=None),
+            patch("mlforge.engine.export_artifact", return_value=None),
+            patch("mlforge.engine.generate_retrospective", return_value=""),
+        ):
+            engine.run()
+            mock_tag.assert_not_called()
+
+    def test_tag_best_duplicate_handled(self, tmp_path):
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(budget_experiments=0)
+        state = SessionState(best_commit="abc123", run_id="run-1")
+        engine = RunEngine(tmp_path, config, state)
+
+        with (
+            patch.object(engine.git, "tag_best", side_effect=ValueError("Tag exists")),
+            patch.object(engine.git, "close"),
+            patch.object(engine, "_compute_baselines", return_value=None),
+            patch("mlforge.engine.export_artifact", return_value=None),
+            patch("mlforge.engine.generate_retrospective", return_value=""),
+        ):
+            engine.run()  # Should NOT raise
+
+
 def _init_git(path: Path) -> None:
     """Initialize a bare git repo with an initial commit."""
     import git
