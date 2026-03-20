@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 07-02-PLAN.md (Wire Intelligence Subsystem)
-last_updated: "2026-03-20T03:55:19.228Z"
-last_activity: 2026-03-20 -- Completed 07-02 (Wire Intelligence Subsystem)
+status: in-progress
+stopped_at: Completed 08-01-PLAN.md (Register DL/FT Plugins)
+last_updated: "2026-03-20T11:24:50.178Z"
+last_activity: 2026-03-20 -- Completed 08-01 (Register DL/FT Plugins)
 progress:
   total_phases: 9
   completed_phases: 7
-  total_plans: 17
-  completed_plans: 17
-  percent: 100
+  total_plans: 19
+  completed_plans: 18
+  percent: 95
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 7: Wire Intelligence Subsystem
+**Current focus:** Phase 8: Register Domain Plugins + Swarm CLI
 
 ## Current Position
 
-Phase: 7 of 9 (Wire Intelligence Subsystem)
-Plan: 2 of 2 in current phase
-Status: 07-02 Complete (Phase 07 Complete)
-Last activity: 2026-03-20 -- Completed 07-02 (Wire Intelligence Subsystem)
+Phase: 8 of 9 (Register Domain Plugins + Swarm CLI)
+Plan: 1 of 2 in current phase
+Status: 08-01 Complete
+Last activity: 2026-03-20 -- Completed 08-01 (Register DL/FT Plugins)
 
-Progress: [██████████] 100%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [██████████] 100%
 | Phase 06 P01 | 2min | 2 tasks | 2 files |
 | Phase 07 P01 | 3min | 2 tasks | 4 files |
 | Phase 07 P02 | 4min | 2 tasks | 2 files |
+| Phase 08 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,8 @@ Recent decisions affecting current work:
 - [Phase 07]: Diagnostics called after both keep and revert in _process_result (always analyze latest predictions)
 - [Phase 07]: Lazy pandas import inside _run_diagnostics() to avoid import-time dependency
 - [Phase 07]: prompt_override parameter on _run_one_experiment() for draft prompt injection
+- [08-01]: Dispatch map (_REGISTRATION_FUNCTIONS dict) rather than if/elif chain for extensibility
+- [08-01]: Unknown domains silently ignored (no-op) rather than raising errors
 
 ### Pending Todos
 
@@ -135,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T03:52:24.962Z
-Stopped at: Completed 07-02-PLAN.md (Wire Intelligence Subsystem)
+Last session: 2026-03-20T11:22:22Z
+Stopped at: Completed 08-01-PLAN.md (Register DL/FT Plugins)
 Resume file: None
