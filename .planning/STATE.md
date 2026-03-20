@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-02-PLAN.md (Diagnostics + Drafts + Stagnation)
-last_updated: "2026-03-20T00:11:01.864Z"
+stopped_at: Completed 02-01-PLAN.md (TabularPlugin + prepare.py + baselines + train.py template)
+last_updated: "2026-03-20T00:11:41.042Z"
 last_activity: 2026-03-20 -- Completed 02-02 (Diagnostics + Drafts + Stagnation)
 progress:
   total_phases: 5
@@ -30,7 +30,7 @@ Plan: 2 of 3 in current phase
 Status: In Progress
 Last activity: 2026-03-20 -- Completed 02-02 (Diagnostics + Drafts + Stagnation)
 
-Progress: [████░░░░░░] 40%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
@@ -75,6 +75,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Correlate abs_error (not signed error) with features for actionable diagnostics
 - [Phase 02]: ALGORITHM_FAMILIES stores class names as strings to avoid heavy deps at import time
 - [Phase 02]: trigger_stagnation_branch uses git.checkout + create_head for detached-HEAD-safe branching
+- [02-01]: ML deps added as required (not optional) -- this is an ML tool
+- [02-01]: prepare.py copied via Path.read_text for scaffold -- avoids import-time ML dep issues
+- [02-01]: Baseline gate uses strict inequality (must beat, not tie) for both directions
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T00:10:58.522Z
-Stopped at: Completed 02-02-PLAN.md (Diagnostics + Drafts + Stagnation)
+Last session: 2026-03-20T00:11:41.039Z
+Stopped at: Completed 02-01-PLAN.md (TabularPlugin + prepare.py + baselines + train.py template)
 Resume file: None

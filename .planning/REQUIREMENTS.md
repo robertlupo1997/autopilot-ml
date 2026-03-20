@@ -22,8 +22,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Experiment Intelligence
 
-- [ ] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
-- [ ] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
+- [x] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
+- [x] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
 - [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
 - [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
@@ -33,11 +33,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Tabular ML Plugin
 
-- [ ] **TABL-01**: Tabular ML plugin handles classification and regression tasks on CSV/Parquet tabular data
-- [ ] **TABL-02**: Plugin supports scikit-learn, XGBoost, LightGBM model families with Optuna hyperparameter search
-- [ ] **TABL-03**: Leakage prevention enforces shift-first temporal features and walk-forward CV for time-series data
-- [ ] **TABL-04**: Plugin generates domain-specific CLAUDE.md protocol with tabular ML rules and anti-patterns
-- [ ] **TABL-05**: Frozen prepare.py handles data loading and train/test split; mutable train.py handles modeling
+- [x] **TABL-01**: Tabular ML plugin handles classification and regression tasks on CSV/Parquet tabular data
+- [x] **TABL-02**: Plugin supports scikit-learn, XGBoost, LightGBM model families with Optuna hyperparameter search
+- [x] **TABL-03**: Leakage prevention enforces shift-first temporal features and walk-forward CV for time-series data
+- [x] **TABL-04**: Plugin generates domain-specific CLAUDE.md protocol with tabular ML rules and anti-patterns
+- [x] **TABL-05**: Frozen prepare.py handles data loading and train/test split; mutable train.py handles modeling
 
 ### Deep Learning Plugin
 
@@ -117,19 +117,19 @@ Deferred to future release.
 | CORE-08 | Phase 1 | Complete |
 | CORE-09 | Phase 3 | Pending |
 | CORE-10 | Phase 1 | Complete |
-| INTL-01 | Phase 2 | Pending |
-| INTL-02 | Phase 2 | Pending |
+| INTL-01 | Phase 2 | Complete |
+| INTL-02 | Phase 2 | Complete |
 | INTL-03 | Phase 2 | Complete |
 | INTL-04 | Phase 2 | Complete |
 | INTL-05 | Phase 2 | Complete |
 | INTL-06 | Phase 2 | Pending |
 | INTL-07 | Phase 3 | Pending |
 | INTL-08 | Phase 2 | Pending |
-| TABL-01 | Phase 2 | Pending |
-| TABL-02 | Phase 2 | Pending |
-| TABL-03 | Phase 4 | Pending |
-| TABL-04 | Phase 2 | Pending |
-| TABL-05 | Phase 2 | Pending |
+| TABL-01 | Phase 2 | Complete |
+| TABL-02 | Phase 2 | Complete |
+| TABL-03 | Phase 4 | Complete |
+| TABL-04 | Phase 2 | Complete |
+| TABL-05 | Phase 2 | Complete |
 | DL-01 | Phase 5 | Pending |
 | DL-02 | Phase 5 | Pending |
 | DL-03 | Phase 5 | Pending |
