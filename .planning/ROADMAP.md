@@ -173,7 +173,7 @@ Plans:
   1. `_compute_baselines()` calls `prepare.load_data()` + `prepare.split_data()` to get actual data, and `state.baselines` is populated for tabular runs
   2. `--enable-drafts` CLI flag exists and sets `config.enable_drafts = True`, making multi-draft reachable
   3. `--cwd` removed from swarm agent command list in `swarm/__init__.py`
-**Plans**: 0 plans
+**Plans**: 1 plan
 
 Plans:
 - [ ] 10-01-PLAN.md -- Fix baseline gate, add --enable-drafts CLI flag, remove invalid --cwd (INTL-01, INTL-02, INTL-05, SWARM-01)
