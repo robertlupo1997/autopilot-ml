@@ -102,7 +102,7 @@ Plans:
 Plans:
 - [ ] 05-01-PLAN.md -- Deep learning plugin: DeepLearningPlugin + frozen prepare.py + dl_train.py.j2 template (DL-01, DL-02, DL-03, DL-04, DL-05)
 - [ ] 05-02-PLAN.md -- Fine-tuning plugin: FineTuningPlugin + frozen prepare.py + ft_train.py.j2 template (FT-01, FT-02, FT-03, FT-04, FT-05)
-- [ ] 05-03-PLAN.md -- Swarm mode: SwarmManager + file-locked scoreboard + budget inheritance + verification agent (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
+- [x] 05-03-PLAN.md -- Swarm mode: SwarmManager + file-locked scoreboard + budget inheritance + verification agent (SWARM-01, SWARM-02, SWARM-03, SWARM-04)
 
 ## Progress
 
@@ -115,4 +115,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Tabular Plugin + Experiment Intelligence | 2/3 | In Progress|  |
 | 3. Scaffold, CLI + Run Engine | 3/3 | Complete   | 2026-03-20 |
 | 4. E2E Validation + UX | 2/2 | Complete   | 2026-03-20 |
-| 5. Domain Plugins + Swarm | 0/3 | Not started | - |
+| 5. Domain Plugins + Swarm | 3/3 | Complete   | 2026-03-20 |

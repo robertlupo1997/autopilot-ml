@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 04-02-PLAN.md (Artifact Export + Run Retrospective)
-last_updated: "2026-03-20T01:30:47.189Z"
-last_activity: 2026-03-20 -- Completed 04-02 (Artifact Export + Run Retrospective)
+stopped_at: Completed 05-03-PLAN.md (Swarm Mode)
+last_updated: "2026-03-20T02:36:42.963Z"
+last_activity: 2026-03-20 -- Completed 05-03 (Swarm Mode)
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 13
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 4: E2E Validation + UX
+**Current focus:** Phase 5: Domain Plugins + Swarm
 
 ## Current Position
 
-Phase: 4 of 5 (E2E Validation + UX)
-Plan: 2 of 2 in current phase
-Status: Phase 04 Complete
-Last activity: 2026-03-20 -- Completed 04-02 (Artifact Export + Run Retrospective)
+Phase: 5 of 5 (Domain Plugins + Swarm)
+Plan: 3 of 3 in current phase
+Status: 05-03 Complete
+Last activity: 2026-03-20 -- Completed 05-03 (Swarm Mode)
 
 Progress: [██████████] 100%
 
@@ -47,10 +47,12 @@ Progress: [██████████] 100%
 | 02-tabular-plugin | 3 | 6 min | 2 min |
 | 03-scaffold-cli-run-engine | 3 | 10 min | 3 min |
 | 04-e2e-validation-ux | 2 | 7 min | 4 min |
+| 05-domain-plugins-swarm | 3 | 12 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (3 min), 03-01 (4 min), 03-02 (3 min), 04-01 (3 min), 04-02 (4 min)
+- Last 5 plans: 03-02 (3 min), 04-01 (3 min), 04-02 (4 min), 05-01 (4 min), 05-03 (4 min)
 - Trend: Stable at ~3-4 min/plan
+| Phase 05 P01 | 4min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -98,6 +100,13 @@ Recent decisions affecting current work:
 - [04-02]: LiveProgress.log() added for post-loop messages (console.print when live, plain print otherwise)
 - [04-02]: Results recorded in _process_result alongside existing deviation logic (not replacing)
 - [04-02]: Stop action records as crash status in results tracker
+- [05-03]: fcntl.LOCK_EX for atomic publish, lockless reads for display
+- [05-03]: dataclasses.replace() for child config creation -- clean budget splitting
+- [05-03]: Append-only TSV format survives agent crashes without data loss
+- [05-03]: Platform guard: RuntimeError on non-Unix (no fcntl) with WSL recommendation
+- [Phase 05]: Module-level torch imports in prepare.py are safe -- standalone file copied during scaffold, never imported by mlforge core
+- [Phase 05]: Both dl and ft pyproject.toml optional deps added in Plan 01 to avoid parallel write conflicts with Plan 02
+- [Phase 05]: Custom task renders minimal nn.Module skeleton with TODO placeholder, time budget and early stopping pre-wired
 
 ### Pending Todos
 
@@ -109,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T01:20:11Z
-Stopped at: Completed 04-02-PLAN.md (Artifact Export + Run Retrospective)
+Last session: 2026-03-20T02:30:43Z
+Stopped at: Completed 05-03-PLAN.md (Swarm Mode)
 Resume file: None
