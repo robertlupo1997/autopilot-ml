@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-03-21T01:56:32.143Z"
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-03-21T02:12:29.709Z"
 last_activity: 2026-03-21 -- Completed 17-01 (Domain-aware export + verifier + diagnostics mapping)
 progress:
   total_phases: 28
-  completed_phases: 27
-  total_plans: 51
-  completed_plans: 51
+  completed_phases: 28
+  total_plans: 52
+  completed_plans: 52
   percent: 100
 ---
 
@@ -69,6 +69,7 @@ Progress: [██████████] 29/29 plans (100%)
 | Phase 16 P01 | 3min | 2 tasks | 3 files |
 | Phase 17 P02 | 2min | 2 tasks | 5 files |
 | Phase 17 P01 | 2min | 2 tasks | 6 files |
+| Phase 18 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -163,6 +164,7 @@ Recent decisions affecting current work:
 - [17-01]: Ordered candidate list with first-match-wins for artifact discovery priority
 - [17-01]: _CLASSIFICATION_TASKS as module-level frozenset for reuse and testability
 - [17-01]: Normalized task_type passed to _format_diagnostics instead of raw task value
+- [Phase 18]: Direct import of validate_no_leakage (not try/except) since pandas is already a profiler dependency
 
 ### Pending Todos
 
@@ -174,6 +176,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T01:49:30Z
-Stopped at: Completed 17-01-PLAN.md
-Resume file: .planning/phases/17-wire-dl-ft-artifact-export-diagnostics/17-01-SUMMARY.md
+Last session: 2026-03-21T02:12:29.704Z
+Stopped at: Completed 18-01-PLAN.md
+Resume file: None
