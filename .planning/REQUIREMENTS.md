@@ -114,14 +114,14 @@ Deferred to future release.
 | CORE-05 | Phase 1 | Complete |
 | CORE-06 | Phase 1 | Complete |
 | CORE-07 | Phase 1 | Complete |
-| CORE-08 | Phase 7 | Complete |
+| CORE-08 | Phase 21 | Pending |
 | CORE-09 | Phase 11 | Complete |
 | CORE-10 | Phase 13 | Complete |
-| INTL-01 | Phase 19 | Complete |
+| INTL-01 | Phase 21 | Pending |
 | INTL-02 | Phase 19 | Complete |
 | INTL-03 | Phase 16 | Complete |
-| INTL-04 | Phase 11 | Complete |
-| INTL-05 | Phase 20 | Complete |
+| INTL-04 | Phase 21 | Pending |
+| INTL-05 | Phase 21 | Pending |
 | INTL-06 | Phase 7 | Complete |
 | INTL-07 | Phase 6 | Complete |
 | INTL-08 | Phase 2 | Complete |
@@ -130,25 +130,25 @@ Deferred to future release.
 | TABL-03 | Phase 9 | Complete |
 | TABL-04 | Phase 2 | Complete |
 | TABL-05 | Phase 2 | Complete |
-| DL-01 | Phase 8 | Complete |
+| DL-01 | Phase 21 | Pending |
 | DL-02 | Phase 8 | Complete |
 | DL-03 | Phase 12 | Complete |
-| DL-04 | Phase 20 | Complete |
+| DL-04 | Phase 21 | Pending |
 | DL-05 | Phase 8 | Complete |
 | FT-01 | Phase 8 | Complete |
 | FT-02 | Phase 8 | Complete |
-| FT-03 | Phase 8 | Complete |
+| FT-03 | Phase 21 | Pending |
 | FT-04 | Phase 15 | Complete |
 | FT-05 | Phase 8 | Complete |
 | GUARD-01 | Phase 3 | Complete |
-| GUARD-02 | Phase 3 | Complete |
+| GUARD-02 | Phase 21 | Pending |
 | GUARD-03 | Phase 6 | Complete |
 | GUARD-04 | Phase 3 | Complete |
-| GUARD-05 | Phase 3 | Complete |
+| GUARD-05 | Phase 21 | Pending |
 | GUARD-06 | Phase 4 | Complete |
 | SWARM-01 | Phase 14 | Complete |
-| SWARM-02 | Phase 14 | Complete |
-| SWARM-03 | Phase 14 | Complete |
+| SWARM-02 | Phase 22 | Pending |
+| SWARM-03 | Phase 22 | Pending |
 | SWARM-04 | Phase 14 | Complete |
 | UX-01 | Phase 15 | Complete |
 | UX-02 | Phase 4 | Complete |
@@ -158,11 +158,11 @@ Deferred to future release.
 
 **Coverage:**
 - v1 requirements: 48 total
-- Satisfied: 44
-- Pending (gap closure): 4
+- Satisfied: 37
+- Pending (gap closure): 11
 - Mapped to phases: 48
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-21 after milestone audit*
+*Last updated: 2026-03-21 after gap closure planning*

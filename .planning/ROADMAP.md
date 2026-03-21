@@ -327,10 +327,39 @@ Plans:
 Plans:
 - [ ] 20-01-PLAN.md -- Add DL/FT task types to ALGORITHM_FAMILIES + multi-draft prompt fix (INTL-05, DL-04)
 
+### Phase 21: Fix Engine + CLI Integration Wiring
+**Goal**: Fix four integration bugs in engine.py and cli.py that break DL baseline gate, FT diagnostics routing, DL expert draft fallback, and max_turns guardrail
+**Depends on**: Phase 20
+**Requirements**: DL-04, GUARD-05, INTL-04, FT-03, INTL-05, DL-01, INTL-01, CORE-08, GUARD-02
+**Gap Closure**: Closes INT-DL-BASELINE, INT-FT-DIAGNOSTICS, INT-DL-DRAFT-FALLBACK, INT-MAX-TURNS from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `cli.py` sets `plugin_settings["dataset_path"]` for DL domain so `_compute_dl_baselines()` receives actual data path
+  2. `_CLASSIFICATION_TASKS` includes `"sft"` so FT diagnostics route to classification path (or a new FT-specific diagnostics path)
+  3. DL expert mode draft phase uses domain-aware task fallback instead of hardcoded `"classification"`
+  4. `max_turns_per_experiment` passed to claude subprocess command when set
+**Plans**: 1 plan
+
+Plans:
+- [ ] 21-01-PLAN.md -- Fix DL baseline path + FT diagnostics + DL draft fallback + max_turns flag (DL-04, GUARD-05, INTL-04, FT-03, INTL-05, DL-01, INTL-01, CORE-08, GUARD-02)
+
+### Phase 22: Fix Swarm State Enforcement
+**Goal**: Make swarm agent result collection code-enforced instead of relying solely on AI text instruction compliance
+**Depends on**: Phase 14
+**Requirements**: SWARM-02, SWARM-03
+**Gap Closure**: Closes INT-SWARM-STATE from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Engine or swarm module writes `state.json` programmatically after each experiment, not just via CLAUDE.md text instruction
+  2. `SwarmManager.run()` handles missing/malformed `state.json` with fallback to checkpoint.json or explicit error instead of silent skip
+  3. Swarm result collection produces correct scoreboard entries even if AI agent doesn't follow state.json write instruction
+**Plans**: 1 plan
+
+Plans:
+- [ ] 22-01-PLAN.md -- Programmatic state.json write + robust result collection fallback (SWARM-02, SWARM-03)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) -> 10 -> 11 -> 12/13 (parallel)
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) -> 10 -> 11 -> 12/13 (parallel) -> ... -> 21/22 (parallel)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -354,3 +383,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) 
 | 18. Wire Leakage Warning Display | 1/1 | Complete    | 2026-03-21 |
 | 19. Add DL/FT Baseline Gate | 1/1 | Complete    | 2026-03-21 |
 | 20. Fix Multi-Draft DL/FT Task Keys | 1/1 | Complete    | 2026-03-21 |
+| 21. Fix Engine + CLI Integration Wiring | 0/1 | Planned    | - |
+| 22. Fix Swarm State Enforcement | 0/1 | Planned    | - |
