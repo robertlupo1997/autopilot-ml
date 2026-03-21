@@ -356,6 +356,36 @@ Plans:
 Plans:
 - [ ] 22-01-PLAN.md -- Programmatic state.json write + robust result collection fallback (SWARM-02, SWARM-03)
 
+### Phase 23: Add Missing CLI Flags
+**Goal**: Add --model-name and --direction CLI flags to close remaining integration gaps
+**Depends on**: Phase 21
+**Requirements**: FT-01, UX-01, CORE-06, UX-02
+**Gap Closure**: Closes INT-FT-MODEL-NAME and INT-DIRECTION-FLAG from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `--model-name` argparse argument added to CLI, passed through to `plugin_settings["model_name"]` for FT domain
+  2. `--direction` argparse argument added to CLI (choices: minimize, maximize), overrides auto-detected direction in config
+  3. `mlforge dataset goal --domain finetuning --model-name meta-llama/Llama-3.2-1B` works without argparse error
+  4. `mlforge dataset goal --metric rmse --direction minimize` correctly sets direction=minimize
+**Plans**: 1 plan
+
+Plans:
+- [x] 23-01-PLAN.md -- Add --model-name and --direction CLI flags (FT-01, UX-01, CORE-06, UX-02)
+
+### Phase 24: Tech Debt Cleanup
+**Goal**: Remove dead code identified by v1.0 milestone audit
+**Depends on**: Phase 23
+**Requirements**: None (tech debt)
+**Success Criteria** (what must be TRUE):
+  1. `SessionState.to_json()` and `SessionState.from_json()` removed (checkpoint.py uses `dataclasses.asdict()`)
+  2. `temporal_split()` removed from `tabular/prepare.py` (never called)
+  3. Unused `ALGORITHM_FAMILIES` import removed from `engine.py` line 23 (only `get_families_for_domain` is used)
+  4. All existing tests still pass after dead code removal
+  5. No new test failures introduced
+**Plans**: 1 plan
+
+Plans:
+- [x] 24-01-PLAN.md -- Remove dead code (to_json, from_json, temporal_split, unused import) (tech debt)
+
 ## Progress
 
 **Execution Order:**
@@ -385,3 +415,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) 
 | 20. Fix Multi-Draft DL/FT Task Keys | 1/1 | Complete    | 2026-03-21 |
 | 21. Fix Engine + CLI Integration Wiring | 1/1 | Complete    | 2026-03-21 |
 | 22. Fix Swarm State Enforcement | 1/1 | Complete    | 2026-03-21 |
+| 23. Add Missing CLI Flags | 1/1 | Complete    | 2026-03-21 |
+| 24. Tech Debt Cleanup | 1/1 | Complete    | 2026-03-21 |
