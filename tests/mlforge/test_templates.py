@@ -219,6 +219,75 @@ class TestClaudeMdArtifactRule:
         assert "diagnostics" in output.lower() or "export" in output.lower()
 
 
+class TestDLTrainArtifacts:
+    """Verify dl_train.py.j2 renders predictions.csv write."""
+
+    def _render(self, task: str = "image_classification") -> str:
+        env = get_template_env()
+        template = env.get_template("dl_train.py.j2")
+        return template.render(
+            task=task,
+            data_dir="data",
+            data_path="data.csv",
+            metric="accuracy",
+            time_budget=300,
+            img_size=224,
+            batch_size=32,
+            model_name="resnet50",
+        )
+
+    def test_dl_template_writes_predictions(self):
+        output = self._render()
+        assert "predictions.csv" in output
+
+    def test_dl_template_cpu_numpy(self):
+        output = self._render()
+        assert ".cpu().numpy()" in output
+
+    def test_dl_template_text_writes_predictions(self):
+        output = self._render("text_classification")
+        assert "predictions.csv" in output
+
+    def test_dl_template_json_after_predictions(self):
+        output = self._render()
+        predictions_pos = output.index("predictions.csv")
+        json_pos = output.index("json.dumps(result)")
+        assert json_pos > predictions_pos
+
+
+class TestFTTrainArtifacts:
+    """Verify ft_train.py.j2 renders predictions.csv write."""
+
+    def _render(self) -> str:
+        env = get_template_env()
+        template = env.get_template("ft_train.py.j2")
+        return template.render(
+            model_name="meta-llama/Llama-3.2-1B",
+            lora_r=16,
+            lora_alpha=16,
+            metric="perplexity",
+            max_length=512,
+            batch_size=4,
+            learning_rate=2e-4,
+            num_epochs=3,
+            dataset_format="instruction",
+        )
+
+    def test_ft_template_writes_predictions(self):
+        output = self._render()
+        assert "predictions.csv" in output
+
+    def test_ft_template_predictions_guarded(self):
+        output = self._render()
+        assert 'METRIC in ("perplexity", "loss")' in output
+
+    def test_ft_template_json_after_predictions(self):
+        output = self._render()
+        predictions_pos = output.index("predictions.csv")
+        json_pos = output.index("json.dumps(result)")
+        assert json_pos > predictions_pos
+
+
 class TestRenderExperimentsMd:
     """Verify experiments.md rendering."""
 

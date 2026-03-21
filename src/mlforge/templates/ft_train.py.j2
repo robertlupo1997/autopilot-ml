@@ -205,7 +205,23 @@ def main():
     model.save_pretrained("best_adapter")
     tokenizer.save_pretrained("best_adapter")
 
-    # 11. Output result as JSON for engine parsing
+    # 11. Save predictions for diagnostics engine (loss-based metrics only)
+    if METRIC in ("perplexity", "loss"):
+        model.eval()
+        all_losses = []
+        with torch.no_grad():
+            for item in dataset["eval"]:
+                text = item["text"] if isinstance(item, dict) else str(item)
+                inputs = tokenizer(
+                    text, return_tensors="pt", truncation=True, max_length=MAX_LENGTH,
+                ).to(model.device)
+                outputs = model(**inputs, labels=inputs["input_ids"])
+                all_losses.append(outputs.loss.item())
+
+        import pandas as pd
+        pd.DataFrame({"y_true": [0.0] * len(all_losses), "y_pred": all_losses}).to_csv("predictions.csv", index=False)
+
+    # 12. Output result as JSON for engine parsing
     result = {"metric_name": metric_name, "metric_value": eval_metric}
     print(json.dumps(result))
 
