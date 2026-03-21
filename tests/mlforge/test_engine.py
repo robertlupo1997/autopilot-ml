@@ -739,8 +739,8 @@ class TestIntelligenceIntegration:
         assert state.baselines == baselines_result
         engine.git.close()
 
-    def test_baselines_skipped_for_non_tabular(self, tmp_path):
-        """When domain!='tabular', baselines are None and loop runs normally."""
+    def test_baselines_skipped_for_unknown_domain(self, tmp_path):
+        """When domain is unknown (not tabular/deeplearning/finetuning), baselines are None."""
         from mlforge.engine import RunEngine
 
         _init_git(tmp_path)
@@ -769,6 +769,112 @@ class TestIntelligenceIntegration:
 
         assert state.baselines is None
         assert state.experiment_count == 1
+        engine.git.close()
+
+    def test_baselines_computed_for_deeplearning(self, tmp_path):
+        """When domain='deeplearning' and labels available, baselines are populated."""
+        from mlforge.engine import RunEngine
+
+        import numpy as np
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(domain="deeplearning", metric="accuracy", budget_experiments=1)
+        config.plugin_settings["dataset_path"] = "images"
+        config.plugin_settings["task"] = "image_classification"
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_labels = np.array([0, 0, 0, 1, 1, 2])
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+            patch.object(engine, "_load_dl_labels", return_value=mock_labels),
+        ):
+            engine.run()
+
+        assert state.baselines is not None
+        assert "random" in state.baselines
+        assert "most_frequent" in state.baselines
+        engine.git.close()
+
+    def test_baselines_computed_for_finetuning(self, tmp_path):
+        """When domain='finetuning', baselines use theoretical bounds."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(domain="finetuning", metric="loss", budget_experiments=1)
+        config.direction = "minimize"
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 2.0}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+        ):
+            engine.run()
+
+        assert state.baselines is not None
+        assert "random_guess" in state.baselines
+        assert "untrained_model" in state.baselines
+        engine.git.close()
+
+    def test_dl_baselines_none_when_labels_unavailable(self, tmp_path):
+        """When domain='deeplearning' but no dataset_path, baselines are None."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(domain="deeplearning", metric="accuracy", budget_experiments=1)
+        # No dataset_path in plugin_settings
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with (
+            patch("subprocess.run", return_value=mock_result),
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch.object(engine.progress, "start"),
+            patch.object(engine.progress, "stop"),
+            patch.object(engine.progress, "update"),
+            patch.object(engine.progress, "log"),
+        ):
+            engine.run()
+
+        assert state.baselines is None
         engine.git.close()
 
     def test_baseline_gate_rejects_sub_baseline_keep(self, tmp_path):

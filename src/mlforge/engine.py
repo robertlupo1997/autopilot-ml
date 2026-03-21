@@ -514,15 +514,27 @@ class RunEngine:
         return "\n".join(lines)
 
     def _compute_baselines(self) -> dict | None:
-        """Compute baselines for tabular domain before the experiment loop.
+        """Compute baselines before the experiment loop.
+
+        Dispatches to domain-specific baseline modules:
+        - tabular: sklearn DummyClassifier/DummyRegressor on training data
+        - deeplearning: DummyClassifier on extracted labels or theoretical loss
+        - finetuning: theoretical loss/perplexity bounds from vocab size
 
         Returns:
-            Baselines dict from compute_baselines(), or None if not tabular
-            or prepare.py is missing.
+            Baselines dict, or None if domain is unknown or data unavailable.
         """
-        if self.config.domain != "tabular":
+        if self.config.domain == "tabular":
+            return self._compute_tabular_baselines()
+        elif self.config.domain == "deeplearning":
+            return self._compute_dl_baselines()
+        elif self.config.domain == "finetuning":
+            return self._compute_ft_baselines()
+        else:
             return None
 
+    def _compute_tabular_baselines(self) -> dict | None:
+        """Compute baselines for tabular domain using prepare.py."""
         prepare_path = self.experiment_dir / "prepare.py"
         if not prepare_path.exists():
             return None
@@ -548,6 +560,67 @@ class RunEngine:
         task = self.config.plugin_settings.get("task", "classification")
         self.state.task = task
         return compute_baselines(X_train, y_train, self.config.metric, task)
+
+    def _compute_dl_baselines(self) -> dict | None:
+        """Compute baselines for deep learning domain."""
+        labels = self._load_dl_labels()
+        if labels is None:
+            return None
+
+        from mlforge.deeplearning.baselines import compute_baselines as dl_baselines
+
+        task = self.config.plugin_settings.get("task", "image_classification")
+        return dl_baselines(labels, self.config.metric, task)
+
+    def _load_dl_labels(self):
+        """Extract labels from dataset directory structure or CSV.
+
+        Returns:
+            numpy array of labels, or None on any failure.
+        """
+        import numpy as np
+
+        dataset_path_str = self.config.plugin_settings.get("dataset_path")
+        if not dataset_path_str:
+            return None
+
+        dataset_path = self.experiment_dir / dataset_path_str
+        if not dataset_path.exists():
+            return None
+
+        try:
+            if dataset_path.is_dir():
+                # Scan subdirectories as class folders
+                class_dirs = sorted(
+                    [d for d in dataset_path.iterdir() if d.is_dir()]
+                )
+                if not class_dirs:
+                    return None
+                labels_list = []
+                for idx, class_dir in enumerate(class_dirs):
+                    file_count = sum(1 for f in class_dir.iterdir() if f.is_file())
+                    if file_count > 0:
+                        labels_list.extend([idx] * file_count)
+                if not labels_list:
+                    return None
+                return np.array(labels_list)
+            else:
+                # CSV-like file with a "label" column
+                import pandas as pd
+
+                df = pd.read_csv(dataset_path)
+                if "label" not in df.columns:
+                    return None
+                return df["label"].values
+        except Exception:
+            return None
+
+    def _compute_ft_baselines(self) -> dict | None:
+        """Compute baselines for fine-tuning domain."""
+        from mlforge.finetuning.baselines import compute_baselines as ft_baselines
+
+        vocab_size = self.config.plugin_settings.get("vocab_size", 32000)
+        return ft_baselines(self.config.metric, vocab_size)
 
     def _write_journal(
         self,
