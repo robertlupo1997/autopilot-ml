@@ -146,6 +146,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.enable_drafts:
         config.enable_drafts = True
 
+    # Set dataset_path unconditionally so all domains (especially DL) can find it
+    config.plugin_settings["dataset_path"] = dataset_path.name
+
     if args.metric is not None:
         # Expert mode: user specified metric, skip profiling
         config.metric = args.metric

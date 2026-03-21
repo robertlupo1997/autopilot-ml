@@ -602,7 +602,7 @@ class TestCommandFlags:
             cmd = mock_sub.call_args[0][0]
             assert "--append-system-prompt" in cmd
             idx = cmd.index("--append-system-prompt")
-            assert cmd[idx + 1] == "my protocol content"
+            assert "my protocol content" in cmd[idx + 1]
             assert "--append-system-prompt-file" not in cmd
         engine.git.close()
 
@@ -635,7 +635,7 @@ class TestCommandFlags:
         _init_git(tmp_path)
         # Do NOT create CLAUDE.md
         (tmp_path / "experiments.md").write_text("# Journal")
-        config = Config()
+        config = Config(max_turns_per_experiment=0)
         state = SessionState()
         engine = RunEngine(tmp_path, config, state)
 

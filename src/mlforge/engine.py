@@ -37,8 +37,15 @@ from mlforge.tabular.baselines import compute_baselines, passes_baseline_gate
 
 # Task types that map to classification diagnostics.
 _CLASSIFICATION_TASKS: frozenset[str] = frozenset({
-    "classification", "image_classification", "text_classification", "custom",
+    "classification", "image_classification", "text_classification", "custom", "sft",
 })
+
+# Default task type per domain -- used when plugin_settings has no explicit "task" key.
+_DOMAIN_DEFAULT_TASK: dict[str, str] = {
+    "tabular": "classification",
+    "deeplearning": "image_classification",
+    "finetuning": "sft",
+}
 
 
 class RunEngine:
@@ -159,6 +166,17 @@ class RunEngine:
 
         claude_md_path = self.experiment_dir / "CLAUDE.md"
         system_prompt = claude_md_path.read_text() if claude_md_path.exists() else ""
+
+        if self.config.max_turns_per_experiment:
+            turns_instruction = (
+                f"\n\nIMPORTANT: Complete your work within "
+                f"{self.config.max_turns_per_experiment} tool-use turns. "
+                f"After that limit, wrap up and report your metric value."
+            )
+            if system_prompt:
+                system_prompt += turns_instruction
+            else:
+                system_prompt = turns_instruction.strip()
 
         cmd = [
             "claude",
@@ -317,7 +335,10 @@ class RunEngine:
         Returns:
             List of DraftResult objects, one per family.
         """
-        task = self.config.plugin_settings.get("task", "classification")
+        task = self.config.plugin_settings.get(
+            "task",
+            _DOMAIN_DEFAULT_TASK.get(self.config.domain, "classification"),
+        )
         results: list[DraftResult] = []
 
         families = get_families_for_domain(self.config.domain)
@@ -434,7 +455,10 @@ class RunEngine:
         y_true = df["y_true"].values
         y_pred = df["y_pred"].values
 
-        task = self.config.plugin_settings.get("task", "classification")
+        task = self.config.plugin_settings.get(
+            "task",
+            _DOMAIN_DEFAULT_TASK.get(self.config.domain, "classification"),
+        )
         if task in _CLASSIFICATION_TASKS:
             diag = diagnose_classification(y_true, y_pred)
             task_type = "classification"
