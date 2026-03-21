@@ -587,6 +587,42 @@ class TestSwarmCli:
         assert not MockEngine.called
 
 
+class TestDatasetPathWiring:
+    """dataset_path must be set in plugin_settings for all domains in both modes."""
+
+    def test_dataset_path_dl_simple_mode(self, tmp_path):
+        """Simple mode with domain=deeplearning sets dataset_path in plugin_settings."""
+        dataset = tmp_path / "images"
+        dataset.mkdir()
+        # Create a minimal structure so dataset_path.exists() is true
+        (dataset / "dummy.txt").write_text("data")
+
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "classify images", "--domain", "deeplearning"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert "dataset_path" in config.plugin_settings
+            assert config.plugin_settings["dataset_path"] == "images"
+
+    def test_dataset_path_expert_mode(self, tmp_path):
+        """Expert mode (--metric explicit) still sets dataset_path in plugin_settings."""
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict b", "--metric", "accuracy", "--domain", "deeplearning"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert "dataset_path" in config.plugin_settings
+            assert config.plugin_settings["dataset_path"] == "data.csv"
+
+
 class TestConfigNewFields:
     """Config dataclass has budget/timeout/model fields with correct defaults."""
 

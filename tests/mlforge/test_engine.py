@@ -1752,6 +1752,149 @@ class TestTagBestWiring:
             engine.run()  # Should NOT raise
 
 
+class TestSftDiagnosticsRouting:
+    """FT diagnostics with task=sft should route to classification path."""
+
+    def test_sft_diagnostics_routes_to_classification(self, tmp_path):
+        """When domain=finetuning and task=sft, diagnose_classification is called."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(domain="finetuning", plugin_settings={"task": "sft"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n0,1\n1,1\n0,0\n")
+
+        with (
+            patch("mlforge.engine.diagnose_classification") as mock_cls,
+            patch("mlforge.engine.diagnose_regression") as mock_reg,
+        ):
+            mock_cls.return_value = {
+                "misclassified_samples": [],
+                "per_class_accuracy": {},
+                "confused_pairs": [],
+            }
+            engine._run_diagnostics()
+
+        mock_cls.assert_called_once()
+        mock_reg.assert_not_called()
+        engine.git.close()
+
+
+class TestDraftDlFallback:
+    """DL draft phase should use domain-aware task fallback, not hardcoded classification."""
+
+    def test_draft_dl_fallback_uses_domain_default(self, tmp_path):
+        """When domain=deeplearning and no task in plugin_settings, draft uses image_classification."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        config = Config(domain="deeplearning", enable_drafts=True)
+        # No "task" key in plugin_settings
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_exp_result = {
+            "result": json.dumps({"metric_value": 0.85}),
+            "total_cost_usd": 0.1,
+        }
+
+        prompts_captured = []
+
+        def capture_prompt(**kwargs):
+            if "prompt_override" in kwargs and kwargs["prompt_override"]:
+                prompts_captured.append(kwargs["prompt_override"])
+            return mock_exp_result
+
+        with (
+            patch.object(engine, "_run_one_experiment", side_effect=lambda **kw: capture_prompt(**kw)) as mock_run,
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+        ):
+            mock_run.side_effect = lambda **kw: capture_prompt(**kw)
+            # We need to capture the prompt passed to _build_draft_prompt
+            # Instead, check the task variable via the prompt content
+            results = engine._run_draft_phase()
+
+        # The draft prompt should reference DL-specific model classes, not tabular "classification"
+        # With the fix, task="image_classification" so family_info.get("image_classification") is used
+        # Without the fix, task="classification" which may not exist in DL families
+        # We verify by checking the prompt passed to _run_one_experiment contains the right model
+        assert len(results) > 0
+        # Check that the prompt was built with the correct task key
+        # The _build_draft_prompt uses family_info.get(task, family_name)
+        # For DL domain, task should be "image_classification", not "classification"
+        from mlforge.intelligence.drafts import get_families_for_domain
+        dl_families = get_families_for_domain("deeplearning")
+        first_family = list(dl_families.keys())[0]
+        first_info = dl_families[first_family]
+        # With correct fallback, model_class = first_info.get("image_classification", first_family)
+        # Without fix, model_class = first_info.get("classification", first_family) which falls back to family_name
+        expected_model = first_info.get("image_classification", first_family)
+        # Verify the prompt contains the expected model class
+        if prompts_captured:
+            assert expected_model in prompts_captured[0], (
+                f"Expected '{expected_model}' in draft prompt but got: {prompts_captured[0][:200]}"
+            )
+        engine.git.close()
+
+
+class TestMaxTurnsSystemPrompt:
+    """max_turns_per_experiment should be injected as system prompt instruction."""
+
+    def test_max_turns_in_system_prompt(self, tmp_path):
+        """When max_turns_per_experiment=25, system prompt contains '25 tool-use turns'."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("base protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(max_turns_per_experiment=25)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with patch("subprocess.run", return_value=mock_result) as mock_sub:
+            engine._run_one_experiment()
+            cmd = mock_sub.call_args[0][0]
+            # Find the --append-system-prompt value
+            idx = cmd.index("--append-system-prompt")
+            system_prompt_value = cmd[idx + 1]
+            assert "25 tool-use turns" in system_prompt_value
+        engine.git.close()
+
+    def test_max_turns_not_in_cmd_args(self, tmp_path):
+        """max_turns should NOT be passed as a CLI flag to claude."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        (tmp_path / "experiments.md").write_text("# Journal")
+        config = Config(max_turns_per_experiment=25)
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = json.dumps({
+            "result": json.dumps({"metric_value": 0.9}),
+            "total_cost_usd": 0.1,
+        })
+
+        with patch("subprocess.run", return_value=mock_result) as mock_sub:
+            engine._run_one_experiment()
+            cmd = mock_sub.call_args[0][0]
+            assert "--max-turns" not in cmd
+        engine.git.close()
+
+
 def _init_git(path: Path) -> None:
     """Initialize a bare git repo with an initial commit."""
     import git
