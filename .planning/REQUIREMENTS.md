@@ -22,8 +22,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Experiment Intelligence
 
-- [ ] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
-- [ ] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
+- [x] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
+- [x] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
 - [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
 - [ ] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
@@ -117,8 +117,8 @@ Deferred to future release.
 | CORE-08 | Phase 7 | Complete |
 | CORE-09 | Phase 11 | Complete |
 | CORE-10 | Phase 13 | Complete |
-| INTL-01 | Phase 19 | Pending |
-| INTL-02 | Phase 19 | Pending |
+| INTL-01 | Phase 19 | Complete |
+| INTL-02 | Phase 19 | Complete |
 | INTL-03 | Phase 16 | Complete |
 | INTL-04 | Phase 11 | Complete |
 | INTL-05 | Phase 20 | Pending |

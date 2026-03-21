@@ -352,5 +352,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) 
 | 16. Wire Template Runtime Artifacts | 1/1 | Complete    | 2026-03-21 |
 | 17. Wire DL/FT Artifact Export + Diagnostics | 2/2 | Complete    | 2026-03-21 |
 | 18. Wire Leakage Warning Display | 1/1 | Complete    | 2026-03-21 |
-| 19. Add DL/FT Baseline Gate | 0/1 | Planned | - |
+| 19. Add DL/FT Baseline Gate | 1/1 | Complete   | 2026-03-21 |
 | 20. Fix Multi-Draft DL/FT Task Keys | 0/1 | Planned | - |
