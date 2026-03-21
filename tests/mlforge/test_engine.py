@@ -1062,7 +1062,7 @@ class TestIntelligenceIntegration:
             patch("mlforge.engine.render_journal_markdown", return_value=""),
             patch("mlforge.engine.check_stagnation", return_value=True),
             patch("mlforge.engine.trigger_stagnation_branch", return_value="explore-random_forest") as mock_branch,
-            patch("mlforge.engine.ALGORITHM_FAMILIES", {"linear": {}, "random_forest": {}, "xgboost": {}}),
+            patch("mlforge.engine.get_families_for_domain", return_value={"linear": {}, "random_forest": {}, "xgboost": {}}),
         ):
             engine._process_result(result)
 
@@ -1201,7 +1201,7 @@ class TestMultiDraftIntegration:
         engine.git.close()
 
     def test_draft_runs_each_family(self, tmp_path):
-        """_run_draft_phase() spawns one experiment per ALGORITHM_FAMILIES entry."""
+        """_run_draft_phase() spawns one experiment per domain family entry."""
         from mlforge.engine import RunEngine
 
         _init_git(tmp_path)
@@ -1221,9 +1221,10 @@ class TestMultiDraftIntegration:
         ):
             results = engine._run_draft_phase()
 
-        from mlforge.intelligence.drafts import ALGORITHM_FAMILIES
-        assert mock_run.call_count == len(ALGORITHM_FAMILIES)
-        assert len(results) == len(ALGORITHM_FAMILIES)
+        from mlforge.intelligence.drafts import get_families_for_domain
+        tabular_families = get_families_for_domain("tabular")
+        assert mock_run.call_count == len(tabular_families)
+        assert len(results) == len(tabular_families)
         engine.git.close()
 
     def test_best_draft_selected(self, tmp_path):
@@ -1345,7 +1346,7 @@ class TestMultiDraftIntegration:
         engine.git.close()
 
     def test_tried_families_populated(self, tmp_path):
-        """After draft phase, state.tried_families contains all family names tried."""
+        """After draft phase, state.tried_families contains all tabular family names."""
         from mlforge.engine import RunEngine
 
         _init_git(tmp_path)
@@ -1365,9 +1366,87 @@ class TestMultiDraftIntegration:
         ):
             results = engine._run_draft_phase()
 
-        from mlforge.intelligence.drafts import ALGORITHM_FAMILIES
-        for family_name in ALGORITHM_FAMILIES:
+        from mlforge.intelligence.drafts import get_families_for_domain
+        for family_name in get_families_for_domain("tabular"):
             assert family_name in state.tried_families
+        engine.git.close()
+
+    def test_draft_phase_uses_dl_families(self, tmp_path):
+        """When config.domain='deeplearning', _run_draft_phase iterates DL families."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        (tmp_path / "CLAUDE.md").write_text("protocol")
+        config = Config(enable_drafts=True, domain="deeplearning")
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        mock_exp_result = {
+            "result": json.dumps({"metric_value": 0.85}),
+            "total_cost_usd": 0.1,
+        }
+
+        with (
+            patch.object(engine, "_run_one_experiment", return_value=mock_exp_result) as mock_run,
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+        ):
+            results = engine._run_draft_phase()
+
+        assert mock_run.call_count == 3  # resnet, vit, efficientnet
+        family_names = [r.name for r in results]
+        assert set(family_names) == {"resnet", "vit", "efficientnet"}
+        engine.git.close()
+
+    def test_stagnation_uses_domain_families(self, tmp_path):
+        """Stagnation untried check uses domain-filtered families for DL domain."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(domain="deeplearning")
+        state = SessionState(
+            best_metric=0.95,
+            best_commit="abc1234",
+            consecutive_reverts=2,
+            tried_families=["resnet"],
+        )
+        engine = RunEngine(tmp_path, config, state)
+
+        result = {"metric_value": 0.8, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "revert_to_last_commit"),
+            patch("mlforge.engine.append_journal_entry"),
+            patch("mlforge.engine.load_journal", return_value=[]),
+            patch("mlforge.engine.render_journal_markdown", return_value=""),
+            patch("mlforge.engine.check_stagnation", return_value=True),
+            patch("mlforge.engine.trigger_stagnation_branch", return_value="explore-vit") as mock_branch,
+        ):
+            engine._process_result(result)
+
+        call_args = mock_branch.call_args
+        new_family = call_args[0][2]
+        assert new_family == "vit"
+        assert "vit" in state.tried_families
+        engine.git.close()
+
+    def test_draft_prompt_renders_dl_model_class(self, tmp_path):
+        """_build_draft_prompt renders the correct DL model class, not the family key."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(domain="deeplearning")
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        family_info = {
+            "description": "ResNet convolutional network",
+            "image_classification": "resnet50",
+            "text_classification": "distilbert-base-uncased",
+            "custom": "resnet50",
+        }
+        prompt = engine._build_draft_prompt("resnet", family_info, "image_classification")
+        assert "resnet50" in prompt
+        assert "Use ONLY resnet50" in prompt
         engine.git.close()
 
 
