@@ -95,6 +95,7 @@ class DeepLearningPlugin:
             "Use early stopping with patience=5 on validation loss",
             "Apply gradient clipping: torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)",
             "Use ReduceLROnPlateau scheduler for adaptive learning rate",
+            "Do NOT remove predictions.csv or best_model.pt writes from train.py -- diagnostics and artifact export depend on these files",
         ]
         return {"domain_rules": rules, "extra_sections": []}
 

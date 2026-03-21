@@ -88,6 +88,7 @@ class FineTuningPlugin:
             "Evaluate with perplexity on held-out set after training",
             "Monitor VRAM usage -- if >90% utilization, reduce batch size or max_length",
             "Use gradient checkpointing to reduce memory: model.gradient_checkpointing_enable()",
+            "Do NOT remove predictions.csv or best_adapter save from train.py -- diagnostics and artifact export depend on these files",
         ]
         return {"domain_rules": rules, "extra_sections": []}
 

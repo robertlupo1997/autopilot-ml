@@ -288,6 +288,35 @@ class TestFTTrainArtifacts:
         assert json_pos > predictions_pos
 
 
+class TestDLTemplateContextArtifactRule:
+    """Verify DL plugin template_context includes artifact preservation rule."""
+
+    def test_dl_template_context_artifact_rule(self):
+        from mlforge.deeplearning import DeepLearningPlugin
+        plugin = DeepLearningPlugin()
+        config = Config(domain="deeplearning", metric="accuracy", direction="maximize")
+        ctx = plugin.template_context(config)
+        rules_text = " ".join(ctx["domain_rules"])
+        assert "predictions.csv" in rules_text
+        assert "best_model.pt" in rules_text
+
+
+class TestFTTemplateContextArtifactRule:
+    """Verify FT plugin template_context includes artifact preservation rule."""
+
+    def test_ft_template_context_artifact_rule(self):
+        from mlforge.finetuning import FineTuningPlugin
+        plugin = FineTuningPlugin()
+        config = Config(
+            domain="finetuning", metric="perplexity", direction="minimize",
+            plugin_settings={"model_name": "test-model"},
+        )
+        ctx = plugin.template_context(config)
+        rules_text = " ".join(ctx["domain_rules"])
+        assert "predictions.csv" in rules_text
+        assert "best_adapter" in rules_text
+
+
 class TestRenderExperimentsMd:
     """Verify experiments.md rendering."""
 
