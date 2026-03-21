@@ -319,5 +319,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) 
 | 14. Fix Swarm Agent Subprocess | 1/1 | Complete    | 2026-03-20 |
 | 15. Fix FT Simple Mode Metric Mapping | 1/1 | Complete    | 2026-03-20 |
 | 16. Wire Template Runtime Artifacts | 1/1 | Complete    | 2026-03-21 |
-| 17. Wire DL/FT Artifact Export + Diagnostics | 0/2 | Planned     | - |
+| 17. Wire DL/FT Artifact Export + Diagnostics | 1/2 | In Progress|  |
 | 18. Wire Leakage Warning Display | 0/0 | Planned     | - |

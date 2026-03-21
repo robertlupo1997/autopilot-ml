@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-03-21T00:04:54.401Z"
-last_activity: 2026-03-20 -- Completed 16-01 (Wire Template Runtime Artifacts)
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-03-21T01:49:18Z"
+last_activity: 2026-03-21 -- Completed 17-02 (DL/FT Artifact Export + Diagnostics)
 progress:
-  total_phases: 16
+  total_phases: 18
   completed_phases: 16
-  total_plans: 27
-  completed_plans: 27
+  total_plans: 29
+  completed_plans: 29
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 16 complete -- Template runtime artifacts wired
+**Current focus:** Phase 17 in progress -- DL/FT artifact export and diagnostics wiring
 
 ## Current Position
 
-Phase: 16 of 16 (Wire Template Runtime Artifacts)
-Plan: 1 of 1 complete
-Status: Phase 16 plan 01 complete
-Last activity: 2026-03-20 -- Completed 16-01 (Wire Template Runtime Artifacts)
+Phase: 17 of 18 (Wire DL/FT Artifact Export + Diagnostics)
+Plan: 2 of 2 complete
+Status: Phase 17 plan 02 complete
+Last activity: 2026-03-21 -- Completed 17-02 (DL/FT Artifact Export + Diagnostics)
 
-Progress: [██████████] 27/27 plans (100%)
+Progress: [██████████] 29/29 plans (100%)
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [██████████] 27/27 plans (100%)
 | Phase 14 P01 | 3min | 2 tasks | 3 files |
 | Phase 15 P01 | 2min | 2 tasks | 2 files |
 | Phase 16 P01 | 3min | 2 tasks | 3 files |
+| Phase 17 P02 | 2min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -155,6 +156,9 @@ Recent decisions affecting current work:
 - [Phase 15]: Auto-default model_name for FT domain replaces hard rejection -- test updated accordingly
 - [Phase 16]: Data reload in __main__ is intentional duplication -- objective() runs many trials, __main__ retrain is single run
 - [Phase 16]: Artifact writes placed before JSON print to maintain engine's last-line JSON parsing contract
+- [17-02]: DL predictions from best_model.pt state dict reload, not last epoch weights
+- [17-02]: FT predictions guarded to loss/perplexity only (ROUGE produces text, not numeric)
+- [17-02]: FT y_true=0.0 placeholder since loss is self-referential
 
 ### Pending Todos
 
@@ -166,6 +170,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T23:58:47Z
-Stopped at: Completed 16-01-PLAN.md
-Resume file: .planning/phases/16-wire-template-runtime-artifacts/16-01-SUMMARY.md
+Last session: 2026-03-21T01:49:18Z
+Stopped at: Completed 17-02-PLAN.md
+Resume file: .planning/phases/17-wire-dl-ft-artifact-export-diagnostics/17-02-SUMMARY.md
