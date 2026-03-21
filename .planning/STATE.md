@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 19-01-PLAN.md
-last_updated: "2026-03-21T02:58:32.148Z"
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-03-21T03:11:35.478Z"
 last_activity: 2026-03-21 -- Completed 17-01 (Domain-aware export + verifier + diagnostics mapping)
 progress:
   total_phases: 30
-  completed_phases: 29
-  total_plans: 53
-  completed_plans: 53
+  completed_phases: 30
+  total_plans: 54
+  completed_plans: 54
   percent: 100
 ---
 
@@ -71,6 +71,7 @@ Progress: [██████████] 29/29 plans (100%)
 | Phase 17 P01 | 2min | 2 tasks | 6 files |
 | Phase 18 P01 | 2min | 2 tasks | 2 files |
 | Phase 19 P01 | 3min | 2 tasks | 6 files |
+| Phase 20 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -169,6 +170,7 @@ Recent decisions affecting current work:
 - [Phase 19]: Refactored _compute_baselines into domain-dispatch with helper methods per domain
 - [Phase 19]: DL label extraction scans directory structure (class folders) for image classification datasets
 - [Phase 19]: FT baselines are purely theoretical using log(vocab_size), no model loading required
+- [Phase 20]: Domain-keyed nested dict with get_families_for_domain helper for algorithm family dispatch
 
 ### Pending Todos
 
@@ -180,6 +182,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T02:55:25.952Z
-Stopped at: Completed 19-01-PLAN.md
+Last session: 2026-03-21T03:11:35.473Z
+Stopped at: Completed 20-01-PLAN.md
 Resume file: None
