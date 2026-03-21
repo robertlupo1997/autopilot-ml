@@ -294,7 +294,10 @@ Plans:
   1. `profile_dataset()` calls leakage validation and populates `DatasetProfile.leakage_warnings`
   2. CLI displays leakage warnings when present in profile output
   3. Existing datasets without leakage produce empty warnings (no false positives)
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 18-01-PLAN.md -- Wire validate_no_leakage into profile_dataset + leakage tests (GUARD-06, UX-04)
 
 ## Progress
 
