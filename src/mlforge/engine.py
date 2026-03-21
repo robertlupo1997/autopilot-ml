@@ -35,6 +35,11 @@ from mlforge.retrospective import generate_retrospective
 from mlforge.state import SessionState
 from mlforge.tabular.baselines import compute_baselines, passes_baseline_gate
 
+# Task types that map to classification diagnostics.
+_CLASSIFICATION_TASKS: frozenset[str] = frozenset({
+    "classification", "image_classification", "text_classification", "custom",
+})
+
 
 class RunEngine:
     """Orchestrates the experiment loop.
@@ -428,12 +433,14 @@ class RunEngine:
         y_pred = df["y_pred"].values
 
         task = self.config.plugin_settings.get("task", "classification")
-        if task == "regression":
-            diag = diagnose_regression(y_true, y_pred)
-        else:
+        if task in _CLASSIFICATION_TASKS:
             diag = diagnose_classification(y_true, y_pred)
+            task_type = "classification"
+        else:
+            diag = diagnose_regression(y_true, y_pred)
+            task_type = "regression"
 
-        content = self._format_diagnostics(diag, task)
+        content = self._format_diagnostics(diag, task_type)
         (self.experiment_dir / "diagnostics.md").write_text(content)
 
     def _format_diagnostics(self, diag: dict, task: str) -> str:
