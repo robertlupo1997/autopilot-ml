@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-03-21T03:14:42.805Z"
-last_activity: 2026-03-21 -- Completed 17-01 (Domain-aware export + verifier + diagnostics mapping)
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-03-21T16:28:14.905Z"
+last_activity: 2026-03-21 -- Completed 21-01 (Fix four engine/CLI integration bugs)
 progress:
-  total_phases: 30
-  completed_phases: 30
-  total_plans: 54
-  completed_plans: 54
+  total_phases: 32
+  completed_phases: 31
+  total_plans: 55
+  completed_plans: 55
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 17 in progress -- DL/FT artifact export and diagnostics wiring
+**Current focus:** Phase 21 complete -- Engine/CLI integration wiring fixes
 
 ## Current Position
 
-Phase: 17 of 18 (Wire DL/FT Artifact Export + Diagnostics)
-Plan: 2 of 2 complete
-Status: Phase 17 complete
-Last activity: 2026-03-21 -- Completed 17-01 (Domain-aware export + verifier + diagnostics mapping)
+Phase: 21 of 22 (Fix Engine/CLI Integration Wiring)
+Plan: 1 of 1 complete
+Status: Phase 21 complete
+Last activity: 2026-03-21 -- Completed 21-01 (Fix four engine/CLI integration bugs)
 
-Progress: [██████████] 29/29 plans (100%)
+Progress: [██████████] 55/55 plans (100%)
 
 ## Performance Metrics
 
@@ -72,6 +72,7 @@ Progress: [██████████] 29/29 plans (100%)
 | Phase 18 P01 | 2min | 2 tasks | 2 files |
 | Phase 19 P01 | 3min | 2 tasks | 6 files |
 | Phase 20 P01 | 3min | 2 tasks | 4 files |
+| Phase 21 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -171,6 +172,8 @@ Recent decisions affecting current work:
 - [Phase 19]: DL label extraction scans directory structure (class folders) for image classification datasets
 - [Phase 19]: FT baselines are purely theoretical using log(vocab_size), no model loading required
 - [Phase 20]: Domain-keyed nested dict with get_families_for_domain helper for algorithm family dispatch
+- [Phase 21]: max_turns injected as system prompt text, not CLI flag (protocol-first philosophy)
+- [Phase 21]: _DOMAIN_DEFAULT_TASK as module-level dict for domain-aware fallbacks in draft and diagnostics
 
 ### Pending Todos
 
@@ -182,6 +185,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T03:11:35.473Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-03-21T16:28:14.900Z
+Stopped at: Completed 21-01-PLAN.md
 Resume file: None
