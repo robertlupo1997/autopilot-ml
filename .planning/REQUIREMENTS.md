@@ -22,11 +22,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Experiment Intelligence
 
-- [x] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
-- [x] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
+- [ ] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
+- [ ] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
 - [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
-- [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
+- [ ] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
 - [x] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
 - [x] **INTL-07**: Experiment time/cost budget with per-experiment timeout and total session budget (wall clock, API cost, GPU hours)
 - [x] **INTL-08**: Results tracking in structured experiment log with commit hash, metric value, status, description, timestamp
@@ -44,7 +44,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DL-01**: Deep learning plugin handles image classification, text classification, and custom architecture training with PyTorch
 - [x] **DL-02**: Plugin manages GPU utilization, memory limits, and training time budgets
 - [x] **DL-03**: Plugin supports learning rate scheduling, early stopping, and gradient clipping as protocol rules
-- [x] **DL-04**: Plugin generates domain-specific CLAUDE.md protocol with deep learning rules and anti-patterns
+- [ ] **DL-04**: Plugin generates domain-specific CLAUDE.md protocol with deep learning rules and anti-patterns
 - [x] **DL-05**: Fixed time budget per training run prevents runaway GPU consumption
 
 ### LLM Fine-tuning Plugin
@@ -117,11 +117,11 @@ Deferred to future release.
 | CORE-08 | Phase 7 | Complete |
 | CORE-09 | Phase 11 | Complete |
 | CORE-10 | Phase 13 | Complete |
-| INTL-01 | Phase 10 | Complete |
-| INTL-02 | Phase 10 | Complete |
+| INTL-01 | Phase 19 | Pending |
+| INTL-02 | Phase 19 | Pending |
 | INTL-03 | Phase 16 | Complete |
 | INTL-04 | Phase 11 | Complete |
-| INTL-05 | Phase 10 | Complete |
+| INTL-05 | Phase 20 | Pending |
 | INTL-06 | Phase 7 | Complete |
 | INTL-07 | Phase 6 | Complete |
 | INTL-08 | Phase 2 | Complete |
@@ -133,7 +133,7 @@ Deferred to future release.
 | DL-01 | Phase 8 | Complete |
 | DL-02 | Phase 8 | Complete |
 | DL-03 | Phase 12 | Complete |
-| DL-04 | Phase 8 | Complete |
+| DL-04 | Phase 20 | Pending |
 | DL-05 | Phase 8 | Complete |
 | FT-01 | Phase 8 | Complete |
 | FT-02 | Phase 8 | Complete |
@@ -158,8 +158,8 @@ Deferred to future release.
 
 **Coverage:**
 - v1 requirements: 48 total
-- Satisfied: 48
-- Pending (gap closure): 0
+- Satisfied: 44
+- Pending (gap closure): 4
 - Mapped to phases: 48
 - Unmapped: 0
 

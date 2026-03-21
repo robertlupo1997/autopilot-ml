@@ -299,6 +299,34 @@ Plans:
 Plans:
 - [ ] 18-01-PLAN.md -- Wire validate_no_leakage into profile_dataset + leakage tests (GUARD-06, UX-04)
 
+### Phase 19: Add DL/FT Baseline Gate
+**Goal**: Implement baseline computation and gate enforcement for DL and FT domains so the dual-baseline gate applies to all domains, not just tabular
+**Depends on**: Phase 10
+**Requirements**: INTL-01, INTL-02
+**Gap Closure**: Closes MISS-01 from v1.0 audit — baseline gate tabular-only
+**Success Criteria** (what must be TRUE):
+  1. `_compute_baselines()` returns domain-appropriate baselines for DL (naive image/text classifier) and FT (base model perplexity/loss)
+  2. `passes_baseline_gate()` enforces dual-baseline comparison for DL/FT experiments, not just tabular
+  3. DL/FT runs with baselines enabled produce populated `state.baselines` instead of `None`
+**Plans**: 1 plan
+
+Plans:
+- [ ] 19-01-PLAN.md -- DL/FT baseline computation + gate enforcement (INTL-01, INTL-02)
+
+### Phase 20: Fix Multi-Draft DL/FT Task Keys
+**Goal**: Add DL/FT task type entries to ALGORITHM_FAMILIES so multi-draft prompt renders correct model families for non-tabular domains
+**Depends on**: Phase 10
+**Requirements**: INTL-05, DL-04
+**Gap Closure**: Closes MISS-02 from v1.0 audit — multi-draft task key mismatch for DL/FT
+**Success Criteria** (what must be TRUE):
+  1. `ALGORITHM_FAMILIES` dict has entries for DL task types (image_classification, text_classification) with appropriate model family lists
+  2. `ALGORITHM_FAMILIES` dict has entries for FT task types with appropriate adapter/method family lists
+  3. `--enable-drafts` on DL/FT domains renders multi-draft prompt with correct families instead of falling back to string
+**Plans**: 1 plan
+
+Plans:
+- [ ] 20-01-PLAN.md -- Add DL/FT task types to ALGORITHM_FAMILIES + multi-draft prompt fix (INTL-05, DL-04)
+
 ## Progress
 
 **Execution Order:**
@@ -323,4 +351,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) 
 | 15. Fix FT Simple Mode Metric Mapping | 1/1 | Complete    | 2026-03-20 |
 | 16. Wire Template Runtime Artifacts | 1/1 | Complete    | 2026-03-21 |
 | 17. Wire DL/FT Artifact Export + Diagnostics | 2/2 | Complete    | 2026-03-21 |
-| 18. Wire Leakage Warning Display | 1/1 | Complete   | 2026-03-21 |
+| 18. Wire Leakage Warning Display | 1/1 | Complete    | 2026-03-21 |
+| 19. Add DL/FT Baseline Gate | 0/1 | Planned | - |
+| 20. Fix Multi-Draft DL/FT Task Keys | 0/1 | Planned | - |
