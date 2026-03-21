@@ -384,4 +384,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) 
 | 19. Add DL/FT Baseline Gate | 1/1 | Complete    | 2026-03-21 |
 | 20. Fix Multi-Draft DL/FT Task Keys | 1/1 | Complete    | 2026-03-21 |
 | 21. Fix Engine + CLI Integration Wiring | 1/1 | Complete    | 2026-03-21 |
-| 22. Fix Swarm State Enforcement | 1/1 | Complete   | 2026-03-21 |
+| 22. Fix Swarm State Enforcement | 1/1 | Complete    | 2026-03-21 |
