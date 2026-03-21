@@ -282,8 +282,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md -- Domain-aware export + verifier fix + diagnostics task mapping (UX-03, SWARM-04, INTL-03)
-- [ ] 17-02-PLAN.md -- DL/FT template predictions.csv + CLAUDE.md artifact rules (DL-04, FT-04, INTL-03)
+- [x] 17-01-PLAN.md -- Domain-aware export + verifier fix + diagnostics task mapping (UX-03, SWARM-04, INTL-03)
+- [x] 17-02-PLAN.md -- DL/FT template predictions.csv + CLAUDE.md artifact rules (DL-04, FT-04, INTL-03)
 
 ### Phase 18: Wire Leakage Warning Display
 **Goal**: Populate profiler leakage_warnings so CLI displays leakage risk information to users
@@ -319,5 +319,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7/8/9 (parallel) 
 | 14. Fix Swarm Agent Subprocess | 1/1 | Complete    | 2026-03-20 |
 | 15. Fix FT Simple Mode Metric Mapping | 1/1 | Complete    | 2026-03-20 |
 | 16. Wire Template Runtime Artifacts | 1/1 | Complete    | 2026-03-21 |
-| 17. Wire DL/FT Artifact Export + Diagnostics | 1/2 | In Progress|  |
+| 17. Wire DL/FT Artifact Export + Diagnostics | 2/2 | Complete    | 2026-03-21 |
 | 18. Wire Leakage Warning Display | 0/0 | Planned     | - |

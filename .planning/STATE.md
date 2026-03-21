@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-03-21T01:49:18Z"
-last_activity: 2026-03-21 -- Completed 17-02 (DL/FT Artifact Export + Diagnostics)
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-03-21T01:52:15.091Z"
+last_activity: 2026-03-21 -- Completed 17-01 (Domain-aware export + verifier + diagnostics mapping)
 progress:
   total_phases: 18
-  completed_phases: 16
+  completed_phases: 17
   total_plans: 29
   completed_plans: 29
   percent: 100
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 Phase: 17 of 18 (Wire DL/FT Artifact Export + Diagnostics)
 Plan: 2 of 2 complete
-Status: Phase 17 plan 02 complete
-Last activity: 2026-03-21 -- Completed 17-02 (DL/FT Artifact Export + Diagnostics)
+Status: Phase 17 complete
+Last activity: 2026-03-21 -- Completed 17-01 (Domain-aware export + verifier + diagnostics mapping)
 
 Progress: [██████████] 29/29 plans (100%)
 
@@ -68,6 +68,7 @@ Progress: [██████████] 29/29 plans (100%)
 | Phase 15 P01 | 2min | 2 tasks | 2 files |
 | Phase 16 P01 | 3min | 2 tasks | 3 files |
 | Phase 17 P02 | 2min | 2 tasks | 5 files |
+| Phase 17 P01 | 2min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -159,6 +160,9 @@ Recent decisions affecting current work:
 - [17-02]: DL predictions from best_model.pt state dict reload, not last epoch weights
 - [17-02]: FT predictions guarded to loss/perplexity only (ROUGE produces text, not numeric)
 - [17-02]: FT y_true=0.0 placeholder since loss is self-referential
+- [17-01]: Ordered candidate list with first-match-wins for artifact discovery priority
+- [17-01]: _CLASSIFICATION_TASKS as module-level frozenset for reuse and testability
+- [17-01]: Normalized task_type passed to _format_diagnostics instead of raw task value
 
 ### Pending Todos
 
@@ -170,6 +174,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T01:49:18Z
-Stopped at: Completed 17-02-PLAN.md
-Resume file: .planning/phases/17-wire-dl-ft-artifact-export-diagnostics/17-02-SUMMARY.md
+Last session: 2026-03-21T01:49:30Z
+Stopped at: Completed 17-01-PLAN.md
+Resume file: .planning/phases/17-wire-dl-ft-artifact-export-diagnostics/17-01-SUMMARY.md
