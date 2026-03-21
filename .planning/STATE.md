@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 21-01-PLAN.md
-last_updated: "2026-03-21T16:30:59.202Z"
-last_activity: 2026-03-21 -- Completed 21-01 (Fix four engine/CLI integration bugs)
+stopped_at: Completed 22-01-PLAN.md
+last_updated: "2026-03-21T16:43:53.000Z"
+last_activity: 2026-03-21 -- Completed 22-01 (Swarm state enforcement fallback chain)
 progress:
   total_phases: 32
   completed_phases: 31
-  total_plans: 55
-  completed_plans: 55
+  total_plans: 56
+  completed_plans: 56
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 21 complete -- Engine/CLI integration wiring fixes
+**Current focus:** Phase 22 complete -- Swarm state enforcement fallback chain
 
 ## Current Position
 
-Phase: 21 of 22 (Fix Engine/CLI Integration Wiring)
+Phase: 22 of 22 (Fix Swarm State Enforcement)
 Plan: 1 of 1 complete
-Status: Phase 21 complete
-Last activity: 2026-03-21 -- Completed 21-01 (Fix four engine/CLI integration bugs)
+Status: Phase 22 complete
+Last activity: 2026-03-21 -- Completed 22-01 (Swarm state enforcement fallback chain)
 
-Progress: [██████████] 55/55 plans (100%)
+Progress: [██████████] 56/56 plans (100%)
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Progress: [██████████] 55/55 plans (100%)
 | Phase 19 P01 | 3min | 2 tasks | 6 files |
 | Phase 20 P01 | 3min | 2 tasks | 4 files |
 | Phase 21 P01 | 3min | 2 tasks | 4 files |
+| Phase 22 P01 | 3min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -174,6 +175,9 @@ Recent decisions affecting current work:
 - [Phase 20]: Domain-keyed nested dict with get_families_for_domain helper for algorithm family dispatch
 - [Phase 21]: max_turns injected as system prompt text, not CLI flag (protocol-first philosophy)
 - [Phase 21]: _DOMAIN_DEFAULT_TASK as module-level dict for domain-aware fallbacks in draft and diagnostics
+- [Phase 22]: Module-level import of verify_best_result instead of lazy import inside run()
+- [Phase 22]: Static _parse_subprocess_output for testability and separation of concerns
+- [Phase 22]: Fallback chain returns (None, "") explicitly instead of silent pass
 
 ### Pending Todos
 
@@ -185,6 +189,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T16:28:14.900Z
-Stopped at: Completed 21-01-PLAN.md
+Last session: 2026-03-21T16:43:53.000Z
+Stopped at: Completed 22-01-PLAN.md
 Resume file: None
