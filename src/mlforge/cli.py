@@ -98,6 +98,14 @@ def main(argv: list[str] | None = None) -> int:
         "--enable-drafts", action="store_true",
         help="Enable multi-draft initial exploration (3-5 diverse solutions)",
     )
+    parser.add_argument(
+        "--model-name", type=str, default=None,
+        help="HuggingFace model name for fine-tuning domain",
+    )
+    parser.add_argument(
+        "--direction", choices=["minimize", "maximize"], default=None,
+        help="Metric optimization direction override",
+    )
 
     # Handle empty args
     if argv is not None and len(argv) == 0:
@@ -145,9 +153,13 @@ def main(argv: list[str] | None = None) -> int:
         config.custom_mutable = args.custom_mutable
     if args.enable_drafts:
         config.enable_drafts = True
+    if args.direction is not None:
+        config.direction = args.direction
 
     # Set dataset_path unconditionally so all domains (especially DL) can find it
     config.plugin_settings["dataset_path"] = dataset_path.name
+    if args.model_name is not None:
+        config.plugin_settings["model_name"] = args.model_name
 
     if args.metric is not None:
         # Expert mode: user specified metric, skip profiling

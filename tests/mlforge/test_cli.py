@@ -587,6 +587,95 @@ class TestSwarmCli:
         assert not MockEngine.called
 
 
+class TestModelNameFlag:
+    """--model-name CLI flag sets plugin_settings['model_name']."""
+
+    def test_model_name_flag(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            result = main([
+                str(dataset), "predict b",
+                "--domain", "finetuning",
+                "--model-name", "meta-llama/Llama-3.2-1B",
+            ])
+            assert result == 0
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.plugin_settings["model_name"] == "meta-llama/Llama-3.2-1B"
+
+    def test_no_model_name_flag_absent_from_plugin_settings(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict b"])
+            config = mock_scaffold.call_args[1]["config"]
+            assert "model_name" not in config.plugin_settings
+
+
+class TestDirectionFlag:
+    """--direction CLI flag overrides config.direction."""
+
+    def test_direction_minimize(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            result = main([
+                str(dataset), "predict b",
+                "--metric", "rmse",
+                "--direction", "minimize",
+            ])
+            assert result == 0
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.direction == "minimize"
+
+    def test_direction_maximize(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            result = main([
+                str(dataset), "predict b",
+                "--metric", "accuracy",
+                "--direction", "maximize",
+            ])
+            assert result == 0
+            config = mock_scaffold.call_args[1]["config"]
+            assert config.direction == "maximize"
+
+    def test_no_direction_flag_uses_default(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment") as mock_scaffold,
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            main([str(dataset), "predict b", "--metric", "rmse"])
+            config = mock_scaffold.call_args[1]["config"]
+            # direction should remain at Config default, not overridden
+            assert config.direction is not None  # has a default
+
+    def test_direction_invalid_rejected(self):
+        """--direction invalid_value is rejected by argparse."""
+        with pytest.raises(SystemExit):
+            main(["data.csv", "predict b", "--direction", "invalid"])
+
+
 class TestDatasetPathWiring:
     """dataset_path must be set in plugin_settings for all domains in both modes."""
 
