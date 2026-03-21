@@ -1405,6 +1405,108 @@ class TestDiagnosticsIntegration:
         mock_reg.assert_not_called()
         engine.git.close()
 
+    def test_diagnostic_image_classification_maps_to_classify(self, tmp_path):
+        """image_classification routes to diagnose_classification."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "image_classification"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n0,0\n1,0\n1,1\n")
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_regression") as mock_reg,
+            patch("mlforge.engine.diagnose_classification") as mock_cls,
+        ):
+            mock_cls.return_value = {"misclassified_samples": [], "per_class_accuracy": {}, "confused_pairs": []}
+            engine._process_result(result)
+
+        mock_cls.assert_called_once()
+        mock_reg.assert_not_called()
+        engine.git.close()
+
+    def test_diagnostic_text_classification_maps_to_classify(self, tmp_path):
+        """text_classification routes to diagnose_classification."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "text_classification"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n0,0\n1,0\n1,1\n")
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_regression") as mock_reg,
+            patch("mlforge.engine.diagnose_classification") as mock_cls,
+        ):
+            mock_cls.return_value = {"misclassified_samples": [], "per_class_accuracy": {}, "confused_pairs": []}
+            engine._process_result(result)
+
+        mock_cls.assert_called_once()
+        mock_reg.assert_not_called()
+        engine.git.close()
+
+    def test_diagnostic_custom_task_maps_to_classify(self, tmp_path):
+        """custom task routes to diagnose_classification."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "custom"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n0,0\n1,0\n1,1\n")
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_regression") as mock_reg,
+            patch("mlforge.engine.diagnose_classification") as mock_cls,
+        ):
+            mock_cls.return_value = {"misclassified_samples": [], "per_class_accuracy": {}, "confused_pairs": []}
+            engine._process_result(result)
+
+        mock_cls.assert_called_once()
+        mock_reg.assert_not_called()
+        engine.git.close()
+
+    def test_diagnostic_format_receives_normalized_task_type(self, tmp_path):
+        """_format_diagnostics receives 'classification' not 'image_classification'."""
+        from mlforge.engine import RunEngine
+
+        _init_git(tmp_path)
+        config = Config(plugin_settings={"task": "image_classification"})
+        state = SessionState()
+        engine = RunEngine(tmp_path, config, state)
+
+        (tmp_path / "predictions.csv").write_text("y_true,y_pred\n0,0\n1,0\n1,1\n")
+
+        result = {"metric_value": 0.9, "total_cost_usd": 0.1, "status": "ok"}
+
+        with (
+            patch.object(engine.git, "commit_experiment", return_value="abc12345"),
+            patch("mlforge.engine.diagnose_classification") as mock_cls,
+            patch.object(engine, "_format_diagnostics", return_value="# Diagnostics") as mock_fmt,
+        ):
+            mock_cls.return_value = {"misclassified_samples": [], "per_class_accuracy": {}, "confused_pairs": []}
+            engine._process_result(result)
+
+        # _format_diagnostics should receive "classification", not "image_classification"
+        mock_fmt.assert_called_once()
+        call_args = mock_fmt.call_args
+        assert call_args[0][1] == "classification"
+        engine.git.close()
+
 
 # --- Helpers ---
 
