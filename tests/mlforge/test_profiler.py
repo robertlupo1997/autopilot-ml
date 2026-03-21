@@ -195,6 +195,45 @@ class TestProfileStatistics:
         assert "distribution" in profile.target_stats
 
 
+class TestLeakageWarnings:
+    """Leakage warnings populated by profile_dataset when leaky columns exist."""
+
+    def test_name_based_leakage_detected(self):
+        """Column containing target name triggers leakage warning."""
+        df = pd.DataFrame({
+            "feature1": np.random.randn(50),
+            "price_encoded": np.random.randn(50),
+            "price": np.random.randn(50),
+        })
+        profile = profile_dataset(df, "price")
+        assert len(profile.leakage_warnings) > 0
+        assert any("price_encoded" in w for w in profile.leakage_warnings)
+
+    def test_high_correlation_leakage_detected(self):
+        """Column with >0.99 correlation to target triggers leakage warning."""
+        rng = np.random.default_rng(42)
+        target = rng.normal(100, 10, size=50)
+        df = pd.DataFrame({
+            "feature1": rng.normal(0, 1, size=50),
+            "leaky_col": target * 1.0001,
+            "target": target,
+        })
+        profile = profile_dataset(df, "target")
+        assert len(profile.leakage_warnings) > 0
+        assert any("correlation" in w for w in profile.leakage_warnings)
+
+    def test_clean_data_no_false_positives(self):
+        """Clean dataset returns empty leakage_warnings."""
+        rng = np.random.default_rng(99)
+        df = pd.DataFrame({
+            "feature1": rng.normal(0, 1, size=50),
+            "feature2": rng.normal(5, 2, size=50),
+            "target": rng.normal(10, 3, size=50),
+        })
+        profile = profile_dataset(df, "target")
+        assert profile.leakage_warnings == []
+
+
 class TestEmptyDataFrame:
     """Empty DataFrame handled gracefully."""
 
