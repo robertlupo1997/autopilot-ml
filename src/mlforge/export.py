@@ -1,8 +1,9 @@
 """Artifact export -- packages the best model with metadata after a session.
 
-Copies the best model file to an ``artifacts/`` directory alongside a
-``metadata.json`` sidecar containing metric info, commit hash, cost, and
-timestamp.
+Copies the best model file or adapter directory to an ``artifacts/`` directory
+alongside a ``metadata.json`` sidecar containing metric info, commit hash,
+cost, and timestamp.  Supports tabular (.joblib), DL (.pt), and fine-tuning
+(best_adapter/) artifacts.
 """
 
 from __future__ import annotations
@@ -15,13 +16,23 @@ from pathlib import Path
 from mlforge.config import Config
 from mlforge.state import SessionState
 
+# Ordered candidate list: first match wins.
+# Each entry is (filename, is_directory).
+_MODEL_CANDIDATES: list[tuple[str, bool]] = [
+    ("best_model.joblib", False),  # tabular
+    ("best_model.pt", False),      # DL
+    ("best_adapter", True),        # FT (directory)
+]
+
 
 def export_artifact(
     experiment_dir: Path, state: SessionState, config: Config
 ) -> Path | None:
     """Export the best model artifact with metadata sidecar.
 
-    Looks for ``best_model.joblib`` in *experiment_dir*. If found, copies it
+    Searches *experiment_dir* for model artifacts in priority order:
+    ``best_model.joblib`` (tabular), ``best_model.pt`` (DL),
+    ``best_adapter/`` (fine-tuning).  First match wins.  Copies the artifact
     to ``artifacts/`` and writes ``metadata.json`` alongside it.
 
     Args:
@@ -32,15 +43,30 @@ def export_artifact(
     Returns:
         Path to the ``artifacts/`` directory, or ``None`` if no model found.
     """
-    model_path = experiment_dir / "best_model.joblib"
-    if not model_path.exists():
+    found: Path | None = None
+    is_dir_candidate = False
+    for name, is_dir in _MODEL_CANDIDATES:
+        candidate = experiment_dir / name
+        if is_dir and candidate.is_dir():
+            found = candidate
+            is_dir_candidate = True
+            break
+        elif not is_dir and candidate.is_file():
+            found = candidate
+            is_dir_candidate = False
+            break
+
+    if found is None:
         return None
 
     artifacts_dir = experiment_dir / "artifacts"
     artifacts_dir.mkdir(exist_ok=True)
 
     # Copy model (not move) to preserve the original
-    shutil.copy2(model_path, artifacts_dir / "best_model.joblib")
+    if is_dir_candidate:
+        shutil.copytree(found, artifacts_dir / found.name, dirs_exist_ok=True)
+    else:
+        shutil.copy2(found, artifacts_dir / found.name)
 
     # Write metadata sidecar
     metadata = {

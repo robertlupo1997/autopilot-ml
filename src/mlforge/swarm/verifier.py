@@ -18,14 +18,17 @@ TOLERANCE = 0.001
 def verify_best_result(
     experiment_dir: Path,
     scoreboard: SwarmScoreboard,
-    eval_script: str = "python train.py --eval-only",
+    eval_script: str = "python train.py",
 ) -> dict | None:
     """Re-run evaluation on the best swarm result and compare metrics.
 
     Args:
         experiment_dir: Root experiment directory.
         scoreboard: SwarmScoreboard to read best result from.
-        eval_script: Command to run for evaluation (must output JSON with metric_value).
+        eval_script: Command to run for evaluation (must output JSON with
+            metric_value).  Default is ``"python train.py"`` -- no template
+            supports ``--eval-only``; all templates output JSON when run
+            normally.
 
     Returns:
         Dict with claimed_metric, verified_metric, match, agent, commit.
