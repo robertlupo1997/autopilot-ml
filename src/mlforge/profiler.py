@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
+from mlforge.tabular.prepare import validate_no_leakage
+
 
 @dataclass
 class DatasetProfile:
@@ -136,6 +138,8 @@ def profile_dataset(df: pd.DataFrame, target_column: str) -> DatasetProfile:
             "distribution": target.value_counts().to_dict() if n_rows > 0 else {},
         }
 
+    leakage_warnings = validate_no_leakage(df, target_column)
+
     return DatasetProfile(
         task=task,
         metric=metric,
@@ -147,4 +151,5 @@ def profile_dataset(df: pd.DataFrame, target_column: str) -> DatasetProfile:
         date_columns=date_columns,
         target_stats=target_stats,
         missing_pct=missing_pct,
+        leakage_warnings=leakage_warnings,
     )
