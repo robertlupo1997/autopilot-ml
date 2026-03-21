@@ -20,7 +20,7 @@ from mlforge.export import export_artifact
 from mlforge.git_ops import GitManager
 from mlforge.guardrails import CostTracker, DeviationHandler, ResourceGuardrails
 from mlforge.intelligence.diagnostics import diagnose_classification, diagnose_regression
-from mlforge.intelligence.drafts import ALGORITHM_FAMILIES, DraftResult, select_best_draft
+from mlforge.intelligence.drafts import ALGORITHM_FAMILIES, DraftResult, get_families_for_domain, select_best_draft
 from mlforge.intelligence.stagnation import check_stagnation, trigger_stagnation_branch
 from mlforge.journal import (
     JournalEntry,
@@ -264,7 +264,8 @@ class RunEngine:
 
             # Stagnation check after revert
             if check_stagnation(self.state, threshold=self.config.stagnation_threshold):
-                untried = [f for f in ALGORITHM_FAMILIES if f not in self.state.tried_families]
+                families = get_families_for_domain(self.config.domain)
+                untried = [f for f in families if f not in self.state.tried_families]
                 if untried:
                     new_family = untried[0]
                     branch = trigger_stagnation_branch(self.git, self.state, new_family)
@@ -319,7 +320,8 @@ class RunEngine:
         task = self.config.plugin_settings.get("task", "classification")
         results: list[DraftResult] = []
 
-        for family_name, family_info in ALGORITHM_FAMILIES.items():
+        families = get_families_for_domain(self.config.domain)
+        for family_name, family_info in families.items():
             prompt = self._build_draft_prompt(family_name, family_info, task)
             exp_result = self._run_one_experiment(prompt_override=prompt)
 
