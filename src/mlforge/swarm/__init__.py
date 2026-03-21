@@ -17,6 +17,7 @@ from git import Repo, GitCommandError
 
 from mlforge.config import Config
 from mlforge.swarm.scoreboard import SwarmScoreboard
+from mlforge.swarm.verifier import verify_best_result
 from mlforge.templates import get_template_env
 
 __all__ = ["SwarmManager", "SwarmScoreboard"]
@@ -93,8 +94,83 @@ class SwarmManager:
 
         return list(self._worktree_paths)
 
+    def _collect_agent_result(self, agent_index: int) -> tuple[float | None, str]:
+        """Collect best result from agent worktree via fallback chain.
+
+        Priority:
+            1. state.json (written by AI agent or from subprocess output parsing)
+            2. checkpoint.json (written by engine checkpoint system)
+
+        Returns:
+            (best_metric, best_commit) or (None, "") if no result found.
+        """
+        mlforge_dir = self._worktree_paths[agent_index] / ".mlforge"
+
+        # Source 1: state.json
+        state_path = mlforge_dir / "state.json"
+        try:
+            if state_path.exists():
+                data = json.loads(state_path.read_text())
+                metric = data.get("best_metric")
+                commit = data.get("best_commit", "")
+                if metric is not None:
+                    return (float(metric), commit or "")
+        except (json.JSONDecodeError, OSError, TypeError, ValueError):
+            pass  # Fall through to checkpoint
+
+        # Source 2: checkpoint.json (nested schema: data["state"]["best_metric"])
+        ckpt_path = mlforge_dir / "checkpoint.json"
+        try:
+            if ckpt_path.exists():
+                data = json.loads(ckpt_path.read_text())
+                state_data = data.get("state", {})
+                metric = state_data.get("best_metric")
+                commit = state_data.get("best_commit", "")
+                if metric is not None:
+                    return (float(metric), commit or "")
+        except (json.JSONDecodeError, OSError, TypeError, ValueError):
+            pass
+
+        return (None, "")
+
+    @staticmethod
+    def _parse_subprocess_output(raw: bytes) -> tuple[float | None, str]:
+        """Parse claude -p --output-format json subprocess output for metric result.
+
+        The output envelope is: {"type": "result", "result": "...", "cost_usd": ...}
+        The "result" text may contain a JSON line like {"metric_value": X, "best_commit": "..."}
+
+        Returns:
+            (metric_value, best_commit) or (None, "") if unparseable.
+        """
+        if not raw:
+            return (None, "")
+        try:
+            envelope = json.loads(raw)
+            result_text = envelope.get("result", "")
+        except (json.JSONDecodeError, TypeError, ValueError):
+            return (None, "")
+
+        # Scan lines in reverse for last JSON-like object with metric_value
+        for line in reversed(result_text.splitlines()):
+            line = line.strip()
+            if line.startswith("{") and "metric_value" in line:
+                try:
+                    parsed = json.loads(line)
+                    metric = parsed.get("metric_value")
+                    commit = parsed.get("best_commit", "")
+                    if metric is not None:
+                        return (float(metric), commit or "")
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    continue
+        return (None, "")
+
     def run(self) -> dict:
         """Spawn agents, wait for completion, return results.
+
+        Captures subprocess stdout to parse agent results and writes state.json
+        as a fallback. Uses _collect_agent_result fallback chain (state.json ->
+        checkpoint.json) instead of silent failure on missing state.
 
         Returns:
             Dict with agents count, best_score, best_agent, and all results.
@@ -111,41 +187,48 @@ class SwarmManager:
         try:
             for i, child_config in enumerate(child_configs):
                 cmd = self._build_agent_command(i, child_config)
-                proc = subprocess.Popen(cmd, cwd=str(self._worktree_paths[i]))
+                proc = subprocess.Popen(
+                    cmd,
+                    cwd=str(self._worktree_paths[i]),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
                 self._processes.append(proc)
 
-            # Wait for all to complete
-            for proc in self._processes:
+            # Wait for all to complete, capture stdout
+            for i, proc in enumerate(self._processes):
                 proc.wait()
-
-            # Publish results from each agent's state.json
-            for i, _proc in enumerate(self._processes):
+                # Try to parse subprocess output and write state.json
                 if i < len(self._worktree_paths):
-                    state_path = self._worktree_paths[i] / ".mlforge" / "state.json"
-                    if state_path.exists():
-                        try:
-                            agent_state = json.loads(state_path.read_text())
-                            metric = agent_state.get("best_metric")
-                            commit = agent_state.get("best_commit", "")
-                            if metric is not None:
-                                self.scoreboard.publish_result(
-                                    agent=f"agent-{i}",
-                                    commit=commit or "",
-                                    metric_value=metric,
-                                    elapsed_sec=0.0,
-                                    status="complete",
-                                    description=f"Agent {i} best result",
-                                )
-                        except (json.JSONDecodeError, OSError):
-                            pass  # Agent crashed or state corrupted
+                    raw_output = proc.stdout.read() if proc.stdout else b""
+                    metric, commit = self._parse_subprocess_output(raw_output)
+                    if metric is not None:
+                        state_path = self._worktree_paths[i] / ".mlforge" / "state.json"
+                        state_path.parent.mkdir(parents=True, exist_ok=True)
+                        state_path.write_text(
+                            json.dumps({"best_metric": metric, "best_commit": commit})
+                            + "\n"
+                        )
+
+            # Collect results via fallback chain and publish to scoreboard
+            for i in range(len(self._processes)):
+                if i < len(self._worktree_paths):
+                    metric, commit = self._collect_agent_result(i)
+                    if metric is not None:
+                        self.scoreboard.publish_result(
+                            agent=f"agent-{i}",
+                            commit=commit,
+                            metric_value=metric,
+                            elapsed_sec=0.0,
+                            status="complete",
+                            description=f"Agent {i} best result",
+                        )
 
             best_score, best_agent = self.scoreboard.read_best()
             all_results = self.scoreboard.read_all()
 
             # Verify best result
             try:
-                from mlforge.swarm.verifier import verify_best_result
-
                 verification = verify_best_result(
                     self.experiment_dir, self.scoreboard
                 )
