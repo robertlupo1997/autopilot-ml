@@ -66,10 +66,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Multi-Agent
 
-- [ ] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
-- [ ] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
-- [ ] **SWARM-03**: Budget inheritance prevents spawn explosion — child agents inherit parent's remaining budget
-- [ ] **SWARM-04**: Verification agent checks metric improvement claims against actual holdout performance
+- [x] **SWARM-01**: Swarm mode spawns parallel agents in git worktrees exploring different model families simultaneously
+- [x] **SWARM-02**: File-locked scoreboard coordinates best result across parallel agents
+- [x] **SWARM-03**: Budget inheritance prevents spawn explosion — child agents inherit parent's remaining budget
+- [x] **SWARM-04**: Verification agent checks metric improvement claims against actual holdout performance
 
 ### User Experience
 
@@ -146,10 +146,10 @@ Deferred to future release.
 | GUARD-04 | Phase 3 | Complete |
 | GUARD-05 | Phase 3 | Complete |
 | GUARD-06 | Phase 4 | Complete |
-| SWARM-01 | Phase 14 | Pending |
-| SWARM-02 | Phase 14 | Pending |
-| SWARM-03 | Phase 14 | Pending |
-| SWARM-04 | Phase 14 | Pending |
+| SWARM-01 | Phase 14 | Complete |
+| SWARM-02 | Phase 14 | Complete |
+| SWARM-03 | Phase 14 | Complete |
+| SWARM-04 | Phase 14 | Complete |
 | UX-01 | Phase 15 | Complete |
 | UX-02 | Phase 4 | Complete |
 | UX-03 | Phase 16 | Complete |
@@ -158,11 +158,11 @@ Deferred to future release.
 
 **Coverage:**
 - v1 requirements: 48 total
-- Satisfied: 40
-- Pending (gap closure): 8
+- Satisfied: 48
+- Pending (gap closure): 0
 - Mapped to phases: 48
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after roadmap creation*
+*Last updated: 2026-03-21 after milestone audit*
