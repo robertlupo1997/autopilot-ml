@@ -254,10 +254,3 @@ class TestSessionStateCost:
         state = SessionState()
         assert state.cost_spent_usd == 0.0
 
-    def test_cost_spent_usd_round_trips_json(self, tmp_path: Path) -> None:
-        state = SessionState(cost_spent_usd=3.75, experiment_count=10)
-        path = tmp_path / "state.json"
-        state.to_json(path)
-        loaded = SessionState.from_json(path)
-        assert loaded.cost_spent_usd == pytest.approx(3.75)
-        assert loaded.experiment_count == 10

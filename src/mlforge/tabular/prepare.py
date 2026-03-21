@@ -171,43 +171,6 @@ def get_data_summary(df: pd.DataFrame, target_column: str) -> dict[str, Any]:
     }
 
 
-def temporal_split(
-    df: pd.DataFrame,
-    date_column: str,
-    n_splits: int = 5,
-) -> list[tuple[list[int], list[int]]]:
-    """Walk-forward cross-validation splits respecting time order.
-
-    Sorts by date_column and creates expanding-window splits where
-    train indices are always before test indices.
-
-    Args:
-        df: DataFrame with a date/datetime column.
-        date_column: Name of the temporal column.
-        n_splits: Number of CV splits.
-
-    Returns:
-        List of (train_indices, test_indices) tuples.
-    """
-    sorted_idx = df[date_column].argsort().values
-    n = len(sorted_idx)
-    # Minimum training size is 1/n_splits of data
-    min_train = n // (n_splits + 1)
-    fold_size = (n - min_train) // n_splits
-
-    splits = []
-    for i in range(n_splits):
-        train_end = min_train + i * fold_size
-        test_start = train_end
-        test_end = min(test_start + fold_size, n)
-        if test_start >= n:
-            break
-        train_idx = sorted_idx[:train_end].tolist()
-        test_idx = sorted_idx[test_start:test_end].tolist()
-        if train_idx and test_idx:
-            splits.append((train_idx, test_idx))
-
-    return splits
 
 
 def validate_no_leakage(

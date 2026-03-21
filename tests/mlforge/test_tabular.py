@@ -386,41 +386,6 @@ class TestGetDataSummary:
 
 
 # ---------------------------------------------------------------------------
-# prepare.py: temporal_split
-# ---------------------------------------------------------------------------
-
-
-class TestTemporalSplit:
-    """temporal_split() produces walk-forward CV splits respecting time order."""
-
-    def test_splits_respect_time_order(self):
-        from mlforge.tabular.prepare import temporal_split
-
-        df = pd.DataFrame({
-            "date": pd.date_range("2020-01-01", periods=100),
-            "value": range(100),
-        })
-        splits = temporal_split(df, "date", n_splits=3)
-        assert len(splits) == 3
-        for train_idx, test_idx in splits:
-            # All train indices should be before all test indices
-            assert max(train_idx) < min(test_idx)
-
-    def test_no_shuffle(self):
-        from mlforge.tabular.prepare import temporal_split
-
-        df = pd.DataFrame({
-            "date": pd.date_range("2020-01-01", periods=50),
-            "value": range(50),
-        })
-        splits = temporal_split(df, "date", n_splits=2)
-        for train_idx, test_idx in splits:
-            # Train and test should be contiguous and ordered
-            assert list(train_idx) == sorted(train_idx)
-            assert list(test_idx) == sorted(test_idx)
-
-
-# ---------------------------------------------------------------------------
 # prepare.py: validate_no_leakage
 # ---------------------------------------------------------------------------
 
