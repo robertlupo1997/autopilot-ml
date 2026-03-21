@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 16 context gathered
-last_updated: "2026-03-20T23:44:06.096Z"
-last_activity: 2026-03-20 -- Completed 15-01 (FT Simple Mode Metric Mapping)
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-03-20T23:58:47Z"
+last_activity: 2026-03-20 -- Completed 16-01 (Wire Template Runtime Artifacts)
 progress:
   total_phases: 16
   completed_phases: 15
   total_plans: 26
-  completed_plans: 26
+  completed_plans: 27
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Leave an ML research agent running overnight with full confidence it will follow protocol, respect resource boundaries, track state, and produce meaningful results -- without human intervention.
-**Current focus:** Phase 15 complete -- FT simple mode metric mapping fixed
+**Current focus:** Phase 16 complete -- Template runtime artifacts wired
 
 ## Current Position
 
-Phase: 15 of 16 (Fix FT Simple Mode Metric Mapping)
+Phase: 16 of 16 (Wire Template Runtime Artifacts)
 Plan: 1 of 1 complete
-Status: Phase 15 complete
-Last activity: 2026-03-20 -- Completed 15-01 (FT Simple Mode Metric Mapping)
+Status: Phase 16 plan 01 complete
+Last activity: 2026-03-20 -- Completed 16-01 (Wire Template Runtime Artifacts)
 
-Progress: [██████████] 26/26 plans (100%)
+Progress: [██████████] 27/27 plans (100%)
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [██████████] 26/26 plans (100%)
 | Phase 13 P01 | 4min | 2 tasks | 6 files |
 | Phase 14 P01 | 3min | 2 tasks | 3 files |
 | Phase 15 P01 | 2min | 2 tasks | 2 files |
+| Phase 16 P01 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,8 @@ Recent decisions affecting current work:
 - [Phase 15]: Lazy import FineTuningPlugin._VALID_METRICS inside _map_task_for_domain to avoid import-time dependency
 - [Phase 15]: Override metric only when NOT in plugin _VALID_METRICS (preserves expert mode explicit metrics)
 - [Phase 15]: Auto-default model_name for FT domain replaces hard rejection -- test updated accordingly
+- [Phase 16]: Data reload in __main__ is intentional duplication -- objective() runs many trials, __main__ retrain is single run
+- [Phase 16]: Artifact writes placed before JSON print to maintain engine's last-line JSON parsing contract
 
 ### Pending Todos
 
@@ -163,6 +166,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T23:44:06.093Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-wire-template-runtime-artifacts/16-CONTEXT.md
+Last session: 2026-03-20T23:58:47Z
+Stopped at: Completed 16-01-PLAN.md
+Resume file: .planning/phases/16-wire-template-runtime-artifacts/16-01-SUMMARY.md

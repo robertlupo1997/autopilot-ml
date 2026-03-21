@@ -290,4 +290,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 13. Wire Dead Code + Rich Profile Display | 1/1 | Complete    | 2026-03-20 |
 | 14. Fix Swarm Agent Subprocess | 1/1 | Complete    | 2026-03-20 |
 | 15. Fix FT Simple Mode Metric Mapping | 1/1 | Complete    | 2026-03-20 |
-| 16. Wire Template Runtime Artifacts | 0/1 | Planned     | - |
+| 16. Wire Template Runtime Artifacts | 1/1 | Complete   | 2026-03-21 |

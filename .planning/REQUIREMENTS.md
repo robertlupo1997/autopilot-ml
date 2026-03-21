@@ -24,7 +24,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INTL-01**: Baseline establishment runs naive + domain-specific baselines before agent starts experimenting
 - [x] **INTL-02**: Dual-baseline gate requires agent to beat both naive and domain-specific baselines before keeping an experiment
-- [ ] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
+- [x] **INTL-03**: Diagnostics engine analyzes WHERE the model fails (worst predictions, bias direction, feature correlations)
 - [x] **INTL-04**: Branch-on-stagnation triggers after 3 consecutive reverts — branches from best-ever commit, tries different approach
 - [x] **INTL-05**: Multi-draft start generates 3-5 diverse initial solutions (different model families), picks best, iterates linearly
 - [x] **INTL-06**: Diff-aware experimentation shows agent what changed between experiments via git diff in journal
@@ -75,7 +75,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **UX-01**: Simple mode auto-detects task type, selects metrics, and generates protocol from minimal user input
 - [x] **UX-02**: Expert mode allows custom CLAUDE.md, custom frozen/mutable zones, custom baseline functions, and plugin API access
-- [ ] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
+- [x] **UX-03**: Best model artifact exported with metadata (metric, config, training history) after session completes
 - [x] **UX-04**: Dataset profiling analyzes schema, feature types, target distribution, and temporal patterns before experiments start
 - [x] **UX-05**: Run retrospective summarizes what approaches worked, what failed, cost analysis, and recommendations for next run
 
@@ -119,7 +119,7 @@ Deferred to future release.
 | CORE-10 | Phase 13 | Complete |
 | INTL-01 | Phase 10 | Complete |
 | INTL-02 | Phase 10 | Complete |
-| INTL-03 | Phase 16 | Pending |
+| INTL-03 | Phase 16 | Complete |
 | INTL-04 | Phase 11 | Complete |
 | INTL-05 | Phase 10 | Complete |
 | INTL-06 | Phase 7 | Complete |
@@ -152,7 +152,7 @@ Deferred to future release.
 | SWARM-04 | Phase 14 | Pending |
 | UX-01 | Phase 15 | Complete |
 | UX-02 | Phase 4 | Complete |
-| UX-03 | Phase 16 | Pending |
+| UX-03 | Phase 16 | Complete |
 | UX-04 | Phase 13 | Complete |
 | UX-05 | Phase 4 | Complete |
 
