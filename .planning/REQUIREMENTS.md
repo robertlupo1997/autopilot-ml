@@ -158,8 +158,8 @@ Deferred to future release.
 
 **Coverage:**
 - v1 requirements: 48 total
-- Satisfied: 37
-- Pending (gap closure): 11
+- Satisfied: 48
+- Pending (gap closure): 0
 - Mapped to phases: 48
 - Unmapped: 0
 
