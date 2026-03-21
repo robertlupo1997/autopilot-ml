@@ -85,3 +85,51 @@ class TestExportArtifact:
         assert not (tmp_path / "artifacts").exists()
         export_artifact(tmp_path, state, config)
         assert (tmp_path / "artifacts").is_dir()
+
+    def test_export_artifact_pt_file(self, tmp_path: Path) -> None:
+        """export_artifact finds best_model.pt when .joblib absent."""
+        from mlforge.export import export_artifact
+
+        (tmp_path / "best_model.pt").write_bytes(b"fake-pt-data")
+        state = SessionState(best_metric=0.85, best_commit="def5678", experiment_count=3)
+        config = Config(metric="accuracy", direction="maximize")
+
+        result = export_artifact(tmp_path, state, config)
+        assert result is not None
+        assert (result / "best_model.pt").exists()
+        assert (result / "best_model.pt").read_bytes() == b"fake-pt-data"
+
+    def test_export_artifact_adapter_dir(self, tmp_path: Path) -> None:
+        """export_artifact copies best_adapter/ directory when .joblib and .pt absent."""
+        from mlforge.export import export_artifact
+
+        adapter_dir = tmp_path / "best_adapter"
+        adapter_dir.mkdir()
+        (adapter_dir / "adapter_model.bin").write_bytes(b"adapter-data")
+        (adapter_dir / "adapter_config.json").write_text('{"r": 16}')
+
+        state = SessionState(best_metric=0.88, best_commit="ghi9012", experiment_count=2)
+        config = Config(metric="f1", direction="maximize")
+
+        result = export_artifact(tmp_path, state, config)
+        assert result is not None
+        exported_adapter = result / "best_adapter"
+        assert exported_adapter.is_dir()
+        assert (exported_adapter / "adapter_model.bin").read_bytes() == b"adapter-data"
+        assert (exported_adapter / "adapter_config.json").read_text() == '{"r": 16}'
+
+    def test_export_artifact_priority_order(self, tmp_path: Path) -> None:
+        """When both .joblib and .pt exist, .joblib wins (first match)."""
+        from mlforge.export import export_artifact
+
+        (tmp_path / "best_model.joblib").write_bytes(b"joblib-data")
+        (tmp_path / "best_model.pt").write_bytes(b"pt-data")
+
+        state = SessionState(best_metric=0.9, best_commit="abc1234", experiment_count=1)
+        config = Config()
+
+        result = export_artifact(tmp_path, state, config)
+        assert result is not None
+        assert (result / "best_model.joblib").exists()
+        # .pt should NOT be exported (first match wins)
+        assert not (result / "best_model.pt").exists()

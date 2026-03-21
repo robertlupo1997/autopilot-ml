@@ -380,3 +380,14 @@ class TestPublishResultWiring:
             result = sm.run()
         # verify_best_result should have been called with experiment_dir and scoreboard
         mock_verify.assert_called_once_with(tmp_path, sm.scoreboard)
+
+
+class TestVerifierDefaultEvalScript:
+    """verify_best_result default eval_script is 'python train.py' (no --eval-only)."""
+
+    def test_verify_default_eval_script(self) -> None:
+        import inspect
+
+        sig = inspect.signature(verify_best_result)
+        default = sig.parameters["eval_script"].default
+        assert default == "python train.py"
