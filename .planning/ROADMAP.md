@@ -268,6 +268,30 @@ Plans:
 Plans:
 - [ ] 16-01-PLAN.md -- Add predictions.csv + best_model.joblib writes to tabular template + CLAUDE.md artifact rule (INTL-03, UX-03)
 
+### Phase 17: Wire DL/FT Artifact Export + Diagnostics
+**Goal**: Make artifact export, diagnostics, and swarm verification work for DL and FT domains, not just tabular
+**Depends on**: Phase 16
+**Requirements**: DL-04, FT-04, UX-03, SWARM-04, INTL-03
+**Gap Closure**: Closes INT-DL-EXPORT, INT-SWARM-VERIFY, and DL/FT diagnostics/export flow gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `export_artifact()` handles `.pt` (DL) and adapter directories (FT), not just `.joblib`
+  2. `dl_train.py.j2` writes `predictions.csv` with test set predictions
+  3. `ft_train.py.j2` writes `predictions.csv` with eval set predictions
+  4. `verify_best_result()` uses domain-aware eval commands, not hardcoded `--eval-only`
+  5. DL and FT diagnostics flow fires at runtime (predictions.csv found by `_run_diagnostics()`)
+**Plans**: TBD
+
+### Phase 18: Wire Leakage Warning Display
+**Goal**: Populate profiler leakage_warnings so CLI displays leakage risk information to users
+**Depends on**: Phase 4
+**Requirements**: GUARD-06, UX-04
+**Gap Closure**: Closes INT-LEAKAGE-WARN from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `profile_dataset()` calls leakage validation and populates `DatasetProfile.leakage_warnings`
+  2. CLI displays leakage warnings when present in profile output
+  3. Existing datasets without leakage produce empty warnings (no false positives)
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -291,3 +315,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7/8/9 (para
 | 14. Fix Swarm Agent Subprocess | 1/1 | Complete    | 2026-03-20 |
 | 15. Fix FT Simple Mode Metric Mapping | 1/1 | Complete    | 2026-03-20 |
 | 16. Wire Template Runtime Artifacts | 1/1 | Complete    | 2026-03-21 |
+| 17. Wire DL/FT Artifact Export + Diagnostics | 0/0 | Planned     | - |
+| 18. Wire Leakage Warning Display | 0/0 | Planned     | - |
