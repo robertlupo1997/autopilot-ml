@@ -9,33 +9,86 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
-ALGORITHM_FAMILIES: dict[str, dict[str, str]] = {
-    "linear": {
-        "description": "Linear models (Ridge/LogisticRegression)",
-        "classification": "LogisticRegression",
-        "regression": "Ridge",
+ALGORITHM_FAMILIES: dict[str, dict[str, dict[str, str]]] = {
+    "tabular": {
+        "linear": {
+            "description": "Linear models (Ridge/LogisticRegression)",
+            "classification": "LogisticRegression",
+            "regression": "Ridge",
+        },
+        "random_forest": {
+            "description": "Random forest ensemble",
+            "classification": "RandomForestClassifier",
+            "regression": "RandomForestRegressor",
+        },
+        "xgboost": {
+            "description": "XGBoost gradient boosting",
+            "classification": "XGBClassifier",
+            "regression": "XGBRegressor",
+        },
+        "lightgbm": {
+            "description": "LightGBM gradient boosting",
+            "classification": "LGBMClassifier",
+            "regression": "LGBMRegressor",
+        },
+        "svm": {
+            "description": "Support vector machines",
+            "classification": "SVC",
+            "regression": "SVR",
+        },
     },
-    "random_forest": {
-        "description": "Random forest ensemble",
-        "classification": "RandomForestClassifier",
-        "regression": "RandomForestRegressor",
+    "deeplearning": {
+        "resnet": {
+            "description": "ResNet convolutional network",
+            "image_classification": "resnet50",
+            "text_classification": "distilbert-base-uncased",
+            "custom": "resnet50",
+        },
+        "vit": {
+            "description": "Vision Transformer",
+            "image_classification": "vit_base_patch16_224",
+            "text_classification": "bert-base-uncased",
+            "custom": "vit_base_patch16_224",
+        },
+        "efficientnet": {
+            "description": "EfficientNet scalable network",
+            "image_classification": "efficientnet_b0",
+            "text_classification": "roberta-base",
+            "custom": "efficientnet_b0",
+        },
     },
-    "xgboost": {
-        "description": "XGBoost gradient boosting",
-        "classification": "XGBClassifier",
-        "regression": "XGBRegressor",
-    },
-    "lightgbm": {
-        "description": "LightGBM gradient boosting",
-        "classification": "LGBMClassifier",
-        "regression": "LGBMRegressor",
-    },
-    "svm": {
-        "description": "Support vector machines",
-        "classification": "SVC",
-        "regression": "SVR",
+    "finetuning": {
+        "qlora_r8": {
+            "description": "QLoRA with rank 8",
+            "sft": "QLoRA r=8 alpha=8",
+        },
+        "qlora_r16": {
+            "description": "QLoRA with rank 16",
+            "sft": "QLoRA r=16 alpha=16",
+        },
+        "qlora_r32": {
+            "description": "QLoRA with rank 32",
+            "sft": "QLoRA r=32 alpha=32",
+        },
+        "lora_full": {
+            "description": "Full LoRA without quantization",
+            "sft": "LoRA r=16 alpha=16 (no quantization)",
+        },
     },
 }
+
+
+def get_families_for_domain(domain: str) -> dict[str, dict[str, str]]:
+    """Return algorithm families for a specific domain.
+
+    Args:
+        domain: One of "tabular", "deeplearning", "finetuning".
+            Unknown domains fall back to tabular families.
+
+    Returns:
+        Dict mapping family names to their task-keyed model class info.
+    """
+    return ALGORITHM_FAMILIES.get(domain, ALGORITHM_FAMILIES["tabular"])
 
 
 @dataclass
