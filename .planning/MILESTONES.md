@@ -1,49 +1,40 @@
 # Milestones
 
-## v3.0 Intelligent Iteration (Shipped: 2026-03-15)
+## mlforge v1.0 — Multi-Domain Autonomous ML Framework (Shipped: 2026-03-21)
 
-**Phases completed:** 4 phases, 6 plans | 2,803 LOC source, 5,210 LOC tests (392 tests)
-**Timeline:** 1 day (2026-03-15) | 30 commits
-**Requirements:** 14/14 satisfied | Audit: passed
+**Phases completed:** 24 phases, 34 plans | 583 tests
+**Timeline:** 3 days (2026-03-19 -> 2026-03-21)
+**Requirements:** 48/48 satisfied | Audit: passed
 
 **Key accomplishments:**
-- `diagnose()` function in forecast.py exposing worst periods, bias, error-growth correlation, and seasonal error patterns
-- `experiments.md` journal seeded at scaffold time with dataset context, baselines, and 4 knowledge sections
-- Full v3.0 protocol in both CLAUDE.md templates: journal read/write, diff-aware iteration, diagnostic recording, hypothesis commits
-- Branch-on-stagnation: best-commit tracking, 3-revert threshold, `git checkout -b explore-{family}` exploration branching
-- E2E validated: MAPE 0.028172, journal actively used by agent (37 to 52 lines), $3.19 cost
+- Ground-up rewrite from autopilot-ml into plugin-based multi-domain framework
+- Three domains: tabular (sklearn/XGBoost/LightGBM/Optuna), deep learning (PyTorch/timm/transformers), fine-tuning (peft/trl/LoRA/QLoRA)
+- Core engine with experiment loop, git state management, checkpoint/resume, guardrails
+- Intelligence layer: diagnostics, multi-draft start, branch-on-stagnation, experiment journal
+- Swarm mode: parallel agents in git worktrees with file-locked scoreboard
+- Protocol-first design: CLAUDE.md Jinja2 templates control all agent behavior
+- Full documentation: README, CONTRIBUTING, 7 domain/config guides
+- CLI: `mlforge <dataset> <goal>` with simple mode (auto-detect) and expert mode (full control)
+- Legacy src/automl/ code removed, repo renamed to mlforge on GitHub
 
 ---
 
-## v2.0 Results-Driven Forecasting (Shipped: 2026-03-15)
+## Prior Work (autopilot-ml, archived in .planning/milestones/)
 
-**Phases completed:** 4 phases, 6 plans, 9 tasks | 2,562 LOC source, 4,417 LOC tests (330 tests)
-**Timeline:** 2 days (2026-03-14 → 2026-03-15) | 50 commits
-**Requirements:** 22/22 satisfied | Nyquist: 4/4 compliant
+### v3.0 Intelligent Iteration (Shipped: 2026-03-15)
 
-**Key accomplishments:**
-- Frozen `forecast.py` with walk-forward CV, MAPE/MAE/RMSE metrics, and naive/seasonal-naive baselines
-- Leakage-free `train_template_forecast.py` with shift-first feature engineering and Optuna hyperparameter search
-- 10-rule agent protocol (`claude_forecast.md.tmpl`) enforcing feature cap, trial budget, dual-baseline gate
-- `--date-column` CLI flag wiring forecasting scaffold end-to-end with baselines pre-computed in `program.md`
-- E2E validation: Ridge achieves MAPE 0.029 vs seasonal naive 0.061 (52% improvement), 7 experiments, $1.90 cost
+**Phases:** 4 | **Plans:** 6 | 392 tests
+Diagnostics, experiment journal, branch-on-stagnation, protocol-first design.
+Tabular-only, in the old src/automl/ codebase (now deleted).
 
----
+### v2.0 Results-Driven Forecasting (Shipped: 2026-03-15)
 
-## v1.0 AutoML MVP + Swarm (Shipped: 2026-03-14)
+**Phases:** 4 | **Plans:** 6 | 330 tests
+Walk-forward CV, shift-first features, forecasting template, dual-baseline gate.
+Tabular-only, in the old src/automl/ codebase (now deleted).
 
-**Phases completed:** 10 phases, 22 plans | 1,977 LOC source, 3,496 LOC tests (250 tests)
-**Timeline:** 6 days (2026-03-09 → 2026-03-14) | 124 commits
-**Requirements:** 69/69 satisfied | Nyquist: 10/10 compliant
+### v1.0 AutoML MVP + Swarm (Shipped: 2026-03-14)
 
-**Key accomplishments:**
-- Frozen pipeline + mutable modeling architecture for autonomous ML experimentation
-- Autonomous experiment loop with multi-draft start, stagnation detection, crash recovery
-- CLI scaffolding: `uv run automl data.csv target metric` generates complete project
-- PreToolUse hooks and permissions for mutable zone enforcement
-- Checkpoint persistence and `--resume` flag for session recovery
-- Multi-agent swarm: parallel claude -p agents in git worktrees with file-locked scoreboard
-- Full E2E validation: 10 experiments, 0 permission denials, autonomous operation confirmed
-
----
-
+**Phases:** 10 | **Plans:** 22 | 250 tests
+Foundation, core loop, CLI, multi-agent swarm. Tabular-only.
+The original autopilot-ml codebase (now deleted).
