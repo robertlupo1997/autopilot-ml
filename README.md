@@ -1,6 +1,12 @@
-# AutoML — Autonomous ML Research Framework
+# mlforge
 
-Give [Claude Code](https://docs.anthropic.com/en/docs/claude-code) a dataset and a metric, and it autonomously discovers the best-performing traditional ML pipeline — running experiments, keeping improvements, reverting failures, and logging everything — without human intervention.
+An autonomous ML research framework. Point it at a dataset and a goal, and it runs structured experiments overnight using **Claude Code** as the autonomous researcher.
+
+Supports **tabular ML**, **deep learning** (PyTorch), and **LLM fine-tuning** (LoRA/QLoRA).
+
+Inspired by Karpathy's [autoresearch](https://github.com/karpathy/autoresearch).
+
+---
 
 ## Quick Start
 
@@ -10,147 +16,262 @@ git clone https://github.com/robertlupo1997/autopilot-ml.git
 cd autopilot-ml
 uv sync
 
-# Scaffold an experiment
-uv run automl data.csv target_column accuracy --goal "Predict customer churn"
+# Tabular ML -- just point and shoot
+mlforge sales.csv "predict customer churn"
 
-# Run the autonomous loop
-cd experiment-churn/
-claude -p "Read CLAUDE.md and begin." --allowedTools 'Bash(*)' 'Edit(*)' 'Write(*)' 'Read' 'Glob' 'Grep'
+# Deep learning -- image classification with PyTorch + timm
+uv sync --extra dl
+mlforge images/ "classify plant diseases" --domain deeplearning
+
+# Fine-tuning -- LoRA on a HuggingFace model
+uv sync --extra ft
+mlforge dataset.jsonl "summarize medical notes" \
+  --domain finetuning \
+  --model-name meta-llama/Llama-3-8B
+
+# Swarm mode -- 5 parallel agents racing on the same problem
+mlforge data.csv "predict revenue" --swarm --n-agents 5
 ```
 
-The agent will:
-1. Generate 3-5 diverse initial models (XGBoost, LightGBM, RandomForest, etc.)
-2. Evaluate each against your metric using cross-validation
-3. Pick the best and iterate — keeping improvements, reverting failures
-4. Log everything to `results.tsv` and git history
-5. Run indefinitely until you stop it
+**Requirements**: Python 3.11+, [uv](https://docs.astral.sh/uv/), [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated. CPU-only for tabular; GPU optional for deep learning and fine-tuning.
 
-## Features
-
-**Single-agent mode** — one Claude Code agent iterating on `train.py`:
-
-```bash
-uv run automl data.csv target metric
-```
-
-**Multi-agent swarm** — N parallel agents in git worktrees with a shared scoreboard:
-
-```bash
-uv run automl data.csv target metric --agents 3
-```
-
-**Session resume** — checkpoint state persists across sessions:
-
-```bash
-uv run automl data.csv target metric --resume
-```
+---
 
 ## How It Works
 
 ```
-data.csv + metric + goal
+mlforge data.csv "predict churn"
         |
         v
-  ┌─────────────┐
-  │  scaffold.py │  Generates experiment project:
-  │              │  prepare.py (frozen), train.py (mutable),
-  │              │  CLAUDE.md, program.md, settings.json
-  └──────┬───────┘
-         |
++------------------+
+|  1. Auto-Profile  |  Detect task type, choose metric, generate prepare.py
++--------+---------+
          v
-  ┌─────────────┐
-  │  claude -p   │  Agent reads CLAUDE.md protocol:
-  │              │  Phase 1: Multi-draft (3-5 algorithms)
-  │              │  Phase 2: Linear iteration (keep/revert)
-  └──────┬───────┘
-         |
-    ┌────┴────┐
-    │ keep?   │──yes──> git commit + log to results.tsv
-    │         │──no───> git reset --hard HEAD
-    └─────────┘
-         |
++------------------+
+|  2. Scaffold      |  Frozen data pipeline + mutable train.py + CLAUDE.md protocol
++--------+---------+
          v
-    (loop forever)
++------------------+
+|  3. Git Branch    |  mlforge/run-{id}
++--------+---------+
+         v
++--------------------------------------+
+|  4. Experiment Loop                   |
+|                                       |
+|   Spawn claude -p with protocol       |
+|        |                              |
+|        v                              |
+|   Agent edits train.py, runs it,      |
+|   reports metric via structured JSON  |
+|        |                              |
+|        v                              |
+|   Improved? -- yes --> git commit     |
+|        |                              |
+|        no ----------> git reset       |
+|        |                              |
+|        v                              |
+|   Diagnostics: analyze WHERE it       |
+|   fails, inject into next prompt      |
+|        |                              |
+|        v                              |
+|   Repeat until budget exhausted       |
++------------------+-------------------+
+                   v
++--------------------------------------+
+|  5. Export best model + retrospective |
++--------------------------------------+
 ```
 
-### Architecture: Staged Mutable Zones
+Every experiment is a git commit. Crash? `--resume` picks up where you left off.
 
-The agent's scope is intentionally constrained:
+---
 
-| Version | What the agent can modify |
-|---------|--------------------------|
-| **v1 (current)** | Modeling only — algorithm, hyperparameters, ensembles |
-| v2 (planned) | + Feature engineering and preprocessing |
-| v3 (planned) | Full pipeline from raw CSV to predictions |
+## Three Domains
 
-### Key Design Decisions
+### Tabular ML
 
-- **Frozen + mutable separation**: `prepare.py` (data loading, evaluation) is frozen; `train.py` is the only file the agent edits
-- **Git for state**: branch per run, commit on keep, reset on discard — full audit trail
-- **Multi-draft + linear**: generate diverse starting points (from AIDE), then iterate (from autoresearch)
-- **PreToolUse hooks**: `guard-frozen.sh` denies writes to `prepare.py` at the Claude Code level
-- **Stdlib-only coordination**: swarm modules use `fcntl`, `subprocess`, `pathlib` — no external dependencies
+scikit-learn, XGBoost, LightGBM with Optuna hyperparameter search. Auto-detects classification vs. regression and selects the appropriate metric.
 
-## Swarm Mode
+```bash
+mlforge customers.csv "predict churn" --metric f1 --budget-usd 3.0
+```
 
-When `--agents N` is specified (N > 1), the CLI spawns a `SwarmManager` that:
+Metrics: accuracy, f1, rmse, mae, r2, and more.
 
-1. Creates N git worktrees under `.swarm/agent-N/`
-2. Assigns algorithm families round-robin (agent-0 gets families [0, N, 2N...])
-3. Spawns N `claude -p` subprocesses, each with its own worktree
-4. Agents coordinate via file-locked `scoreboard.tsv` and TTL claim files
-5. On completion, worktrees are cleaned up and the best `train.py` is preserved
+### Deep Learning
+
+PyTorch with timm (images) and transformers (text). Generates GPU-aware training templates.
+
+```bash
+uv sync --extra dl
+mlforge images/ "classify defects" --domain deeplearning --budget-experiments 20
+```
+
+Metrics: accuracy, f1, loss.
+
+### Fine-Tuning
+
+LoRA/QLoRA via peft and trl. Point it at a HuggingFace model and a dataset.
+
+```bash
+uv sync --extra ft
+mlforge data.jsonl "answer questions about legal documents" \
+  --domain finetuning \
+  --model-name mistralai/Mistral-7B-v0.1 \
+  --budget-experiments 10
+```
+
+Metrics: perplexity, rouge1, rougeL, loss.
+
+---
+
+## Key Features
+
+| Feature | Description |
+|---|---|
+| **Auto-profiling** | Detects task type, picks metric, generates data pipeline |
+| **Plugin system** | Shared core engine with domain-specific plugins |
+| **Protocol prompts** | Jinja2 CLAUDE.md templates control agent behavior |
+| **Git for state** | Branch per run, commit on keep, hard reset on revert |
+| **Multi-draft start** | 3-5 diverse initial solutions, pick best, iterate linearly |
+| **Branch-on-stagnation** | 3 consecutive reverts -> branch from best-ever, try different model family |
+| **Diagnostics** | Tells the agent *where* the model fails (worst slices, bias, correlation) |
+| **Swarm mode** | Parallel agents in git worktrees with file-locked scoreboard |
+| **Guardrails** | Cost caps, time limits, disk usage, per-experiment timeouts |
+| **Checkpoint/resume** | Crash recovery for unattended overnight runs |
+| **Experiment journal** | Hypothesis -> result -> diff tracking in experiments.md |
+| **Retrospective** | Post-run summary: what worked, what didn't, metric trajectory |
+
+---
+
+## Architecture
+
+```
++------------------------------------------------------+
+|                    CLI (cli.py)                        |
++------------------------------------------------------+
+|                 Core Engine (engine.py)                |
+|                                                       |
+|  scaffold --- git_ops --- checkpoint --- guardrails   |
+|  profiler --- results --- export --- retrospective    |
+|  hooks ------ progress -- journal --- state           |
+|                                                       |
+|              Intelligence Layer                        |
+|  diagnostics ---- drafts ---- stagnation              |
++----------+---------------+---------------+-----------+
+| Tabular  | Deep Learning |  Fine-Tuning  |  Swarm    |
+| Plugin   | Plugin        |  Plugin       |  Mode     |
+|          |               |               |           |
+| sklearn  | PyTorch/timm  |  peft/trl     | worktrees |
+| XGBoost  | transformers  |  LoRA/QLoRA   | scoreboard|
+| LightGBM |               |               | claims    |
+| Optuna   |               |               |           |
++----------+---------------+---------------+-----------+
+|              Templates (Jinja2)                        |
+|  CLAUDE.md --- train.py --- experiments.md             |
++------------------------------------------------------+
+```
+
+---
+
+## CLI Reference
+
+```
+mlforge <dataset> <goal> [options]
+```
+
+| Argument | Default | Description |
+|---|---|---|
+| `dataset` | *(required)* | Path to dataset (CSV or Parquet) |
+| `goal` | *(required)* | What to predict or optimize |
+| `--domain` | `tabular` | Plugin domain: `tabular`, `deeplearning`, `finetuning` |
+| `--metric` | auto-detected | Metric to optimize |
+| `--direction` | auto | Override metric direction: `minimize` or `maximize` |
+| `--budget-minutes` | `60` | Time budget in minutes |
+| `--budget-usd` | `5.0` | USD cost cap |
+| `--budget-experiments` | `50` | Maximum experiment count |
+| `--output-dir` | auto | Experiment output directory |
+| `--resume` | -- | Resume a previous run |
+| `--model` | -- | Claude model to use |
+| `--custom-claude-md` | -- | Path to custom CLAUDE.md template |
+| `--custom-frozen` | -- | Additional frozen files |
+| `--custom-mutable` | -- | Additional mutable files |
+| `--swarm` | `false` | Enable parallel swarm mode |
+| `--n-agents` | `3` | Number of swarm agents |
+| `--enable-drafts` | `false` | Multi-draft initial exploration |
+| `--model-name` | -- | HuggingFace model name (fine-tuning) |
+
+---
 
 ## Project Structure
 
 ```
-src/automl/
-  prepare.py           # Frozen data pipeline (load, split, evaluate, preprocess)
-  train_template.py    # Mutable train.py template (agent edits this)
-  runner.py            # Experiment execution and metric extraction
-  git_ops.py           # Git operations (branch, commit, revert, worktree)
-  experiment_logger.py # results.tsv logging
-  loop_helpers.py      # Keep/revert, stagnation detection, crash recovery
-  drafts.py            # Algorithm families and multi-draft generation
-  scaffold.py          # Project scaffolding (generates experiment directory)
-  cli.py               # CLI entry point (automl command)
-  checkpoint.py        # Session state persistence (checkpoint.json)
-  swarm.py             # SwarmManager orchestrator
-  swarm_scoreboard.py  # File-locked cross-agent scoreboard
-  swarm_claims.py      # TTL-based experiment deduplication
-  templates/           # CLAUDE.md, program.md, swarm_claude.md templates
+src/mlforge/
+  cli.py                 # CLI entry point
+  config.py              # TOML-based configuration
+  engine.py              # Core experiment loop
+  scaffold.py            # Experiment directory scaffolding
+  plugins.py             # Plugin protocol + registry
+  state.py               # Session state tracking
+  checkpoint.py          # Crash recovery / session resume
+  git_ops.py             # Git operations (branch, commit, revert)
+  guardrails.py          # Cost / time / disk safety limits
+  profiler.py            # Dataset auto-profiling
+  export.py              # Best model artifact export
+  results.py             # JSONL experiment tracking
+  journal.py             # Experiment journal
+  retrospective.py       # Post-session summary report
+  progress.py            # Live terminal progress display
+  hooks.py               # Git hooks for frozen file protection
+  intelligence/
+    diagnostics.py       # Where does the model fail?
+    drafts.py            # Multi-draft exploration
+    stagnation.py        # Detect + branch on plateau
+  tabular/               # Tabular ML plugin
+  deeplearning/          # Deep learning plugin
+  finetuning/            # Fine-tuning plugin
+  swarm/                 # Multi-agent parallel mode
+  templates/             # Jinja2 templates (CLAUDE.md, train.py, experiments.md)
 ```
+
+---
+
+## Documentation
+
+- **[Getting Started](docs/getting-started.md)** -- Installation, first experiment, simple vs expert mode
+- **[Tabular ML Guide](docs/tabular-guide.md)** -- Baselines, diagnostics, stagnation, model families
+- **[Deep Learning Guide](docs/deep-learning-guide.md)** -- Image/text classification, GPU config
+- **[Fine-Tuning Guide](docs/fine-tuning-guide.md)** -- LoRA/QLoRA, data format, memory planning
+- **[Swarm Guide](docs/swarm-guide.md)** -- Parallel agents, scoreboard, budget splitting
+- **[Configuration Reference](docs/configuration.md)** -- All CLI flags, config file, metrics
+
+---
 
 ## Testing
 
 ```bash
-uv run pytest -x -q          # 250 tests, ~25s
+uv run pytest -x -q          # 617+ tests
 uv run pytest -v              # Verbose output
 ```
 
-## Requirements
-
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/) package manager
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI (for running experiments)
-- CPU only — traditional ML doesn't need GPU
+---
 
 ## Acknowledgments
 
-This project synthesizes ideas from several pioneering autonomous ML and research frameworks:
+This project builds on ideas from the **AI-for-science / autonomous-research** community:
 
-| Project | Author | Key Ideas Adopted |
-|---------|--------|-------------------|
-| [**autoresearch**](https://github.com/karpathy/autoresearch) | Andrej Karpathy | Single-file constraint, git state management, `program.md` domain context, "NEVER STOP" protocol, `results.tsv` logging, `run.log` output redirect |
-| [**AIDE**](https://github.com/WecoAI/aideml) | Weco AI | Multi-draft start (diverse initial solutions), atomic improvements, separation of frozen/mutable concerns |
-| [**SELA**](https://github.com/geekan/MetaGPT/tree/main/metagpt/ext/sela) | MetaGPT / Tsinghua | Stage-wise pipeline concept (informing our staged mutable zones roadmap) |
-| [**AutoKaggle**](https://github.com/multimodal-art-projection/AutoKaggle) | Alibaba / MAP | Unit testing concept for ML pipelines |
-| [**ML-Agent**](https://github.com/geekan/MetaGPT/tree/main/metagpt/ext/ai_ml_agent) | Shanghai AI Lab | Insight that domain-specific approaches outperform scale alone |
-| [**The AI Scientist**](https://github.com/SakanaAI/AI-Scientist) | Sakana AI | Full research lifecycle vision (informing future roadmap) |
+| Project | Key Idea Borrowed |
+|---|---|
+| [autoresearch](https://github.com/karpathy/autoresearch) | "Point AI at a problem, let it research overnight" -- the founding inspiration |
+| [AIDE](https://github.com/WecoAI/aideml) (WecoAI) | Multi-draft start, atomic improvements, frozen/mutable separation |
+| [SELA](https://github.com/geekan/MetaGPT/tree/main/metagpt/ext/sela) (MetaGPT) | Stage-wise pipeline concept informing staged mutable zones |
+| [AutoKaggle](https://github.com/multimodal-art-projection/AutoKaggle) (Alibaba) | Unit testing concept for ML pipelines |
+| [ML-Agent](https://github.com/geekan/MetaGPT/tree/main/metagpt/ext/ai_ml_agent) (Shanghai AI Lab) | Domain-specific approaches outperform scale alone |
+| [The AI Scientist](https://github.com/SakanaAI/AI-Scientist) (Sakana AI) | Full research lifecycle vision |
+| [pi-autoresearch](https://github.com/JohnPaton/pi-autoresearch) (John Paton) | Checkpoint/resume patterns |
+| [autoresearch-at-home](https://github.com/darien-schettler/autoresearch-at-home) (Darien Schettler) | Multi-agent coordination patterns |
 
-Additional inspiration from:
-- [**pi-autoresearch**](https://github.com/JohnPaton/pi-autoresearch) (John Paton) — checkpoint/resume patterns
-- [**autoresearch-at-home**](https://github.com/darien-schettler/autoresearch-at-home) (Darien Schettler) — multi-agent coordination patterns
+---
 
 ## License
 
