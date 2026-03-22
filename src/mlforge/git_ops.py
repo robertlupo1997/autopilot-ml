@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from git import Repo, GitCommandError
+from git import Repo
 
 
 class GitManager:
@@ -93,7 +93,7 @@ class GitManager:
         """Close the underlying Repo to prevent file handle leaks."""
         self.repo.close()
 
-    def __enter__(self) -> "GitManager":
+    def __enter__(self) -> GitManager:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:  # noqa: ANN001

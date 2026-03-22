@@ -9,9 +9,10 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import logging
 import signal
 import subprocess
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from mlforge.checkpoint import save_checkpoint
@@ -34,6 +35,8 @@ from mlforge.results import ExperimentResult, ResultsTracker
 from mlforge.retrospective import generate_retrospective
 from mlforge.state import SessionState
 from mlforge.tabular.baselines import compute_baselines, passes_baseline_gate
+
+logger = logging.getLogger(__name__)
 
 # Task types that map to classification diagnostics.
 _CLASSIFICATION_TASKS: frozenset[str] = frozenset({
@@ -192,6 +195,8 @@ class RunEngine:
         if self.config.model is not None:
             cmd.extend(["--model", self.config.model])
 
+        logger.debug("Spawning claude -p (timeout=%ds)", self.config.per_experiment_timeout_sec)
+
         try:
             proc = subprocess.run(
                 cmd,
@@ -201,14 +206,17 @@ class RunEngine:
                 cwd=str(self.experiment_dir),
             )
         except subprocess.TimeoutExpired:
+            logger.warning("Experiment timed out after %ds", self.config.per_experiment_timeout_sec)
             return {"status": "timeout"}
 
         if proc.returncode != 0:
+            logger.warning("Experiment crashed (returncode=%d)", proc.returncode)
             return {"status": "crash", "error": proc.stderr or proc.stdout}
 
         try:
             return json.loads(proc.stdout)
         except json.JSONDecodeError:
+            logger.warning("Invalid JSON output from claude")
             return {"status": "crash", "error": "Invalid JSON output"}
 
     def _process_result(self, result: dict) -> str:
@@ -244,6 +252,7 @@ class RunEngine:
         exp_id = self.state.experiment_count + 1
         metric_value = result_for_handler.get("metric_value")
         prev_best = self.state.best_metric
+        logger.info("Experiment %d: metric=%s, action=%s", exp_id, metric_value, action)
 
         if action == "keep":
             # Baseline gate: check BEFORE committing
@@ -282,10 +291,12 @@ class RunEngine:
 
             # Stagnation check after revert
             if check_stagnation(self.state, threshold=self.config.stagnation_threshold):
+                logger.info("Stagnation detected (%d consecutive reverts)", self.state.consecutive_reverts)
                 families = get_families_for_domain(self.config.domain)
                 untried = [f for f in families if f not in self.state.tried_families]
                 if untried:
                     new_family = untried[0]
+                    logger.info("Branching to new model family: %s", new_family)
                     branch = trigger_stagnation_branch(self.git, self.state, new_family)
                     if branch is not None:
                         self.state.tried_families.append(new_family)
@@ -321,7 +332,7 @@ class RunEngine:
             metric_value=metric_value,
             status=status,
             description=f"experiment-{experiment_id}",
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
         self.results_tracker.add(result)
 

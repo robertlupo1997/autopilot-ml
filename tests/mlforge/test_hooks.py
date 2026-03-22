@@ -5,12 +5,8 @@ from __future__ import annotations
 import json
 import os
 import stat
-from pathlib import Path
-
-import pytest
 
 from mlforge.hooks import generate_guard_script, generate_hook_settings, write_hook_files
-
 
 FROZEN = ["prepare.py", "forecast.py"]
 

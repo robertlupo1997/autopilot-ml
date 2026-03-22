@@ -3,18 +3,16 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from mlforge.config import Config
 from mlforge.swarm import SwarmManager
-from mlforge.swarm.verifier import verify_best_result
 from mlforge.swarm.scoreboard import SwarmScoreboard
+from mlforge.swarm.verifier import verify_best_result
 from mlforge.templates import get_template_env
-
 
 # ---------------------------------------------------------------------------
 # SwarmManager init
@@ -387,7 +385,7 @@ class TestPublishResultWiring:
             patch.object(sm.scoreboard, "read_all", return_value=[]),
             patch("mlforge.swarm.verify_best_result", new=mock_verify),
         ):
-            result = sm.run()
+            sm.run()
         # verify_best_result should have been called with experiment_dir and scoreboard
         mock_verify.assert_called_once_with(tmp_path, sm.scoreboard)
 

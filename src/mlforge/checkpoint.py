@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, fields
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from mlforge.state import SessionState
@@ -35,7 +35,7 @@ def save_checkpoint(state: SessionState, checkpoint_dir: Path) -> None:
     payload = {
         "schema_version": SCHEMA_VERSION,
         "state": asdict(state),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
     tmp_path.write_text(json.dumps(payload, indent=2) + "\n")

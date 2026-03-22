@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import json
-import signal
 import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -773,9 +772,9 @@ class TestIntelligenceIntegration:
 
     def test_baselines_computed_for_deeplearning(self, tmp_path):
         """When domain='deeplearning' and labels available, baselines are populated."""
-        from mlforge.engine import RunEngine
-
         import numpy as np
+
+        from mlforge.engine import RunEngine
 
         _init_git(tmp_path)
         (tmp_path / "CLAUDE.md").write_text("protocol")
@@ -893,7 +892,7 @@ class TestIntelligenceIntegration:
 
         with (
             patch.object(engine.git, "revert_to_last_commit"),
-            patch("mlforge.engine.passes_baseline_gate", return_value=False) as mock_gate,
+            patch("mlforge.engine.passes_baseline_gate", return_value=False),
             patch("mlforge.engine.append_journal_entry"),
             patch("mlforge.engine.load_journal", return_value=[]),
             patch("mlforge.engine.render_journal_markdown", return_value=""),
@@ -1361,10 +1360,10 @@ class TestMultiDraftIntegration:
         }
 
         with (
-            patch.object(engine, "_run_one_experiment", return_value=mock_exp_result) as mock_run,
+            patch.object(engine, "_run_one_experiment", return_value=mock_exp_result),
             patch.object(engine.git, "commit_experiment", return_value="abc12345"),
         ):
-            results = engine._run_draft_phase()
+            engine._run_draft_phase()
 
         from mlforge.intelligence.drafts import get_families_for_domain
         for family_name in get_families_for_domain("tabular"):

@@ -2,8 +2,18 @@
 
 from __future__ import annotations
 
-import pytest
+import logging
 from pathlib import Path
+
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _reset_mlforge_logger():
+    """Clear mlforge logger handlers between tests to prevent leakage."""
+    yield
+    mlforge_logger = logging.getLogger("mlforge")
+    mlforge_logger.handlers.clear()
 
 
 @pytest.fixture

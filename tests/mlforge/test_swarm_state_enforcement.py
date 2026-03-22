@@ -12,7 +12,6 @@ import pytest
 from mlforge.config import Config
 from mlforge.swarm import SwarmManager
 
-
 # ---------------------------------------------------------------------------
 # _collect_agent_result fallback chain
 # ---------------------------------------------------------------------------

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import sys
+import logging
 from pathlib import Path
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -25,6 +25,18 @@ def _patch_all():
         patch("mlforge.cli.GitManager"),
         patch("mlforge.cli.RunEngine"),
     )
+
+
+class TestCliVersion:
+    """--version prints version and exits."""
+
+    def test_version_flag(self, capsys):
+        with pytest.raises(SystemExit) as exc_info:
+            main(["--version"])
+        assert exc_info.value.code == 0
+        captured = capsys.readouterr()
+        from mlforge import __version__
+        assert __version__ in captured.out
 
 
 class TestCliNoArgs:
@@ -150,11 +162,11 @@ class TestCliArgParsing:
 class TestCliValidation:
     """CLI validates inputs before proceeding."""
 
-    def test_nonexistent_dataset_returns_1(self, capsys):
-        result = main(["nonexistent.csv", "predict price"])
+    def test_nonexistent_dataset_returns_1(self, caplog):
+        with caplog.at_level(logging.ERROR, logger="mlforge"):
+            result = main(["nonexistent.csv", "predict price"])
         assert result == 1
-        captured = capsys.readouterr()
-        assert "not found" in captured.err.lower() or "does not exist" in captured.err.lower()
+        assert "does not exist" in caplog.text.lower()
 
 
 class TestCliScaffoldEngineWiring:
@@ -201,8 +213,8 @@ class TestCliScaffoldEngineWiring:
         target_dir = tmp_path / "output"
         target_dir.mkdir()
 
-        from mlforge.state import SessionState
         from mlforge.checkpoint import save_checkpoint
+        from mlforge.state import SessionState
 
         state = SessionState(run_id="run-123", experiment_count=3)
         save_checkpoint(state, target_dir / ".mlforge")
@@ -219,31 +231,31 @@ class TestCliScaffoldEngineWiring:
             assert result == 0
             assert not mock_scaffold.called
 
-    def test_resume_no_checkpoint_returns_1(self, tmp_path, capsys):
+    def test_resume_no_checkpoint_returns_1(self, tmp_path, caplog):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
         target_dir = tmp_path / "output"
         target_dir.mkdir()
 
-        result = main([
-            str(dataset), "predict price",
-            "--resume", "--output-dir", str(target_dir),
-        ])
+        with caplog.at_level(logging.ERROR, logger="mlforge"):
+            result = main([
+                str(dataset), "predict price",
+                "--resume", "--output-dir", str(target_dir),
+            ])
         assert result == 1
-        captured = capsys.readouterr()
-        assert "no checkpoint" in captured.err.lower()
+        assert "no checkpoint" in caplog.text.lower()
 
-    def test_prints_summary_on_completion(self, tmp_path, capsys):
+    def test_prints_summary_on_completion(self, tmp_path, caplog):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
         with (
+            caplog.at_level(logging.INFO, logger="mlforge"),
             patch("mlforge.cli.scaffold_experiment"),
             patch("mlforge.cli.GitManager"),
             patch("mlforge.cli.RunEngine"),
         ):
             main([str(dataset), "predict price"])
-        captured = capsys.readouterr()
-        assert "Completed" in captured.out or "completed" in captured.out.lower()
+        assert "completed" in caplog.text.lower()
 
 
 class TestExpertMode:
@@ -304,7 +316,6 @@ class TestSimpleMode:
     def test_auto_detection_sets_metric(self, tmp_path):
         dataset = tmp_path / "data.csv"
         # Regression dataset: numeric target with many unique values
-        import numpy as np
         lines = ["feature,target"]
         for i in range(50):
             lines.append(f"{i},{float(i) * 1.5 + 0.1 * i}")
@@ -320,7 +331,7 @@ class TestSimpleMode:
             assert config.metric == "r2"
             assert config.direction == "maximize"
 
-    def test_auto_detection_prints_message(self, tmp_path, capsys):
+    def test_auto_detection_prints_message(self, tmp_path, caplog):
         dataset = tmp_path / "data.csv"
         lines = ["feature,target"]
         for i in range(50):
@@ -328,13 +339,13 @@ class TestSimpleMode:
         dataset.write_text("\n".join(lines) + "\n")
 
         with (
+            caplog.at_level(logging.INFO, logger="mlforge"),
             patch("mlforge.cli.scaffold_experiment"),
             patch("mlforge.cli.GitManager"),
             patch("mlforge.cli.RunEngine"),
         ):
             main([str(dataset), "predict target"])
-        captured = capsys.readouterr()
-        assert "Auto-detected" in captured.out
+        assert "Auto-detected" in caplog.text
 
     def test_explicit_metric_skips_profiling(self, tmp_path):
         dataset = tmp_path / "data.csv"
@@ -406,8 +417,8 @@ class TestSimpleMode:
 class TestProfileDisplay:
     """CLI displays rich profile info: missing_pct, numeric/categorical counts, leakage warnings."""
 
-    def test_profile_display_rich_fields(self, tmp_path, capsys):
-        """Capture stdout during simple mode CLI, assert Missing: and Numeric: appear."""
+    def test_profile_display_rich_fields(self, tmp_path, caplog):
+        """Capture log output during simple mode CLI, assert Missing and Numeric appear."""
         dataset = tmp_path / "data.csv"
         lines = ["feature1,feature2,target"]
         for i in range(50):
@@ -428,18 +439,18 @@ class TestProfileDisplay:
         )
 
         with (
+            caplog.at_level(logging.INFO, logger="mlforge"),
             patch("mlforge.cli.scaffold_experiment"),
             patch("mlforge.cli.GitManager"),
             patch("mlforge.cli.RunEngine"),
             patch("mlforge.cli.profile_dataset", return_value=mock_profile),
         ):
             main([str(dataset), "predict target"])
-        captured = capsys.readouterr()
-        assert "Missing:" in captured.out
-        assert "Numeric:" in captured.out
+        assert "Missing:" in caplog.text
+        assert "Numeric:" in caplog.text
 
-    def test_profile_display_leakage_warnings(self, tmp_path, capsys):
-        """Create profile with leakage_warnings, assert WARNING: appears."""
+    def test_profile_display_leakage_warnings(self, tmp_path, caplog):
+        """Create profile with leakage_warnings, assert warning appears."""
         dataset = tmp_path / "data.csv"
         lines = ["feature1,target"]
         for i in range(50):
@@ -461,14 +472,14 @@ class TestProfileDisplay:
         )
 
         with (
+            caplog.at_level(logging.WARNING, logger="mlforge"),
             patch("mlforge.cli.scaffold_experiment"),
             patch("mlforge.cli.GitManager"),
             patch("mlforge.cli.RunEngine"),
             patch("mlforge.cli.profile_dataset", return_value=mock_profile),
         ):
             main([str(dataset), "predict target"])
-        captured = capsys.readouterr()
-        assert "WARNING:" in captured.out
+        assert "Leakage" in caplog.text
 
 
 class TestEnableDraftsFlag:
@@ -546,25 +557,25 @@ class TestSwarmCli:
             call_kwargs = MockSM.call_args[1]
             assert call_kwargs["n_agents"] == 5
 
-    def test_n_agents_without_swarm_warns(self, tmp_path, capsys):
+    def test_n_agents_without_swarm_warns(self, tmp_path, caplog):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
         with (
+            caplog.at_level(logging.WARNING, logger="mlforge"),
             patch("mlforge.cli.scaffold_experiment"),
             patch("mlforge.cli.GitManager"),
             patch("mlforge.cli.RunEngine"),
         ):
             main([str(dataset), "predict b", "--n-agents", "5"])
-        captured = capsys.readouterr()
-        assert "warning" in captured.err.lower()
+        assert "no effect" in caplog.text.lower()
 
-    def test_swarm_with_resume_returns_error(self, tmp_path, capsys):
+    def test_swarm_with_resume_returns_error(self, tmp_path, caplog):
         dataset = tmp_path / "data.csv"
         dataset.write_text("a,b\n1,2\n")
-        result = main([str(dataset), "predict b", "--swarm", "--resume"])
+        with caplog.at_level(logging.ERROR, logger="mlforge"):
+            result = main([str(dataset), "predict b", "--swarm", "--resume"])
         assert result == 1
-        captured = capsys.readouterr()
-        assert "cannot be used together" in captured.err.lower()
+        assert "cannot be used together" in caplog.text.lower()
 
     def test_swarm_does_not_call_run_engine(self, tmp_path):
         dataset = tmp_path / "data.csv"
@@ -741,7 +752,7 @@ class TestConfigNewFields:
         assert config.model is None
 
     def test_budget_usd_from_toml(self, tmp_path):
-        from mlforge.config import Config, CONFIG_FILENAME
+        from mlforge.config import CONFIG_FILENAME, Config
         config_path = tmp_path / CONFIG_FILENAME
         config_path.write_text("""\
 [budget]
@@ -757,8 +768,76 @@ max_turns = 50
         assert config.max_turns_per_experiment == 50
 
     def test_model_from_toml(self, tmp_path):
-        from mlforge.config import Config, CONFIG_FILENAME
+        from mlforge.config import CONFIG_FILENAME, Config
         config_path = tmp_path / CONFIG_FILENAME
         config_path.write_text('model = "sonnet"\n')
         config = Config.load(config_path)
         assert config.model == "sonnet"
+
+
+class TestDryRun:
+    """--dry-run shows plan without executing."""
+
+    def test_dry_run_returns_0(self, tmp_path, caplog):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with caplog.at_level(logging.INFO, logger="mlforge"):
+            result = main([str(dataset), "predict b", "--dry-run"])
+        assert result == 0
+        assert "Dry run" in caplog.text
+
+    def test_dry_run_does_not_scaffold(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with patch("mlforge.cli.scaffold_experiment") as mock_scaffold:
+            main([str(dataset), "predict b", "--dry-run"])
+            mock_scaffold.assert_not_called()
+
+    def test_dry_run_shows_config(self, tmp_path, caplog):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with caplog.at_level(logging.INFO, logger="mlforge"):
+            main([str(dataset), "predict b", "--dry-run", "--domain", "tabular"])
+        assert "tabular" in caplog.text
+
+
+class TestBackwardCompat:
+    """Positional args without 'run' subcommand still work."""
+
+    def test_positional_args_work(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            result = main([str(dataset), "predict b"])
+        assert result == 0
+
+    def test_explicit_run_subcommand_works(self, tmp_path):
+        dataset = tmp_path / "data.csv"
+        dataset.write_text("a,b\n1,2\n")
+        with (
+            patch("mlforge.cli.scaffold_experiment"),
+            patch("mlforge.cli.GitManager"),
+            patch("mlforge.cli.RunEngine"),
+        ):
+            result = main(["run", str(dataset), "predict b"])
+        assert result == 0
+
+
+class TestStatusSubcommand:
+    """mlforge status subcommand."""
+
+    def test_status_returns_0(self, tmp_path):
+        result = main(["status", "--dir", str(tmp_path)])
+        assert result == 0
+
+
+class TestCleanSubcommand:
+    """mlforge clean subcommand."""
+
+    def test_clean_dry_run_returns_0(self, tmp_path):
+        result = main(["clean", "--dir", str(tmp_path), "--dry-run"])
+        assert result == 0

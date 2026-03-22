@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from mlforge.config import Config
@@ -76,7 +76,7 @@ def export_artifact(
         "best_commit": state.best_commit,
         "experiment_count": state.experiment_count,
         "total_cost_usd": state.cost_spent_usd,
-        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "exported_at": datetime.now(UTC).isoformat(),
     }
     metadata_path = artifacts_dir / "metadata.json"
     metadata_path.write_text(json.dumps(metadata, indent=2) + "\n")

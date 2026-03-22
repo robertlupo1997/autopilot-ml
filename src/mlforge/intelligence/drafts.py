@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
 ALGORITHM_FAMILIES: dict[str, dict[str, dict[str, str]]] = {
     "tabular": {
         "linear": {

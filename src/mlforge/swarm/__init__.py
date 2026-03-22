@@ -13,7 +13,7 @@ import subprocess
 from dataclasses import replace
 from pathlib import Path
 
-from git import Repo, GitCommandError
+from git import GitCommandError, Repo
 
 from mlforge.config import Config
 from mlforge.swarm.scoreboard import SwarmScoreboard

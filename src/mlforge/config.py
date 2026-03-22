@@ -40,9 +40,14 @@ class Config:
     def load(cls, path: Path | None = None) -> Config:
         """Load config from a TOML file, falling back to defaults.
 
+        Discovery chain (first found wins):
+        1. Explicit ``path`` argument
+        2. ``./mlforge.config.toml`` (project-level)
+        3. ``~/.config/mlforge/config.toml`` (user-level, XDG)
+
         Args:
-            path: Path to the config file. If None, looks for
-                  CONFIG_FILENAME in the current directory.
+            path: Path to the config file. If None, searches the
+                  discovery chain.
 
         Returns:
             Config instance with values from TOML merged over defaults.
@@ -50,8 +55,17 @@ class Config:
         Raises:
             ValueError: If direction is not "maximize" or "minimize".
         """
-        config_path = path or Path(CONFIG_FILENAME)
-        if not config_path.exists():
+        if path is not None:
+            config_path = path
+        else:
+            # Discovery chain
+            candidates = [
+                Path(CONFIG_FILENAME),
+                Path.home() / ".config" / "mlforge" / "config.toml",
+            ]
+            config_path = next((p for p in candidates if p.exists()), None)
+
+        if config_path is None or not config_path.exists():
             return cls()
 
         with open(config_path, "rb") as f:

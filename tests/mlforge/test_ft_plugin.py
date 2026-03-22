@@ -11,7 +11,6 @@ import pytest
 from mlforge.config import Config
 from mlforge.plugins import DomainPlugin, get_plugin, register_plugin
 
-
 # ---------------------------------------------------------------------------
 # FineTuningPlugin Protocol conformance
 # ---------------------------------------------------------------------------

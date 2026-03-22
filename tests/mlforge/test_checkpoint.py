@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from mlforge.checkpoint import save_checkpoint, load_checkpoint, CHECKPOINT_FILE, SCHEMA_VERSION
+from mlforge.checkpoint import CHECKPOINT_FILE, SCHEMA_VERSION, load_checkpoint, save_checkpoint
 from mlforge.state import SessionState
 
 

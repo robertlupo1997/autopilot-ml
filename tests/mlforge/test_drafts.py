@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from mlforge.intelligence.drafts import (
     ALGORITHM_FAMILIES,
     DraftResult,

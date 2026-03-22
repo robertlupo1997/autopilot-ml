@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from pathlib import Path
 from unittest.mock import patch
 
@@ -11,7 +10,6 @@ import pytest
 from mlforge.config import Config
 from mlforge.guardrails import CostTracker, DeviationHandler, ResourceGuardrails
 from mlforge.state import SessionState
-
 
 # ---------------------------------------------------------------------------
 # ResourceGuardrails

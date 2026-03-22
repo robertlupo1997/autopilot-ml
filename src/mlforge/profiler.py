@@ -54,7 +54,7 @@ def _detect_date_columns(df: pd.DataFrame, columns: list[str]) -> list[str]:
             date_cols.append(col)
             continue
         # For object columns, try parsing a sample
-        if df[col].dtype == object:
+        if pd.api.types.is_string_dtype(df[col]):
             try:
                 sample = df[col].dropna().head(20)
                 if len(sample) == 0:
@@ -78,9 +78,25 @@ def profile_dataset(df: pd.DataFrame, target_column: str) -> DatasetProfile:
     Returns:
         DatasetProfile with auto-detected settings and data characteristics.
     """
+    # Input validation
+    if df.empty:
+        raise ValueError("Dataset is empty (0 rows)")
+    if target_column not in df.columns:
+        raise ValueError(
+            f"Target column '{target_column}' not found. "
+            f"Available columns: {list(df.columns)}"
+        )
+    if df[target_column].isna().all():
+        raise ValueError(f"Target column '{target_column}' is entirely NaN")
+
     n_rows = len(df)
     feature_cols = [c for c in df.columns if c != target_column]
     n_features = len(feature_cols)
+
+    if n_features == 0:
+        raise ValueError("Dataset has only one column; need at least a target and one feature")
+    if df[feature_cols].isna().all(axis=None):
+        raise ValueError("All feature columns are entirely NaN")
 
     # Feature type detection
     numeric_features: list[str] = []

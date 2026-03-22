@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from git import GitCommandError, Repo
@@ -51,7 +51,7 @@ def append_journal_entry(path: Path, entry: JournalEntry) -> None:
         entry: The journal entry to append.
     """
     record = asdict(entry)
-    record["timestamp"] = datetime.now(timezone.utc).isoformat()
+    record["timestamp"] = datetime.now(UTC).isoformat()
     with open(path, "a") as f:
         f.write(json.dumps(record) + "\n")
 

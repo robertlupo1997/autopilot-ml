@@ -8,6 +8,7 @@ experiment outcomes to keep/revert/retry/stop actions.
 
 from __future__ import annotations
 
+import logging
 import math
 import shutil
 import time
@@ -15,6 +16,8 @@ from pathlib import Path
 
 from mlforge.config import Config
 from mlforge.state import SessionState
+
+logger = logging.getLogger(__name__)
 
 
 class ResourceGuardrails:
@@ -32,7 +35,10 @@ class ResourceGuardrails:
 
     def should_stop(self, state: SessionState) -> bool:
         """Return True if any guardrail is tripped."""
-        return self.stop_reason(state) is not None
+        reason = self.stop_reason(state)
+        if reason:
+            logger.info("Guardrail tripped: %s", reason)
+        return reason is not None
 
     def stop_reason(self, state: SessionState) -> str | None:
         """Return a human-readable reason if a guardrail tripped, else None."""
@@ -72,6 +78,7 @@ class CostTracker:
         self._costs.append(cost_usd)
         self._total += cost_usd
         state.cost_spent_usd = self._total
+        logger.debug("Cost: $%.4f this experiment, $%.2f total", cost_usd, self._total)
 
     @property
     def total_cost(self) -> float:
@@ -82,6 +89,18 @@ class CostTracker:
     def per_experiment_costs(self) -> list[float]:
         """List of individual experiment costs."""
         return list(self._costs)
+
+    def summary(self) -> dict:
+        """Return a cost summary dict."""
+        if not self._costs:
+            return {"total": 0.0, "count": 0, "avg": 0.0, "min": 0.0, "max": 0.0}
+        return {
+            "total": self._total,
+            "count": len(self._costs),
+            "avg": self._total / len(self._costs),
+            "min": min(self._costs),
+            "max": max(self._costs),
+        }
 
 
 class DeviationHandler:

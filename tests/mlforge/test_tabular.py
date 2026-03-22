@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-import pytest
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
+import pytest
 from sklearn.datasets import make_classification, make_regression
 
 from mlforge.config import Config
 from mlforge.plugins import DomainPlugin
-
 
 # ---------------------------------------------------------------------------
 # TabularPlugin Protocol conformance

@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 
 import numpy as np
-import pytest
 
 
 class TestDLComputeBaselinesClassification:
@@ -24,7 +23,7 @@ class TestDLComputeBaselinesClassification:
 
         labels = np.array([0, 0, 0, 1, 1, 2])
         result = compute_baselines(labels, scoring="accuracy", task="image_classification")
-        for name, entry in result.items():
+        for _name, entry in result.items():
             assert "score" in entry
             assert "std" in entry
             assert isinstance(entry["score"], float)

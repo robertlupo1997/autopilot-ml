@@ -7,7 +7,6 @@ import pytest
 from mlforge.config import Config
 from mlforge.templates import get_template_env, render_claude_md, render_experiments_md
 
-
 # Re-use the mock plugin from test_plugins
 from tests.mlforge.test_plugins import MockTabularPlugin
 

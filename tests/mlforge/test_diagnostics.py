@@ -7,7 +7,6 @@ import pytest
 
 from mlforge.intelligence.diagnostics import diagnose_classification, diagnose_regression
 
-
 # ── Regression diagnostics ────────────────────────────────────────
 
 

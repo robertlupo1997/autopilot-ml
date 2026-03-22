@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import csv
 import io
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 try:
@@ -74,7 +74,7 @@ class SwarmScoreboard:
             current_best = self._parse_best()
 
             # Build and append new row
-            timestamp = datetime.now(timezone.utc).isoformat()
+            timestamp = datetime.now(UTC).isoformat()
             row = f"{agent}\t{commit}\t{metric_value}\t{elapsed_sec}\t{status}\t{description}\t{timestamp}\n"
             with open(self.scoreboard_path, "a") as f:
                 f.write(row)

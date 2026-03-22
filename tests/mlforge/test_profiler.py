@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from mlforge.profiler import DatasetProfile, profile_dataset, _detect_date_columns
+from mlforge.profiler import _detect_date_columns, profile_dataset
 
 
 class TestRegressionDetection:
@@ -234,11 +234,39 @@ class TestLeakageWarnings:
         assert profile.leakage_warnings == []
 
 
-class TestEmptyDataFrame:
-    """Empty DataFrame handled gracefully."""
+class TestInputValidation:
+    """profile_dataset validates inputs and raises ValueError for bad data."""
 
-    def test_empty_df_no_crash(self):
+    def test_empty_df_raises(self):
         df = pd.DataFrame({"a": pd.Series(dtype=float), "target": pd.Series(dtype=float)})
+        with pytest.raises(ValueError, match="empty"):
+            profile_dataset(df, "target")
+
+    def test_missing_target_column_raises(self):
+        df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+        with pytest.raises(ValueError, match="not found"):
+            profile_dataset(df, "nonexistent")
+
+    def test_all_nan_target_raises(self):
+        df = pd.DataFrame({"a": [1, 2, 3], "target": [float("nan")] * 3})
+        with pytest.raises(ValueError, match="entirely NaN"):
+            profile_dataset(df, "target")
+
+    def test_single_column_raises(self):
+        df = pd.DataFrame({"target": [1, 2, 3]})
+        with pytest.raises(ValueError, match="only one column"):
+            profile_dataset(df, "target")
+
+    def test_all_nan_features_raises(self):
+        df = pd.DataFrame({
+            "a": [float("nan")] * 3,
+            "b": [float("nan")] * 3,
+            "target": [1, 2, 3],
+        })
+        with pytest.raises(ValueError, match="entirely NaN"):
+            profile_dataset(df, "target")
+
+    def test_valid_df_does_not_raise(self):
+        df = pd.DataFrame({"a": [1, 2, 3], "target": [0, 1, 0]})
         profile = profile_dataset(df, "target")
-        assert profile.n_rows == 0
-        assert profile.missing_pct == 0.0
+        assert profile.n_rows == 3

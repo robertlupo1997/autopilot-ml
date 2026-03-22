@@ -5,16 +5,13 @@ Phase 14-01: Fix swarm agent subprocess command.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
 from mlforge.config import Config
 from mlforge.swarm import SwarmManager
 from mlforge.templates import get_template_env
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

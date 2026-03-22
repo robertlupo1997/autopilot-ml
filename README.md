@@ -12,8 +12,8 @@ Inspired by Karpathy's [autoresearch](https://github.com/karpathy/autoresearch).
 
 ```bash
 # Install
-git clone https://github.com/robertlupo1997/autopilot-ml.git
-cd autopilot-ml
+git clone https://github.com/robertlupo1997/mlforge.git
+cd mlforge
 uv sync
 
 # Tabular ML -- just point and shoot
@@ -177,8 +177,13 @@ Metrics: perplexity, rouge1, rougeL, loss.
 ## CLI Reference
 
 ```
-mlforge <dataset> <goal> [options]
+mlforge [run] <dataset> <goal> [options]
+mlforge status [--dir PATH]
+mlforge clean [--dir PATH] [--dry-run]
+mlforge --version
 ```
+
+### Run (default subcommand)
 
 | Argument | Default | Description |
 |---|---|---|
@@ -200,6 +205,9 @@ mlforge <dataset> <goal> [options]
 | `--n-agents` | `3` | Number of swarm agents |
 | `--enable-drafts` | `false` | Multi-draft initial exploration |
 | `--model-name` | -- | HuggingFace model name (fine-tuning) |
+| `--dry-run` | -- | Profile dataset and show plan without executing |
+| `--notify` | -- | Notification on completion: `desktop` or `webhook:<url>` |
+| `-v, --verbose` | -- | Enable DEBUG-level console logging |
 
 ---
 
@@ -250,7 +258,7 @@ src/mlforge/
 ## Testing
 
 ```bash
-uv run pytest -x -q          # 617+ tests
+uv run pytest -x -q          # 609+ tests
 uv run pytest -v              # Verbose output
 ```
 

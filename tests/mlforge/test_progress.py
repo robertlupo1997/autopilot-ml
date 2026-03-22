@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from mlforge.config import Config
 from mlforge.progress import LiveProgress
 from mlforge.state import SessionState
@@ -68,8 +66,9 @@ class TestLiveProgressRender:
     @staticmethod
     def _table_text(table) -> str:
         """Extract text from a rich Table by rendering to string."""
-        from rich.console import Console
         from io import StringIO
+
+        from rich.console import Console
         buf = StringIO()
         console = Console(file=buf, width=120, no_color=True)
         console.print(table)

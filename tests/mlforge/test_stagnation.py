@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 from git import Repo
 
-from mlforge.intelligence.stagnation import check_stagnation, trigger_stagnation_branch
 from mlforge.git_ops import GitManager
+from mlforge.intelligence.stagnation import check_stagnation, trigger_stagnation_branch
 from mlforge.state import SessionState
 
 

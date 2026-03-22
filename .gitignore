@@ -12,3 +12,5 @@ experiment-*/
 
 # Research docs (large binary)
 *.docx
+mlforge-data/
+mlforge-images/

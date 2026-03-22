@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from mlforge.config import Config, CONFIG_FILENAME
+from mlforge.config import CONFIG_FILENAME, Config
 
 
 class TestConfigDefaults:

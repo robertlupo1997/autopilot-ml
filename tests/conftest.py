@@ -1,7 +1,8 @@
 """Shared test fixtures for AutoML test suite."""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 try:
     import numpy as np

@@ -2,11 +2,7 @@
 
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
-import pytest
 from sklearn.datasets import make_classification, make_regression
-
 
 # ---------------------------------------------------------------------------
 # compute_baselines
@@ -37,7 +33,7 @@ class TestComputeBaselines:
 
         X, y = make_classification(n_samples=100, n_features=5, random_state=42)
         baselines = compute_baselines(X, y, scoring="accuracy", task="classification")
-        for name, result in baselines.items():
+        for _name, result in baselines.items():
             assert "score" in result
             assert "std" in result
             assert isinstance(result["score"], float)

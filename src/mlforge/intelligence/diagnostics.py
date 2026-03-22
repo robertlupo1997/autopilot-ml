@@ -137,7 +137,7 @@ def diagnose_classification(
 
     # Confused pairs: (true_class, predicted_class, count) sorted by count desc
     pair_counts: Counter = Counter()
-    for t, p in zip(y_true[wrong_mask], y_pred[wrong_mask]):
+    for t, p in zip(y_true[wrong_mask], y_pred[wrong_mask], strict=True):
         t_key = t.item() if hasattr(t, "item") else t
         p_key = p.item() if hasattr(p, "item") else p
         if class_names is not None:

@@ -36,7 +36,7 @@ class TestScaffoldCreatesDirectory:
     """scaffold_experiment creates target directory if it does not exist."""
 
     def test_creates_target_dir(self, config, dataset, target_dir):
-        result = scaffold_experiment(config=config, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
+        scaffold_experiment(config=config, dataset_path=dataset, target_dir=target_dir, run_id="run-1")
         assert target_dir.exists()
         assert target_dir.is_dir()
 
@@ -233,24 +233,24 @@ class TestPluginRegistrationDispatch:
         _registry.clear()
 
     def test_deeplearning_registered(self):
-        from mlforge.scaffold import _ensure_plugin_registered
         from mlforge.plugins import get_plugin
+        from mlforge.scaffold import _ensure_plugin_registered
 
         _ensure_plugin_registered("deeplearning")
         plugin = get_plugin("deeplearning")
         assert plugin.name == "deeplearning"
 
     def test_finetuning_registered(self):
-        from mlforge.scaffold import _ensure_plugin_registered
         from mlforge.plugins import get_plugin
+        from mlforge.scaffold import _ensure_plugin_registered
 
         _ensure_plugin_registered("finetuning")
         plugin = get_plugin("finetuning")
         assert plugin.name == "finetuning"
 
     def test_tabular_registered(self):
-        from mlforge.scaffold import _ensure_plugin_registered
         from mlforge.plugins import get_plugin
+        from mlforge.scaffold import _ensure_plugin_registered
 
         _ensure_plugin_registered("tabular")
         plugin = get_plugin("tabular")
@@ -263,8 +263,8 @@ class TestPluginRegistrationDispatch:
         _ensure_plugin_registered("unknown_domain_xyz")
 
     def test_idempotent_registration(self):
-        from mlforge.scaffold import _ensure_plugin_registered
         from mlforge.plugins import get_plugin
+        from mlforge.scaffold import _ensure_plugin_registered
 
         _ensure_plugin_registered("deeplearning")
         plugin1 = get_plugin("deeplearning")
